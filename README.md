@@ -32,3 +32,8 @@ Ejecuta secuencialmente formato, lint, typecheck y tests:
 ```bash
 pnpm check
 ```
+
+## Continuous Integration
+
+GitHub Actions ejecuta automáticamente `pnpm check` en los pushes a `main` y en los pull requests
+hacia `main`. Un CI rojo indica que falló al menos una validación de formato, lint, tipos o tests.

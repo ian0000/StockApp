@@ -1249,6 +1249,8 @@ Conceptualmente:
 ```text
 inventory-app/
 │
+├── AGENTS.md
+│
 ├── apps/
 │   └── mobile/
 │
@@ -1265,8 +1267,7 @@ inventory-app/
 │   ├── DATA_MODEL.md
 │   ├── ARCHITECTURE.md
 │   ├── MONETIZATION.md
-│   ├── ROADMAP.md
-│   └── AGENTS.md
+│   └── ROADMAP.md
 │
 └── package.json
 ```
