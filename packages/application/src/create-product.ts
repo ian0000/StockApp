@@ -7,6 +7,13 @@ import {
   type Product,
 } from '@stock-app/domain';
 
+import type {
+  InventoryMovementRepository,
+  InventoryRepository,
+  ProductRepository,
+  TransactionManager,
+} from './ports';
+
 export interface ProductIdGenerator {
   generate(): string;
 }
@@ -28,11 +35,19 @@ export interface CreateProductResult {
   readonly initialMovement: InventoryMovement | null;
 }
 
-export class CreateProductUseCase {
-  constructor(private readonly productIdGenerator: ProductIdGenerator) {}
+interface CreateProductDependencies {
+  readonly productIdGenerator: ProductIdGenerator;
+  readonly productRepository: ProductRepository;
+  readonly inventoryRepository: InventoryRepository;
+  readonly inventoryMovementRepository: InventoryMovementRepository;
+  readonly transactionManager: TransactionManager;
+}
 
-  execute(input: CreateProductInput): CreateProductResult {
-    const productId = this.productIdGenerator.generate();
+export class CreateProductUseCase {
+  constructor(private readonly dependencies: CreateProductDependencies) {}
+
+  async execute(input: CreateProductInput): Promise<CreateProductResult> {
+    const productId = this.dependencies.productIdGenerator.generate();
     const product = createProduct({
       id: productId,
       inventoryId: input.inventoryId,
@@ -47,10 +62,29 @@ export class CreateProductUseCase {
       initialUnitCost: input.initialUnitCost,
     });
 
-    return Object.freeze({
+    const result = Object.freeze({
       product,
       inventory: initialInventory.inventory,
       initialMovement: initialInventory.movement,
     });
+
+    await this.dependencies.transactionManager.runInTransaction(async () => {
+      await this.dependencies.productRepository.save(result.product);
+      await this.dependencies.inventoryRepository.save({
+        inventoryId: result.product.inventoryId,
+        productId: result.product.id,
+        state: result.inventory,
+      });
+
+      if (result.initialMovement !== null) {
+        await this.dependencies.inventoryMovementRepository.save({
+          inventoryId: result.product.inventoryId,
+          productId: result.product.id,
+          movement: result.initialMovement,
+        });
+      }
+    });
+
+    return result;
   }
 }
