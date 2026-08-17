@@ -1,4 +1,9 @@
 export {
+  CreateInventoryUseCase,
+  type CreateInventoryInput,
+  type InventoryIdGenerator,
+} from './create-inventory';
+export {
   CreateProductUseCase,
   type CreateProductInput,
   type CreateProductResult,
@@ -7,6 +12,7 @@ export {
   type ProductIdGenerator,
 } from './create-product';
 export {
+  type InventoryRepository,
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductRepository,

@@ -1,8 +1,13 @@
 import type {
+  Inventory,
   InventoryMovement,
   InventoryState,
   Product,
 } from '@stock-app/domain';
+
+export interface InventoryRepository {
+  save(inventory: Inventory): Promise<void>;
+}
 
 export interface ProductRepository {
   save(product: Product): Promise<void>;
