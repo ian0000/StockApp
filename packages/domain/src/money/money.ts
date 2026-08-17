@@ -67,6 +67,28 @@ export class Money {
     return Money.fromScaledUnits(this.#value * safeMultiplier);
   }
 
+  divideByInteger(divisor: number): Money {
+    const safeDivisor = requireSafeInteger(divisor, 'Divisor');
+
+    if (safeDivisor === 0) {
+      throw new RangeError('Divisor must not be zero.');
+    }
+
+    const remainder = this.#value % safeDivisor;
+    const quotient = (this.#value - remainder) / safeDivisor;
+    const isNearestUnitAwayFromZero =
+      Math.abs(remainder) >= Math.abs(safeDivisor) / 2;
+
+    if (remainder === 0 || !isNearestUnitAwayFromZero) {
+      return Money.fromScaledUnits(quotient);
+    }
+
+    const roundingDirection =
+      Math.sign(this.#value) === Math.sign(safeDivisor) ? 1 : -1;
+
+    return Money.fromScaledUnits(quotient + roundingDirection);
+  }
+
   equals(other: Money): boolean {
     return this.#value === other.#value;
   }
