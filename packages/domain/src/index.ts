@@ -3,6 +3,7 @@ export {
   calculateWeightedAverageCost,
   createInitialInventory,
   createInitialStockMovement,
+  createInventory,
   createInventoryMovement,
   createInventoryMovementDraft,
   createInventoryState,
@@ -11,6 +12,7 @@ export {
   type CalculateWeightedAverageCostInput,
   type CreateInitialInventoryInput,
   type CreateInitialStockMovementInput,
+  type CreateInventoryInput,
   type CreateInventoryMovementInput,
   type CreateInventoryMovementDraftInput,
   type CreatePurchaseMovementInput,
@@ -18,6 +20,7 @@ export {
   type InventoryMovementDraft,
   type InventoryMovementType,
   type InventoryState,
+  type Inventory,
   type InitialInventoryResult,
 } from './inventory/index';
 export { Money } from './money/index';

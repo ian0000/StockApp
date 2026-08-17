@@ -1155,7 +1155,12 @@ Esto será importante cuando exista sincronización entre dispositivos.
 
 # 43. Moneda
 
-Cada `Inventory` tendrá una moneda principal.
+Cada `Inventory` tendrá una moneda principal representada mediante un código ISO 4217 alpha-3.
+
+El valor canónico utiliza exactamente tres letras ASCII mayúsculas. Domain elimina whitespace
+exterior, normaliza a uppercase y valida únicamente este formato. V1 no mantiene un catálogo de
+códigos ISO 4217 ni comprueba que cada código con forma válida aparezca actualmente en ese catálogo;
+la UI/Application futura presentará opciones de moneda válidas en lugar de depender de input libre.
 
 Ejemplo:
 
