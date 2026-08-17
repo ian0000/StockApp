@@ -72,7 +72,7 @@ test('preserves the exact cost on the initial stock movement', () => {
     initialUnitCost,
   });
 
-  assert.strictEqual(result.movement?.unitCost, initialUnitCost);
+  assert.strictEqual(result.movement?.unitCostSnapshot, initialUnitCost);
 });
 
 test('preserves the exact cost on the inventory state', () => {
@@ -92,7 +92,7 @@ test('accepts a real zero cost with positive initial stock', () => {
   });
 
   assert.ok(result.inventory.unitCost?.equals(Money.zero()));
-  assert.ok(result.movement?.unitCost?.equals(Money.zero()));
+  assert.ok(result.movement?.unitCostSnapshot?.equals(Money.zero()));
 });
 
 test('rejects an unknown cost with positive initial stock', () => {
@@ -221,7 +221,7 @@ test('initial stock movement factory rejects negative cost', () => {
         quantity: 1,
         unitCost: Money.fromDecimal('-1'),
       }),
-    /movement unit cost.*negative/i,
+    /movement cost snapshot.*negative/i,
   );
 });
 

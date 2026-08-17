@@ -12,6 +12,8 @@ function validProductInput() {
     barcode: '001234567890',
     regularSalePrice: Money.fromDecimal('1.5'),
     minimumStock: 5,
+    createdAt: 1_776_444_000_000,
+    updatedAt: 1_776_444_000_000,
   };
 }
 
@@ -27,6 +29,8 @@ test('creates a valid product', () => {
     regularSalePrice: Money.fromDecimal('1.5'),
     minimumStock: 5,
     isArchived: false,
+    createdAt: 1_776_444_000_000,
+    updatedAt: 1_776_444_000_000,
   });
 });
 
@@ -242,6 +246,8 @@ test('normalizes omitted optional fields to null', () => {
     inventoryId: 'inventory-local-1',
     name: 'Coca-Cola 500 ml',
     regularSalePrice: Money.fromDecimal('1.5'),
+    createdAt: 1_776_444_000_000,
+    updatedAt: 1_776_444_000_000,
   });
 
   assert.equal(product.variant, null);

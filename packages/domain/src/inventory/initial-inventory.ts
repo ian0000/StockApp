@@ -2,7 +2,7 @@ import { Money } from '../money/index';
 import { createInventoryState, type InventoryState } from './apply-purchase';
 import {
   createInitialStockMovement,
-  type InventoryMovement,
+  type InventoryMovementDraft,
 } from './inventory-movement';
 
 export interface CreateInitialInventoryInput {
@@ -12,7 +12,7 @@ export interface CreateInitialInventoryInput {
 
 export interface InitialInventoryResult {
   readonly inventory: InventoryState;
-  readonly movement: InventoryMovement | null;
+  readonly movement: InventoryMovementDraft | null;
 }
 
 export function createInitialInventory({

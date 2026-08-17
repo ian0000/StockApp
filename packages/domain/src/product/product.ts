@@ -1,4 +1,5 @@
 import { Money } from '../money/index';
+import { createTimestampMs, type TimestampMs } from '../timestamp/index';
 
 export interface Product {
   readonly id: string;
@@ -9,6 +10,8 @@ export interface Product {
   readonly regularSalePrice: Money;
   readonly minimumStock: number | null;
   readonly isArchived: boolean;
+  readonly createdAt: TimestampMs;
+  readonly updatedAt: TimestampMs;
 }
 
 export interface CreateProductInput {
@@ -19,6 +22,8 @@ export interface CreateProductInput {
   readonly barcode?: string | null;
   readonly regularSalePrice: Money;
   readonly minimumStock?: number | null;
+  readonly createdAt: TimestampMs;
+  readonly updatedAt: TimestampMs;
 }
 
 function normalizeRequiredString(value: string, label: string): string {
@@ -78,9 +83,18 @@ export function createProduct({
   barcode,
   regularSalePrice,
   minimumStock,
+  createdAt,
+  updatedAt,
 }: CreateProductInput): Product {
   if (regularSalePrice.compare(Money.zero()) < 0) {
     throw new RangeError('Regular sale price must not be negative.');
+  }
+
+  const normalizedCreatedAt = createTimestampMs(createdAt, 'Created at');
+  const normalizedUpdatedAt = createTimestampMs(updatedAt, 'Updated at');
+
+  if (normalizedUpdatedAt < normalizedCreatedAt) {
+    throw new RangeError('Updated at must not be before created at.');
   }
 
   return Object.freeze({
@@ -92,5 +106,7 @@ export function createProduct({
     regularSalePrice,
     minimumStock: normalizeMinimumStock(minimumStock),
     isArchived: false,
+    createdAt: normalizedCreatedAt,
+    updatedAt: normalizedUpdatedAt,
   });
 }

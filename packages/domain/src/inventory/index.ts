@@ -11,11 +11,14 @@ export {
 export {
   createInitialStockMovement,
   createInventoryMovement,
+  createInventoryMovementDraft,
   createPurchaseMovement,
   type CreateInitialStockMovementInput,
   type CreateInventoryMovementInput,
+  type CreateInventoryMovementDraftInput,
   type CreatePurchaseMovementInput,
   type InventoryMovement,
+  type InventoryMovementDraft,
   type InventoryMovementType,
 } from './inventory-movement';
 export {

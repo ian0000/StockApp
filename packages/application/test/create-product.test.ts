@@ -68,6 +68,8 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
   return {
     useCase: new CreateProductUseCase({
       productIdGenerator: generator,
+      inventoryMovementIdGenerator: { generate: () => 'movement-123' },
+      clock: { now: () => 1_776_444_000_000 },
       productRepository,
       inventoryRepository,
       inventoryMovementRepository,
@@ -191,7 +193,7 @@ test('preserves the exact movement cost', async () => {
     validInput({ initialStock: 20, initialUnitCost }),
   );
 
-  assert.strictEqual(result.initialMovement?.unitCost, initialUnitCost);
+  assert.strictEqual(result.initialMovement?.unitCostSnapshot, initialUnitCost);
 });
 
 test('propagates the product variant', async () => {

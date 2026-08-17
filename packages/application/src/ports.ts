@@ -18,14 +18,8 @@ export interface InventoryRepository {
   save(input: SaveInventoryInput): Promise<void>;
 }
 
-export interface SaveInventoryMovementInput {
-  readonly inventoryId: string;
-  readonly productId: string;
-  readonly movement: InventoryMovement;
-}
-
 export interface InventoryMovementRepository {
-  save(input: SaveInventoryMovementInput): Promise<void>;
+  save(movement: InventoryMovement): Promise<void>;
 }
 
 export interface TransactionManager {

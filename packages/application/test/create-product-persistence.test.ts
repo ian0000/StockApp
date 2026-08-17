@@ -10,13 +10,14 @@ import {
 
 import {
   CreateProductUseCase,
+  type Clock,
   type CreateProductInput,
+  type InventoryMovementIdGenerator,
   type InventoryMovementRepository,
   type InventoryRepository,
   type ProductIdGenerator,
   type ProductRepository,
   type SaveInventoryInput,
-  type SaveInventoryMovementInput,
   type TransactionManager,
 } from '../src/index';
 
@@ -34,6 +35,34 @@ class FakeProductIdGenerator implements ProductIdGenerator {
     }
 
     return id;
+  }
+}
+
+class FakeInventoryMovementIdGenerator implements InventoryMovementIdGenerator {
+  calls = 0;
+
+  constructor(private readonly ids: readonly string[]) {}
+
+  generate(): string {
+    const id = this.ids[this.calls];
+    this.calls += 1;
+
+    if (id === undefined) {
+      throw new Error('Fake movement ID sequence exhausted.');
+    }
+
+    return id;
+  }
+}
+
+class FakeClock implements Clock {
+  calls = 0;
+
+  constructor(readonly value: number) {}
+
+  now(): number {
+    this.calls += 1;
+    return this.value;
   }
 }
 
@@ -109,7 +138,7 @@ class RecordingInventoryRepository implements InventoryRepository {
 }
 
 class RecordingInventoryMovementRepository implements InventoryMovementRepository {
-  readonly calls: SaveInventoryMovementInput[] = [];
+  readonly calls: InventoryMovement[] = [];
   readonly transactionStates: boolean[] = [];
 
   constructor(
@@ -118,9 +147,9 @@ class RecordingInventoryMovementRepository implements InventoryMovementRepositor
     private readonly error: Error | null = null,
   ) {}
 
-  async save(input: SaveInventoryMovementInput): Promise<void> {
+  async save(movement: InventoryMovement): Promise<void> {
     this.events.push('movement');
-    this.calls.push(input);
+    this.calls.push(movement);
     this.transactionStates.push(this.isTransactionActive());
 
     if (this.error !== null) {
@@ -131,6 +160,8 @@ class RecordingInventoryMovementRepository implements InventoryMovementRepositor
 
 interface HarnessOptions {
   readonly ids?: readonly string[];
+  readonly movementIds?: readonly string[];
+  readonly timestamp?: number;
   readonly productError?: Error;
   readonly inventoryError?: Error;
   readonly movementError?: Error;
@@ -158,6 +189,10 @@ function createHarness(options: HarnessOptions = {}) {
   const productIdGenerator = new FakeProductIdGenerator(
     options.ids ?? ['product-123'],
   );
+  const inventoryMovementIdGenerator = new FakeInventoryMovementIdGenerator(
+    options.movementIds ?? ['movement-123'],
+  );
+  const clock = new FakeClock(options.timestamp ?? 1_776_444_000_000);
   const transactionManager = new RecordingTransactionManager(
     events,
     options.transactionError ?? null,
@@ -179,6 +214,8 @@ function createHarness(options: HarnessOptions = {}) {
   );
   const useCase = new CreateProductUseCase({
     productIdGenerator,
+    inventoryMovementIdGenerator,
+    clock,
     productRepository,
     inventoryRepository,
     inventoryMovementRepository,
@@ -188,6 +225,8 @@ function createHarness(options: HarnessOptions = {}) {
   return {
     events,
     productIdGenerator,
+    inventoryMovementIdGenerator,
+    clock,
     transactionManager,
     productRepository,
     inventoryRepository,
@@ -303,10 +342,11 @@ test('movement repository receives the inventory association and exact movement'
   const persisted = inventoryMovementRepository.calls[0];
   assert.equal(persisted?.inventoryId, 'inventory-789');
   assert.equal(persisted?.productId, 'product-123');
-  assert.equal(persisted?.movement.type, 'INITIAL_STOCK');
-  assert.equal(persisted?.movement.quantityDelta, 20);
-  assert.strictEqual(persisted?.movement.unitCost, initialUnitCost);
-  assert.strictEqual(result.initialMovement, persisted?.movement);
+  assert.equal(persisted?.id, 'movement-123');
+  assert.equal(persisted?.type, 'INITIAL_STOCK');
+  assert.equal(persisted?.quantityDelta, 20);
+  assert.strictEqual(persisted?.unitCostSnapshot, initialUnitCost);
+  assert.strictEqual(result.initialMovement, persisted);
 });
 
 test('all repository writes execute inside the transaction callback', async () => {
@@ -373,6 +413,10 @@ test('execute resolves only after the transaction manager completes', async () =
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
+    inventoryMovementIdGenerator: new FakeInventoryMovementIdGenerator([
+      'movement-123',
+    ]),
+    clock: new FakeClock(1_776_444_000_000),
     productRepository,
     inventoryRepository,
     inventoryMovementRepository,
@@ -415,6 +459,10 @@ test('repository writes are awaited sequentially', async () => {
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: new FakeProductIdGenerator(['product-123']),
+    inventoryMovementIdGenerator: new FakeInventoryMovementIdGenerator([
+      'movement-123',
+    ]),
+    clock: new FakeClock(1_776_444_000_000),
     productRepository,
     inventoryRepository,
     inventoryMovementRepository: { async save() {} },
@@ -610,21 +658,27 @@ test('Money inputs remain unchanged through persistence', async () => {
 test('repository input types reuse Domain models', () => {
   const state: InventoryState = { stock: 0, unitCost: null };
   const movement: InventoryMovement = {
+    id: 'movement-123',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
     type: 'INITIAL_STOCK',
     quantityDelta: 1,
-    unitCost: Money.fromDecimal('1'),
+    effectiveAt: 1_776_444_000_000,
+    createdAt: 1_776_444_000_000,
+    updatedAt: 1_776_444_000_000,
+    sourceType: null,
+    sourceId: null,
+    unitCostSnapshot: Money.fromDecimal('1'),
+    stockBefore: 0,
+    stockAfter: 1,
+    metadata: null,
   };
   const inventoryInput: SaveInventoryInput = {
     inventoryId: 'inventory-123',
     productId: 'product-123',
     state,
   };
-  const movementInput: SaveInventoryMovementInput = {
-    inventoryId: 'inventory-123',
-    productId: 'product-123',
-    movement,
-  };
-
   assert.strictEqual(inventoryInput.state, state);
-  assert.strictEqual(movementInput.movement, movement);
+  assert.equal(movement.inventoryId, inventoryInput.inventoryId);
+  assert.equal(movement.productId, inventoryInput.productId);
 });

@@ -2,6 +2,8 @@ export {
   CreateProductUseCase,
   type CreateProductInput,
   type CreateProductResult,
+  type Clock,
+  type InventoryMovementIdGenerator,
   type ProductIdGenerator,
 } from './create-product';
 export {
@@ -9,6 +11,5 @@ export {
   type InventoryRepository,
   type ProductRepository,
   type SaveInventoryInput,
-  type SaveInventoryMovementInput,
   type TransactionManager,
 } from './ports';
