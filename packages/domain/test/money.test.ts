@@ -179,3 +179,47 @@ test('compares and checks equality exactly', () => {
   assert.ok(equal.equals(Money.zero()));
   assert.equal(equal.equals(greater), false);
 });
+
+test('divides money exactly by an integer', () => {
+  const result = Money.fromScaledUnits(12).divideByInteger(3);
+
+  assert.equal(result.scaledUnits, 4);
+});
+
+test('rounds integer division below half toward zero', () => {
+  const result = Money.fromScaledUnits(4).divideByInteger(3);
+
+  assert.equal(result.scaledUnits, 1);
+});
+
+test('rounds integer division above half away from zero', () => {
+  const result = Money.fromScaledUnits(5).divideByInteger(3);
+
+  assert.equal(result.scaledUnits, 2);
+});
+
+test('rounds a positive exact half away from zero', () => {
+  const result = Money.fromScaledUnits(1).divideByInteger(2);
+
+  assert.equal(result.scaledUnits, 1);
+});
+
+test('rounds a negative exact half away from zero', () => {
+  const result = Money.fromScaledUnits(-1).divideByInteger(2);
+
+  assert.equal(result.scaledUnits, -1);
+});
+
+test('defines division behavior for a negative divisor', () => {
+  const result = Money.fromScaledUnits(1).divideByInteger(-2);
+
+  assert.equal(result.scaledUnits, -1);
+});
+
+test('divideByInteger rejects zero and values that are not safe integers', () => {
+  const value = Money.fromScaledUnits(1);
+
+  for (const divisor of [0, 1.5, Number.MAX_SAFE_INTEGER + 1, Number.NaN]) {
+    assert.throws(() => value.divideByInteger(divisor), /divisor/i);
+  }
+});

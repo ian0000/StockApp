@@ -1,5 +1,4 @@
 export {
   calculateWeightedAverageCost,
   type CalculateWeightedAverageCostInput,
-} from './inventory/index';
-export { Money } from './money/index';
+} from './weighted-average-cost';
