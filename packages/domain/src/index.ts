@@ -15,6 +15,11 @@ export {
 export { Money } from './money/index';
 export { Percentage } from './percentage/index';
 export {
+  createProduct,
+  type CreateProductInput,
+  type Product,
+} from './product/index';
+export {
   calculateEstimatedProfit,
   calculateMargin,
   calculateMarkup,
