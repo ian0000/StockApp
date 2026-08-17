@@ -8,5 +8,7 @@ export {
   calculateEstimatedProfit,
   calculateMargin,
   calculateMarkup,
+  suggestSalePriceForMargin,
   type ProfitabilityInput,
+  type SuggestSalePriceForMarginInput,
 } from './pricing/index';
