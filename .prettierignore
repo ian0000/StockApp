@@ -1,0 +1,18 @@
+# Dependencies and generated output
+node_modules/
+.pnpm-store/
+.expo/
+.expo-shared/
+apps/mobile/android/
+apps/mobile/ios/
+build/
+coverage/
+dist/
+web-build/
+
+# Generated dependency lockfile
+pnpm-lock.yaml
+
+# Canonical baseline documents retain their established formatting
+AGENTS.md
+docs/

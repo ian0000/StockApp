@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Inventory App",
+    "slug": "inventory-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "inventory-app",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

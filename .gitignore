@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Expo and generated native projects
+.expo/
+.expo-shared/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/expo-env.d.ts
+
+# Builds and quality output
+build/
+dist/
+web-build/
+coverage/
+*.tsbuildinfo
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.mobileprovision
