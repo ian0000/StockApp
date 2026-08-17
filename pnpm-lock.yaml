@@ -47,6 +47,9 @@ importers:
       expo-constants:
         specifier: ~18.0.14
         version: 18.0.14(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))
+      expo-crypto:
+        specifier: ~15.0.9
+        version: 15.0.9(expo@54.0.37)
       expo-linking:
         specifier: ~8.0.12
         version: 8.0.12(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -77,6 +80,9 @@ importers:
       react-native-worklets:
         specifier: 0.5.1
         version: 0.5.1(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      uuid:
+        specifier: 14.0.1
+        version: 14.0.1
     devDependencies:
       '@types/react':
         specifier: ~19.1.17
@@ -2781,6 +2787,11 @@ packages:
       expo: '*'
       react-native: '*'
 
+  expo-crypto@15.0.9:
+    resolution: {integrity: sha512-SNWKa2fXx7v9gkp1h/7nqXY5XN7qgNDn3yRc2aO0gWGbeMbvob/haMxxsPFe9f51aqH5NjNCqHf2kvLhvAd8KQ==}
+    peerDependencies:
+      expo: '*'
+
   expo-file-system@19.0.24:
     resolution: {integrity: sha512-hZs0Ng+coNjx7YJ8MPwfJpoU1SRul6OZ9LZycFzozUeoR+denbyr944YrMP9NVn+Zf1tdC7p0K0zgah3ZySOYg==}
     peerDependencies:
@@ -4562,6 +4573,10 @@ packages:
   utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
+
+  uuid@14.0.1:
+    resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
+    hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
@@ -7750,6 +7765,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  expo-crypto@15.0.9(expo@54.0.37):
+    dependencies:
+      base64-js: 1.5.1
+      expo: 54.0.37(@babel/core@7.29.7)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
+
   expo-file-system@19.0.24(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)):
     dependencies:
       expo: 54.0.37(@babel/core@7.29.7)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
@@ -9763,6 +9783,8 @@ snapshots:
       react: 19.1.0
 
   utils-merge@1.0.1: {}
+
+  uuid@14.0.1: {}
 
   uuid@7.0.3: {}
 
