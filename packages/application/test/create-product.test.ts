@@ -8,10 +8,11 @@ import {
   CreateProductUseCase,
   type CreateProductInput,
   type InventoryMovementRepository,
-  type InventoryRepository,
+  type InventoryStateRepository,
   type ProductIdGenerator,
   type ProductRepository,
   type TransactionManager,
+  type TransactionRepositories,
 } from '../src/index';
 
 class FakeProductIdGenerator implements ProductIdGenerator {
@@ -55,14 +56,19 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
   const productRepository: ProductRepository = {
     async save() {},
   };
-  const inventoryRepository: InventoryRepository = {
+  const inventoryStateRepository: InventoryStateRepository = {
     async save() {},
   };
   const inventoryMovementRepository: InventoryMovementRepository = {
     async save() {},
   };
+  const repositories: TransactionRepositories = {
+    productRepository,
+    inventoryStateRepository,
+    inventoryMovementRepository,
+  };
   const transactionManager: TransactionManager = {
-    runInTransaction: (operation) => operation(),
+    runInTransaction: (operation) => operation(repositories),
   };
 
   return {
@@ -70,9 +76,6 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
       productIdGenerator: generator,
       inventoryMovementIdGenerator: { generate: () => 'movement-123' },
       clock: { now: () => 1_776_444_000_000 },
-      productRepository,
-      inventoryRepository,
-      inventoryMovementRepository,
       transactionManager,
     }),
     generator,

@@ -8,8 +8,9 @@ export {
 } from './create-product';
 export {
   type InventoryMovementRepository,
-  type InventoryRepository,
+  type InventoryStateRepository,
   type ProductRepository,
-  type SaveInventoryInput,
+  type SaveInventoryStateInput,
   type TransactionManager,
+  type TransactionRepositories,
 } from './ports';
