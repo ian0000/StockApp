@@ -25,6 +25,11 @@ export interface CreatePurchaseMovementInput {
   readonly unitCost: Money;
 }
 
+export interface CreateInitialStockMovementInput {
+  readonly quantity: number;
+  readonly unitCost: Money;
+}
+
 function requireSafeInteger(value: number, label: string): number {
   if (!Number.isSafeInteger(value)) {
     throw new RangeError(`${label} must be a safe integer.`);
@@ -63,6 +68,23 @@ export function createPurchaseMovement({
 
   return createInventoryMovement({
     type: 'PURCHASE',
+    quantityDelta: quantity,
+    unitCost,
+  });
+}
+
+export function createInitialStockMovement({
+  quantity,
+  unitCost,
+}: CreateInitialStockMovementInput): InventoryMovement {
+  requireSafeInteger(quantity, 'Initial stock quantity');
+
+  if (quantity <= 0) {
+    throw new RangeError('Initial stock quantity must be greater than zero.');
+  }
+
+  return createInventoryMovement({
+    type: 'INITIAL_STOCK',
     quantityDelta: quantity,
     unitCost,
   });
