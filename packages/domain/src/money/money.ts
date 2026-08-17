@@ -1,3 +1,5 @@
+import { divideAndRoundHalfAwayFromZero } from '../internal/integer-arithmetic';
+
 const DECIMAL_PLACES = 6;
 const DECIMAL_PATTERN = /^(-?)(\d+)(?:\.(\d{1,6}))?$/;
 
@@ -68,25 +70,9 @@ export class Money {
   }
 
   divideByInteger(divisor: number): Money {
-    const safeDivisor = requireSafeInteger(divisor, 'Divisor');
-
-    if (safeDivisor === 0) {
-      throw new RangeError('Divisor must not be zero.');
-    }
-
-    const remainder = this.#value % safeDivisor;
-    const quotient = (this.#value - remainder) / safeDivisor;
-    const isNearestUnitAwayFromZero =
-      Math.abs(remainder) >= Math.abs(safeDivisor) / 2;
-
-    if (remainder === 0 || !isNearestUnitAwayFromZero) {
-      return Money.fromScaledUnits(quotient);
-    }
-
-    const roundingDirection =
-      Math.sign(this.#value) === Math.sign(safeDivisor) ? 1 : -1;
-
-    return Money.fromScaledUnits(quotient + roundingDirection);
+    return Money.fromScaledUnits(
+      divideAndRoundHalfAwayFromZero(this.#value, divisor),
+    );
   }
 
   equals(other: Money): boolean {

@@ -220,6 +220,9 @@ createdAt
 updatedAt
 ```
 
+`createdAt` y `updatedAt` son obligatorios. Al crear un Product representan el mismo instante;
+posteriormente `updatedAt` nunca puede ser anterior a `createdAt`.
+
 ---
 
 # 7. Product.name
@@ -643,6 +646,43 @@ stockAfter
 
 metadata
 ```
+
+Campos obligatorios:
+
+```text
+id
+inventoryId
+productId
+type
+quantityDelta
+effectiveAt
+createdAt
+updatedAt
+stockBefore
+stockAfter
+```
+
+Campos nullable:
+
+```text
+sourceType
+sourceId
+unitCostSnapshot
+metadata
+```
+
+`sourceType` y `sourceId` forman una asociación opcional: ambos son `null` o ambos tienen valor.
+Para `INITIAL_STOCK` ambos son `null`.
+
+`stockBefore` y `stockAfter` son enteros seguros, pueden ser negativos y deben cumplir:
+
+```text
+stockBefore + quantityDelta = stockAfter
+```
+
+La suma no puede salir del rango de enteros seguros. `unitCostSnapshot = null` significa costo
+histórico desconocido; un costo real de cero se conserva como cero. `metadata` es nullable y su
+valor por defecto en V1 es `null`; queda reservado para metadata futura específica del movimiento.
 
 ---
 
@@ -1104,13 +1144,12 @@ Esto nos prepara para movimientos históricos futuros.
 
 # 42. Tiempo y zonas horarias
 
-Los timestamps deberán almacenarse en un formato absoluto consistente.
+Los timestamps se representan como enteros seguros y no negativos de milisegundos desde Unix epoch
+en UTC. Representan un instante absoluto.
 
 La presentación utilizará la zona horaria local correspondiente.
 
 Esto será importante cuando exista sincronización entre dispositivos.
-
-La decisión técnica exacta irá en arquitectura.
 
 ---
 

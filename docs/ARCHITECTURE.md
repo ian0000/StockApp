@@ -646,6 +646,20 @@ En V1, IDs generables offline, `createdAt`, `updatedAt` y relaciones correctas s
 suficiente. No se implementará metadata específica de sincronización; se diseñará al comenzar
 Pro/cloud.
 
+## Timestamps persistibles
+
+Todos los instantes persistibles de V1 se representan como milisegundos desde Unix epoch en UTC.
+En TypeScript se utiliza `number`, con estas invariantes:
+
+```text
+Number.isSafeInteger(value)
+value >= 0
+```
+
+El valor representa un instante absoluto. Domain y Application no almacenan nombres de zona
+horaria, fechas formateadas ni strings dependientes de locale. La presentación convierte el
+instante a la zona horaria local del usuario cuando corresponda.
+
 ---
 
 # 25. Money
