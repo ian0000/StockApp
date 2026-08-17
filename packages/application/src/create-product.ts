@@ -9,12 +9,7 @@ import {
   type TimestampMs,
 } from '@stock-app/domain';
 
-import type {
-  InventoryMovementRepository,
-  InventoryRepository,
-  ProductRepository,
-  TransactionManager,
-} from './ports';
+import type { TransactionManager } from './ports';
 
 export interface ProductIdGenerator {
   generate(): string;
@@ -49,9 +44,6 @@ interface CreateProductDependencies {
   readonly productIdGenerator: ProductIdGenerator;
   readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
   readonly clock: Clock;
-  readonly productRepository: ProductRepository;
-  readonly inventoryRepository: InventoryRepository;
-  readonly inventoryMovementRepository: InventoryMovementRepository;
   readonly transactionManager: TransactionManager;
 }
 
@@ -95,20 +87,22 @@ export class CreateProductUseCase {
       initialMovement,
     });
 
-    await this.dependencies.transactionManager.runInTransaction(async () => {
-      await this.dependencies.productRepository.save(result.product);
-      await this.dependencies.inventoryRepository.save({
-        inventoryId: result.product.inventoryId,
-        productId: result.product.id,
-        state: result.inventory,
-      });
+    await this.dependencies.transactionManager.runInTransaction(
+      async (repositories) => {
+        await repositories.productRepository.save(result.product);
+        await repositories.inventoryStateRepository.save({
+          inventoryId: result.product.inventoryId,
+          productId: result.product.id,
+          state: result.inventory,
+        });
 
-      if (result.initialMovement !== null) {
-        await this.dependencies.inventoryMovementRepository.save(
-          result.initialMovement,
-        );
-      }
-    });
+        if (result.initialMovement !== null) {
+          await repositories.inventoryMovementRepository.save(
+            result.initialMovement,
+          );
+        }
+      },
+    );
 
     return result;
   }

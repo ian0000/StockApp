@@ -14,11 +14,12 @@ import {
   type CreateProductInput,
   type InventoryMovementIdGenerator,
   type InventoryMovementRepository,
-  type InventoryRepository,
+  type InventoryStateRepository,
   type ProductIdGenerator,
   type ProductRepository,
-  type SaveInventoryInput,
+  type SaveInventoryStateInput,
   type TransactionManager,
+  type TransactionRepositories,
 } from '../src/index';
 
 class FakeProductIdGenerator implements ProductIdGenerator {
@@ -72,10 +73,13 @@ class RecordingTransactionManager implements TransactionManager {
 
   constructor(
     readonly events: string[],
+    private readonly getRepositories: () => TransactionRepositories,
     private readonly error: Error | null = null,
   ) {}
 
-  async runInTransaction<T>(operation: () => Promise<T>): Promise<T> {
+  async runInTransaction<T>(
+    operation: (repositories: TransactionRepositories) => Promise<T>,
+  ): Promise<T> {
     this.calls += 1;
     this.events.push('transaction:start');
 
@@ -86,7 +90,7 @@ class RecordingTransactionManager implements TransactionManager {
     this.isActive = true;
 
     try {
-      const result = await operation();
+      const result = await operation(this.getRepositories());
       this.events.push('transaction:complete');
       return result;
     } finally {
@@ -116,8 +120,8 @@ class RecordingProductRepository implements ProductRepository {
   }
 }
 
-class RecordingInventoryRepository implements InventoryRepository {
-  readonly calls: SaveInventoryInput[] = [];
+class RecordingInventoryStateRepository implements InventoryStateRepository {
+  readonly calls: SaveInventoryStateInput[] = [];
   readonly transactionStates: boolean[] = [];
 
   constructor(
@@ -126,7 +130,7 @@ class RecordingInventoryRepository implements InventoryRepository {
     private readonly error: Error | null = null,
   ) {}
 
-  async save(input: SaveInventoryInput): Promise<void> {
+  async save(input: SaveInventoryStateInput): Promise<void> {
     this.events.push('inventory');
     this.calls.push(input);
     this.transactionStates.push(this.isTransactionActive());
@@ -193,8 +197,10 @@ function createHarness(options: HarnessOptions = {}) {
     options.movementIds ?? ['movement-123'],
   );
   const clock = new FakeClock(options.timestamp ?? 1_776_444_000_000);
+  let transactionRepositories: TransactionRepositories;
   const transactionManager = new RecordingTransactionManager(
     events,
+    () => transactionRepositories,
     options.transactionError ?? null,
   );
   const productRepository = new RecordingProductRepository(
@@ -202,7 +208,7 @@ function createHarness(options: HarnessOptions = {}) {
     () => transactionManager.isActive,
     options.productError ?? null,
   );
-  const inventoryRepository = new RecordingInventoryRepository(
+  const inventoryStateRepository = new RecordingInventoryStateRepository(
     events,
     () => transactionManager.isActive,
     options.inventoryError ?? null,
@@ -212,13 +218,15 @@ function createHarness(options: HarnessOptions = {}) {
     () => transactionManager.isActive,
     options.movementError ?? null,
   );
+  transactionRepositories = {
+    productRepository,
+    inventoryStateRepository,
+    inventoryMovementRepository,
+  };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
     inventoryMovementIdGenerator,
     clock,
-    productRepository,
-    inventoryRepository,
-    inventoryMovementRepository,
     transactionManager,
   });
 
@@ -229,7 +237,7 @@ function createHarness(options: HarnessOptions = {}) {
     clock,
     transactionManager,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
     inventoryMovementRepository,
     useCase,
   };
@@ -260,12 +268,12 @@ test('zero-stock creation saves the product once', async () => {
   assert.equal(productRepository.calls.length, 1);
 });
 
-test('zero-stock creation saves inventory once', async () => {
-  const { useCase, inventoryRepository } = createHarness();
+test('zero-stock creation saves inventory state once', async () => {
+  const { useCase, inventoryStateRepository } = createHarness();
 
   await useCase.execute(validInput());
 
-  assert.equal(inventoryRepository.calls.length, 1);
+  assert.equal(inventoryStateRepository.calls.length, 1);
 });
 
 test('zero-stock creation does not save a movement', async () => {
@@ -277,31 +285,36 @@ test('zero-stock creation does not save a movement', async () => {
 });
 
 test('repositories receive the generated product and inventory association', async () => {
-  const { useCase, productRepository, inventoryRepository } = createHarness({
-    ids: ['product-generated-456'],
-  });
+  const { useCase, productRepository, inventoryStateRepository } =
+    createHarness({
+      ids: ['product-generated-456'],
+    });
 
   await useCase.execute(validInput({ inventoryId: 'inventory-456' }));
 
   assert.equal(productRepository.calls[0]?.id, 'product-generated-456');
-  assert.equal(inventoryRepository.calls[0]?.inventoryId, 'inventory-456');
+  assert.equal(inventoryStateRepository.calls[0]?.inventoryId, 'inventory-456');
   assert.equal(
-    inventoryRepository.calls[0]?.productId,
+    inventoryStateRepository.calls[0]?.productId,
     'product-generated-456',
   );
-  assert.deepEqual(inventoryRepository.calls[0]?.state, {
+  assert.deepEqual(inventoryStateRepository.calls[0]?.state, {
     stock: 0,
     unitCost: null,
   });
 });
 
 test('returned result contains the exact persisted product and inventory', async () => {
-  const { useCase, productRepository, inventoryRepository } = createHarness();
+  const { useCase, productRepository, inventoryStateRepository } =
+    createHarness();
 
   const result = await useCase.execute(validInput());
 
   assert.strictEqual(result.product, productRepository.calls[0]);
-  assert.strictEqual(result.inventory, inventoryRepository.calls[0]?.state);
+  assert.strictEqual(
+    result.inventory,
+    inventoryStateRepository.calls[0]?.state,
+  );
   assert.equal(result.initialMovement, null);
 });
 
@@ -310,7 +323,7 @@ test('positive-stock creation saves all three records once', async () => {
     useCase,
     transactionManager,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
     inventoryMovementRepository,
   } = createHarness();
 
@@ -323,7 +336,7 @@ test('positive-stock creation saves all three records once', async () => {
 
   assert.equal(transactionManager.calls, 1);
   assert.equal(productRepository.calls.length, 1);
-  assert.equal(inventoryRepository.calls.length, 1);
+  assert.equal(inventoryStateRepository.calls.length, 1);
   assert.equal(inventoryMovementRepository.calls.length, 1);
 });
 
@@ -353,7 +366,7 @@ test('all repository writes execute inside the transaction callback', async () =
   const {
     useCase,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
     inventoryMovementRepository,
   } = createHarness();
 
@@ -365,11 +378,11 @@ test('all repository writes execute inside the transaction callback', async () =
   );
 
   assert.deepEqual(productRepository.transactionStates, [true]);
-  assert.deepEqual(inventoryRepository.transactionStates, [true]);
+  assert.deepEqual(inventoryStateRepository.transactionStates, [true]);
   assert.deepEqual(inventoryMovementRepository.transactionStates, [true]);
 });
 
-test('repository writes use Product then Inventory then Movement order', async () => {
+test('repository writes use Product then InventoryState then Movement order', async () => {
   const { useCase, events } = createHarness();
 
   await useCase.execute(
@@ -397,19 +410,26 @@ test('execute resolves only after the transaction manager completes', async () =
   const operationComplete = new Promise<void>((resolve) => {
     signalOperationComplete = resolve;
   });
+  const productIdGenerator = new FakeProductIdGenerator(['product-123']);
+  const productRepository: ProductRepository = { async save() {} };
+  const inventoryStateRepository: InventoryStateRepository = {
+    async save() {},
+  };
+  const inventoryMovementRepository: InventoryMovementRepository = {
+    async save() {},
+  };
+  const repositories: TransactionRepositories = {
+    productRepository,
+    inventoryStateRepository,
+    inventoryMovementRepository,
+  };
   const transactionManager: TransactionManager = {
     async runInTransaction(operation) {
-      const result = await operation();
+      const result = await operation(repositories);
       signalOperationComplete?.();
       await transactionGate;
       return result;
     },
-  };
-  const productIdGenerator = new FakeProductIdGenerator(['product-123']);
-  const productRepository: ProductRepository = { async save() {} };
-  const inventoryRepository: InventoryRepository = { async save() {} };
-  const inventoryMovementRepository: InventoryMovementRepository = {
-    async save() {},
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
@@ -417,9 +437,6 @@ test('execute resolves only after the transaction manager completes', async () =
       'movement-123',
     ]),
     clock: new FakeClock(1_776_444_000_000),
-    productRepository,
-    inventoryRepository,
-    inventoryMovementRepository,
     transactionManager,
   });
   let resolved = false;
@@ -452,10 +469,15 @@ test('repository writes are awaited sequentially', async () => {
       await productGate;
     },
   };
-  const inventoryRepository: InventoryRepository = {
+  const inventoryStateRepository: InventoryStateRepository = {
     async save() {
       inventoryCalls += 1;
     },
+  };
+  const repositories: TransactionRepositories = {
+    productRepository,
+    inventoryStateRepository,
+    inventoryMovementRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: new FakeProductIdGenerator(['product-123']),
@@ -463,10 +485,9 @@ test('repository writes are awaited sequentially', async () => {
       'movement-123',
     ]),
     clock: new FakeClock(1_776_444_000_000),
-    productRepository,
-    inventoryRepository,
-    inventoryMovementRepository: { async save() {} },
-    transactionManager: { runInTransaction: (operation) => operation() },
+    transactionManager: {
+      runInTransaction: (operation) => operation(repositories),
+    },
   });
 
   const execution = useCase.execute(validInput());
@@ -486,14 +507,14 @@ async function assertDomainFailureHasNoPersistence(
     useCase,
     transactionManager,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
     inventoryMovementRepository,
   } = createHarness();
 
   await assert.rejects(() => useCase.execute(input), expectedError);
   assert.equal(transactionManager.calls, 0);
   assert.equal(productRepository.calls.length, 0);
-  assert.equal(inventoryRepository.calls.length, 0);
+  assert.equal(inventoryStateRepository.calls.length, 0);
   assert.equal(inventoryMovementRepository.calls.length, 0);
 }
 
@@ -537,18 +558,19 @@ test('zero stock with cost fails before transaction or repositories', async () =
 
 test('product repository failure is propagated without later writes', async () => {
   const error = new Error('product save failed');
-  const { useCase, productRepository, inventoryRepository } = createHarness({
-    productError: error,
-  });
+  const { useCase, productRepository, inventoryStateRepository } =
+    createHarness({
+      productError: error,
+    });
 
   await assert.rejects(() => useCase.execute(validInput()), error);
   assert.equal(productRepository.calls.length, 1);
-  assert.equal(inventoryRepository.calls.length, 0);
+  assert.equal(inventoryStateRepository.calls.length, 0);
 });
 
-test('inventory repository failure is propagated without movement write', async () => {
+test('inventory state repository failure is propagated without movement write', async () => {
   const error = new Error('inventory save failed');
-  const { useCase, inventoryRepository, inventoryMovementRepository } =
+  const { useCase, inventoryStateRepository, inventoryMovementRepository } =
     createHarness({ inventoryError: error });
 
   await assert.rejects(
@@ -561,7 +583,7 @@ test('inventory repository failure is propagated without movement write', async 
       ),
     error,
   );
-  assert.equal(inventoryRepository.calls.length, 1);
+  assert.equal(inventoryStateRepository.calls.length, 1);
   assert.equal(inventoryMovementRepository.calls.length, 0);
 });
 
@@ -589,13 +611,13 @@ test('transaction manager failure is propagated without repository calls', async
   const {
     useCase,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
     inventoryMovementRepository,
   } = createHarness({ transactionError: error });
 
   await assert.rejects(() => useCase.execute(validInput()), error);
   assert.equal(productRepository.calls.length, 0);
-  assert.equal(inventoryRepository.calls.length, 0);
+  assert.equal(inventoryStateRepository.calls.length, 0);
   assert.equal(inventoryMovementRepository.calls.length, 0);
 });
 
@@ -624,7 +646,7 @@ test('two executions use independent IDs and persistence calls', async () => {
     productIdGenerator,
     transactionManager,
     productRepository,
-    inventoryRepository,
+    inventoryStateRepository,
   } = createHarness({ ids: ['product-1', 'product-2'] });
 
   const first = await useCase.execute(validInput());
@@ -635,7 +657,7 @@ test('two executions use independent IDs and persistence calls', async () => {
   assert.equal(productIdGenerator.calls, 2);
   assert.equal(transactionManager.calls, 2);
   assert.equal(productRepository.calls.length, 2);
-  assert.equal(inventoryRepository.calls.length, 2);
+  assert.equal(inventoryStateRepository.calls.length, 2);
 });
 
 test('Money inputs remain unchanged through persistence', async () => {
@@ -673,7 +695,7 @@ test('repository input types reuse Domain models', () => {
     stockAfter: 1,
     metadata: null,
   };
-  const inventoryInput: SaveInventoryInput = {
+  const inventoryInput: SaveInventoryStateInput = {
     inventoryId: 'inventory-123',
     productId: 'product-123',
     state,

@@ -8,6 +8,7 @@ import {
   type InventoryMovementIdGenerator,
   type InventoryMovementRepository,
   type ProductIdGenerator,
+  type TransactionRepositories,
 } from '../src/index';
 
 class SequenceIdGenerator
@@ -46,14 +47,18 @@ function createHarness() {
       movements.push(movement);
     },
   };
+  const repositories: TransactionRepositories = {
+    productRepository: { async save() {} },
+    inventoryStateRepository: { async save() {} },
+    inventoryMovementRepository: movementRepository,
+  };
   const useCase = new CreateProductUseCase({
     productIdGenerator: productIds,
     inventoryMovementIdGenerator: movementIds,
     clock,
-    productRepository: { async save() {} },
-    inventoryRepository: { async save() {} },
-    inventoryMovementRepository: movementRepository,
-    transactionManager: { runInTransaction: (operation) => operation() },
+    transactionManager: {
+      runInTransaction: (operation) => operation(repositories),
+    },
   });
 
   return { clock, movementIds, movements, productIds, useCase };
