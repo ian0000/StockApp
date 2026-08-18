@@ -4,6 +4,7 @@ export const colors = Object.freeze({
   accentSoft: '#e4f2e9',
   background: '#f6f7f4',
   border: '#dde3dc',
+  danger: '#a13b2b',
   onAccent: '#ffffff',
   surface: '#ffffff',
   surfaceMuted: '#eef1ec',

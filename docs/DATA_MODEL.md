@@ -147,6 +147,20 @@ name: "Mi negocio"
 currency: USD
 ```
 
+## Inventory activo en la UI móvil V1
+
+La UI móvil V1 opera con un único `Inventory` activo:
+
+```text
+0 inventories → mostrar configuración inicial
+1 inventory   → utilizar ese Inventory
+>1 inventories → estado no soportado explícito
+```
+
+La aplicación no elegirá silenciosamente el primer registro cuando exista más de uno. V1 no
+incluye selector de inventarios, `active_inventory_id` ni una tabla adicional para esta decisión.
+El modelo conserva su soporte estructural para múltiples inventarios futuros.
+
 ---
 
 # 5. ¿Por qué Inventory si Free ni siquiera requiere cuenta?

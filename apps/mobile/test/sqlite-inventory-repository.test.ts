@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 import { createInventory, type Inventory } from '@stock-app/domain';
 
-import { mapInventoryToRow } from '../src/infrastructure/sqlite/repositories/mappers';
+import {
+  mapInventoryRowToDomain,
+  mapInventoryToRow,
+} from '../src/infrastructure/sqlite/repositories/mappers';
 import { createInventoryRepository } from '../src/infrastructure/sqlite/repositories/repositories';
 import { inventories } from '../src/infrastructure/sqlite/schema';
 
@@ -23,17 +26,25 @@ function createValidInventory(): Inventory {
   });
 }
 
-type InventoryInsertExecutor = Parameters<typeof createInventoryRepository>[0];
+type InventoryRepositoryExecutor = Parameters<
+  typeof createInventoryRepository
+>[0];
+type InventoryRow = typeof inventories.$inferSelect;
 
-class RecordingInsertExecutor {
+class RecordingInventoryExecutor {
   readonly events: string[] = [];
   readonly rows: unknown[] = [];
+  readonly selectTables: unknown[] = [];
   readonly tables: unknown[] = [];
   runs = 0;
 
-  readonly executor: InventoryInsertExecutor;
+  readonly executor: InventoryRepositoryExecutor;
 
-  constructor(private readonly runError: Error | null = null) {
+  constructor(
+    private readonly selectedRows: readonly InventoryRow[] = [],
+    private readonly runError: Error | null = null,
+    private readonly selectError: Error | null = null,
+  ) {
     this.executor = {
       insert: ((table: unknown) => {
         this.events.push('insert');
@@ -56,9 +67,31 @@ class RecordingInsertExecutor {
             };
           },
         };
-      }) as InventoryInsertExecutor['insert'],
+      }) as InventoryRepositoryExecutor['insert'],
+      select: (() => ({
+        from: (table: unknown) => {
+          this.selectTables.push(table);
+
+          if (this.selectError !== null) {
+            return Promise.reject(this.selectError);
+          }
+
+          return Promise.resolve(this.selectedRows);
+        },
+      })) as unknown as InventoryRepositoryExecutor['select'],
     };
   }
+}
+
+function createValidRow(overrides: Partial<InventoryRow> = {}): InventoryRow {
+  return {
+    id: '019cf123-4567-7890-abcd-ef1234567890',
+    name: 'Mi Negocio',
+    currency: 'USD',
+    createdAt: CREATED_AT,
+    updatedAt: UPDATED_AT,
+    ...overrides,
+  };
 }
 
 test('Inventory mapper preserves id', () => {
@@ -100,8 +133,28 @@ test('Inventory mapper produces exactly the inventories insert shape', () => {
   );
 });
 
+test('Inventory row mapper reconstructs every Domain field', () => {
+  assert.deepEqual(mapInventoryRowToDomain(createValidRow()), {
+    id: '019cf123-4567-7890-abcd-ef1234567890',
+    name: 'Mi Negocio',
+    currency: 'USD',
+    createdAt: CREATED_AT,
+    updatedAt: UPDATED_AT,
+  });
+});
+
+test('Inventory row mapper validates and normalizes through Domain', () => {
+  const inventory = mapInventoryRowToDomain(
+    createValidRow({ name: '  Tienda Central  ', currency: 'usd' }),
+  );
+
+  assert.equal(inventory.name, 'Tienda Central');
+  assert.equal(inventory.currency, 'USD');
+  assert.equal(Object.isFrozen(inventory), true);
+});
+
 test('InventoryRepository save performs one insert into inventories', async () => {
-  const recording = new RecordingInsertExecutor();
+  const recording = new RecordingInventoryExecutor();
   const repository = createInventoryRepository(recording.executor);
 
   await repository.save(createValidInventory());
@@ -112,7 +165,7 @@ test('InventoryRepository save performs one insert into inventories', async () =
 });
 
 test('InventoryRepository uses strict insert semantics without upsert', async () => {
-  const recording = new RecordingInsertExecutor();
+  const recording = new RecordingInventoryExecutor();
   const repository = createInventoryRepository(recording.executor);
 
   await repository.save(createValidInventory());
@@ -133,7 +186,7 @@ test('InventoryRepository uses strict insert semantics without upsert', async ()
 
 test('InventoryRepository propagates insert errors', async () => {
   const error = new Error('SQLITE_CONSTRAINT_PRIMARYKEY');
-  const recording = new RecordingInsertExecutor(error);
+  const recording = new RecordingInventoryExecutor([], error);
   const repository = createInventoryRepository(recording.executor);
 
   await assert.rejects(() => repository.save(createValidInventory()), error);
@@ -142,11 +195,79 @@ test('InventoryRepository propagates insert errors', async () => {
 test('InventoryRepository does not mutate Inventory', async () => {
   const inventory = createValidInventory();
   const snapshot = { ...inventory };
-  const recording = new RecordingInsertExecutor();
+  const recording = new RecordingInventoryExecutor();
   const repository = createInventoryRepository(recording.executor);
 
   await repository.save(inventory);
 
   assert.deepEqual(inventory, snapshot);
   assert.deepEqual(recording.rows[0], snapshot);
+});
+
+test('InventoryRepository list reads from inventories', async () => {
+  const recording = new RecordingInventoryExecutor([]);
+  const repository = createInventoryRepository(recording.executor);
+
+  await repository.list();
+
+  assert.deepEqual(recording.selectTables, [inventories]);
+});
+
+test('InventoryRepository list returns an empty list', async () => {
+  const recording = new RecordingInventoryExecutor([]);
+  const repository = createInventoryRepository(recording.executor);
+
+  assert.deepEqual(await repository.list(), []);
+});
+
+test('InventoryRepository list reconstructs one Domain Inventory', async () => {
+  const recording = new RecordingInventoryExecutor([
+    createValidRow({ name: 'Smoke Shop' }),
+  ]);
+  const repository = createInventoryRepository(recording.executor);
+
+  const result = await repository.list();
+
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0], {
+    id: '019cf123-4567-7890-abcd-ef1234567890',
+    name: 'Smoke Shop',
+    currency: 'USD',
+    createdAt: CREATED_AT,
+    updatedAt: UPDATED_AT,
+  });
+});
+
+test('InventoryRepository list returns every Inventory for explicit V1 handling', async () => {
+  const recording = new RecordingInventoryExecutor([
+    createValidRow({ id: 'inventory-1' }),
+    createValidRow({ id: 'inventory-2', name: 'Otra tienda' }),
+  ]);
+  const repository = createInventoryRepository(recording.executor);
+
+  const result = await repository.list();
+
+  assert.deepEqual(
+    result.map(({ id }) => id),
+    ['inventory-1', 'inventory-2'],
+  );
+});
+
+test('InventoryRepository list does not mutate SQLite rows', async () => {
+  const row = createValidRow();
+  const snapshot = { ...row };
+  const recording = new RecordingInventoryExecutor([row]);
+  const repository = createInventoryRepository(recording.executor);
+
+  await repository.list();
+
+  assert.deepEqual(row, snapshot);
+});
+
+test('InventoryRepository list propagates select errors', async () => {
+  const error = new Error('SQLITE_READ_FAILED');
+  const recording = new RecordingInventoryExecutor([], null, error);
+  const repository = createInventoryRepository(recording.executor);
+
+  await assert.rejects(() => repository.list(), error);
 });

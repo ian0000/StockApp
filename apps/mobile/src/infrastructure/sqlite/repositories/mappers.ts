@@ -1,5 +1,10 @@
 import type { SaveInventoryStateInput } from '@stock-app/application';
-import type { Inventory, InventoryMovement, Product } from '@stock-app/domain';
+import {
+  createInventory,
+  type Inventory,
+  type InventoryMovement,
+  type Product,
+} from '@stock-app/domain';
 
 import {
   inventories,
@@ -18,6 +23,18 @@ export function mapInventoryToRow(
     createdAt: inventory.createdAt,
     updatedAt: inventory.updatedAt,
   };
+}
+
+export function mapInventoryRowToDomain(
+  row: typeof inventories.$inferSelect,
+): Inventory {
+  return createInventory({
+    id: row.id,
+    name: row.name,
+    currency: row.currency,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
 }
 
 export function mapProductToRow(
