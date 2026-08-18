@@ -16,6 +16,8 @@ export function Screen({ children, edges = ['top'] }: ScreenProps) {
     <SafeAreaView edges={edges} style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>{children}</View>
