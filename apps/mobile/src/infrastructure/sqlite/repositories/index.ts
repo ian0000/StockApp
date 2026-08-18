@@ -1,4 +1,5 @@
 export {
+  createInventoryRepository,
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,

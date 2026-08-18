@@ -1,4 +1,5 @@
 import type {
+  InventoryRepository,
   InventoryMovementRepository,
   InventoryStateRepository,
   ProductRepository,
@@ -6,14 +7,30 @@ import type {
 } from '@stock-app/application';
 
 import type { AppDatabase } from '../database';
-import { inventoryMovements, inventoryStates, products } from '../schema';
 import {
+  inventories,
+  inventoryMovements,
+  inventoryStates,
+  products,
+} from '../schema';
+import {
+  mapInventoryToRow,
   mapInventoryMovementToRow,
   mapInventoryStateToRow,
   mapProductToRow,
 } from './mappers';
 
 type SqliteInsertExecutor = Pick<AppDatabase['db'], 'insert'>;
+
+export function createInventoryRepository(
+  executor: SqliteInsertExecutor,
+): InventoryRepository {
+  return {
+    async save(inventory) {
+      executor.insert(inventories).values(mapInventoryToRow(inventory)).run();
+    },
+  };
+}
 
 export function createSqliteProductRepository(
   executor: SqliteInsertExecutor,

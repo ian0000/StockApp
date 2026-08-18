@@ -9,10 +9,12 @@ export async function migrateDatabase(
   await migrate(database.db, migrations);
 }
 
-export async function initializeAppDatabase(): Promise<AppDatabase> {
-  const database = await openAppDatabase();
+export async function initializeAppDatabase(
+  database?: AppDatabase,
+): Promise<AppDatabase> {
+  const initializedDatabase = database ?? (await openAppDatabase());
 
-  await migrateDatabase(database);
+  await migrateDatabase(initializedDatabase);
 
-  return database;
+  return initializedDatabase;
 }

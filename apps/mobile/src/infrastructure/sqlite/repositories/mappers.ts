@@ -1,7 +1,24 @@
 import type { SaveInventoryStateInput } from '@stock-app/application';
-import type { InventoryMovement, Product } from '@stock-app/domain';
+import type { Inventory, InventoryMovement, Product } from '@stock-app/domain';
 
-import { inventoryMovements, inventoryStates, products } from '../schema';
+import {
+  inventories,
+  inventoryMovements,
+  inventoryStates,
+  products,
+} from '../schema';
+
+export function mapInventoryToRow(
+  inventory: Inventory,
+): typeof inventories.$inferInsert {
+  return {
+    id: inventory.id,
+    name: inventory.name,
+    currency: inventory.currency,
+    createdAt: inventory.createdAt,
+    updatedAt: inventory.updatedAt,
+  };
+}
 
 export function mapProductToRow(
   product: Product,

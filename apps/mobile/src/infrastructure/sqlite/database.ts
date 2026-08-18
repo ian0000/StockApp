@@ -10,8 +10,10 @@ export interface AppDatabase {
   readonly db: ExpoSQLiteDatabase<typeof schema>;
 }
 
-export async function openAppDatabase(): Promise<AppDatabase> {
-  const sqlite = await openDatabaseAsync(APP_DATABASE_NAME);
+export async function openAppDatabase(
+  databaseName = APP_DATABASE_NAME,
+): Promise<AppDatabase> {
+  const sqlite = await openDatabaseAsync(databaseName);
 
   await sqlite.execAsync(
     'PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;',
