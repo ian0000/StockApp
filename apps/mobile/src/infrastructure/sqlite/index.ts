@@ -5,6 +5,7 @@ export {
 } from './database';
 export { initializeAppDatabase, migrateDatabase } from './migrations';
 export {
+  createInventoryRepository,
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
