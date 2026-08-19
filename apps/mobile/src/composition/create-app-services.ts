@@ -1,5 +1,7 @@
 import {
   createInventoryRepository,
+  createSqliteInventoryStateRepository,
+  createSqliteProductRepository,
   createSqliteTransactionManager,
   initializeAppDatabase,
   openAppDatabase,
@@ -28,10 +30,16 @@ export async function createAppRuntime(
 
     const clock = new SystemClock();
     const idGenerator = new UuidV7Generator(clock);
+    const inventoryStateRepository = createSqliteInventoryStateRepository(
+      database.db,
+    );
+    const productRepository = createSqliteProductRepository(database.db);
     const services = assembleAppServices({
       clock,
       idGenerator,
       inventoryRepository: createInventoryRepository(database.db),
+      inventoryStateRepository,
+      productRepository,
       transactionManager: createSqliteTransactionManager(database),
     });
 

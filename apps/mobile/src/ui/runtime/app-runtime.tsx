@@ -13,6 +13,7 @@ const WEB_PREVIEW_RUNTIME = Object.freeze({
     updatedAt: 0,
   }),
   persistence: 'web-preview' as const,
+  productServices: null,
 });
 
 export function AppRuntimeProvider({ children }: PropsWithChildren) {

@@ -16,6 +16,12 @@ export {
   MultipleInventoriesNotSupportedError,
 } from './get-current-inventory';
 export {
+  ListProductsUseCase,
+  type ListProductsInput,
+  type ProductSummary,
+} from './list-products';
+export {
+  type InventoryStateRecord,
   type InventoryRepository,
   type InventoryMovementRepository,
   type InventoryStateRepository,

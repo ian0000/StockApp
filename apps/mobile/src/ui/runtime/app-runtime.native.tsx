@@ -20,7 +20,11 @@ import { AppRuntimeContext } from './app-runtime-context';
 type RuntimeState =
   | { readonly status: 'loading' }
   | { readonly status: 'setup'; readonly services: AppServices }
-  | { readonly status: 'ready'; readonly inventory: Inventory }
+  | {
+      readonly status: 'ready';
+      readonly inventory: Inventory;
+      readonly services: AppServices;
+    }
   | { readonly status: 'error'; readonly message: string };
 
 function initializationErrorMessage(error: unknown): string {
@@ -54,7 +58,7 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
         setState(
           inventory === null
             ? { status: 'setup', services }
-            : { status: 'ready', inventory },
+            : { status: 'ready', inventory, services },
         );
       } catch (error) {
         if (isCurrentAttempt) {
@@ -113,14 +117,23 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
     return (
       <FirstRunSetup
         createInventory={state.services.createInventory}
-        onCreated={(inventory) => setState({ status: 'ready', inventory })}
+        onCreated={(inventory) =>
+          setState({ status: 'ready', inventory, services: state.services })
+        }
       />
     );
   }
 
   return (
     <AppRuntimeContext.Provider
-      value={{ inventory: state.inventory, persistence: 'sqlite' }}
+      value={{
+        inventory: state.inventory,
+        persistence: 'sqlite',
+        productServices: {
+          createProduct: state.services.createProduct,
+          listProducts: state.services.listProducts,
+        },
+      }}
     >
       {children}
     </AppRuntimeContext.Provider>

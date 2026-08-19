@@ -48,8 +48,18 @@ function createHarness() {
     },
   };
   const repositories: TransactionRepositories = {
-    productRepository: { async save() {} },
-    inventoryStateRepository: { async save() {} },
+    productRepository: {
+      async listByInventory() {
+        return [];
+      },
+      async save() {},
+    },
+    inventoryStateRepository: {
+      async listByInventory() {
+        return [];
+      },
+      async save() {},
+    },
     inventoryMovementRepository: movementRepository,
   };
   const useCase = new CreateProductUseCase({

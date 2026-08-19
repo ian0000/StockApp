@@ -591,6 +591,10 @@ Camiseta negra · M
 7 unidades                $18.00
 ```
 
+En la lista normal V1 no aparecen productos archivados. Los productos activos se presentan por
+`createdAt` descendente para mostrar primero los creados más recientemente; ante timestamps iguales,
+el ID descendente actúa únicamente como desempate determinista de la consulta.
+
 ---
 
 # 22. Búsqueda
