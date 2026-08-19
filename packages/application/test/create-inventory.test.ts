@@ -56,6 +56,10 @@ class RecordingInventoryRepository implements InventoryRepository {
     ) => Promise<void> = async () => {},
   ) {}
 
+  async list(): Promise<readonly Inventory[]> {
+    return [];
+  }
+
   async save(inventory: Inventory): Promise<void> {
     this.calls.push(inventory);
     await this.saveImplementation(inventory);

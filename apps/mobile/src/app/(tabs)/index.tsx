@@ -5,6 +5,7 @@ import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
+import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 
 const INITIAL_SUMMARY = Object.freeze({
   estimatedProfit: '$0.00',
@@ -28,13 +29,19 @@ function Metric({ label, value }: MetricProps) {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { inventory, persistence } = useAppRuntime();
 
   return (
     <Screen>
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.title}>
-          Mi Negocio
+          {inventory.name}
         </Text>
+        {persistence === 'web-preview' ? (
+          <Text style={styles.previewText}>
+            Vista previa web · Los datos no se guardan.
+          </Text>
+        ) : null}
       </View>
 
       <Section title="Hoy">
@@ -149,6 +156,11 @@ const styles = StyleSheet.create({
     color: colors.onAccent,
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
+  },
+  previewText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
   },
   secondaryAction: {
     backgroundColor: colors.surface,

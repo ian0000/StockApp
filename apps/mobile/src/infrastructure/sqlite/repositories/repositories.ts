@@ -15,17 +15,24 @@ import {
 } from '../schema';
 import {
   mapInventoryToRow,
+  mapInventoryRowToDomain,
   mapInventoryMovementToRow,
   mapInventoryStateToRow,
   mapProductToRow,
 } from './mappers';
 
 type SqliteInsertExecutor = Pick<AppDatabase['db'], 'insert'>;
+type SqliteInventoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
 
 export function createInventoryRepository(
-  executor: SqliteInsertExecutor,
+  executor: SqliteInventoryExecutor,
 ): InventoryRepository {
   return {
+    async list() {
+      const rows = await executor.select().from(inventories);
+
+      return rows.map(mapInventoryRowToDomain);
+    },
     async save(inventory) {
       executor.insert(inventories).values(mapInventoryToRow(inventory)).run();
     },

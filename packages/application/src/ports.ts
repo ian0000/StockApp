@@ -6,6 +6,7 @@ import type {
 } from '@stock-app/domain';
 
 export interface InventoryRepository {
+  list(): Promise<readonly Inventory[]>;
   save(inventory: Inventory): Promise<void>;
 }
 

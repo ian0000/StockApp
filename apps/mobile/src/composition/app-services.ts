@@ -1,6 +1,7 @@
 import {
   CreateInventoryUseCase,
   CreateProductUseCase,
+  GetCurrentInventoryUseCase,
   type Clock,
   type InventoryIdGenerator,
   type InventoryMovementIdGenerator,
@@ -16,6 +17,7 @@ type AppIdGenerator = InventoryIdGenerator &
 export interface AppServices {
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
+  readonly getCurrentInventory: GetCurrentInventoryUseCase;
 }
 
 export interface AppServiceDependencies {
@@ -43,6 +45,7 @@ export function assembleAppServices({
       clock,
       transactionManager,
     }),
+    getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
   });
 }
 

@@ -12,6 +12,10 @@ export {
   type ProductIdGenerator,
 } from './create-product';
 export {
+  GetCurrentInventoryUseCase,
+  MultipleInventoriesNotSupportedError,
+} from './get-current-inventory';
+export {
   type InventoryRepository,
   type InventoryMovementRepository,
   type InventoryStateRepository,
