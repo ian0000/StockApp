@@ -5,7 +5,10 @@ import {
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
+  ListProductsUseCase,
   type InventoryRepository,
+  type InventoryStateRepository,
+  type ProductRepository,
   type TransactionManager,
 } from '@stock-app/application';
 
@@ -19,10 +22,14 @@ function createDependencies(): {
   readonly dependencies: AppServiceDependencies;
   readonly getInventorySaveCount: () => number;
   readonly getInventoryListCount: () => number;
+  readonly getInventoryStateListCount: () => number;
+  readonly getProductListCount: () => number;
   readonly getTransactionCount: () => number;
 } {
   let inventorySaveCount = 0;
   let inventoryListCount = 0;
+  let inventoryStateListCount = 0;
+  let productListCount = 0;
   let transactionCount = 0;
   const inventoryRepository: InventoryRepository = {
     async list() {
@@ -39,16 +46,34 @@ function createDependencies(): {
       throw new Error('A use case was executed during composition.');
     },
   };
+  const productRepository: ProductRepository = {
+    async listByInventory() {
+      productListCount += 1;
+      return [];
+    },
+    async save() {},
+  };
+  const inventoryStateRepository: InventoryStateRepository = {
+    async listByInventory() {
+      inventoryStateListCount += 1;
+      return [];
+    },
+    async save() {},
+  };
 
   return {
     dependencies: {
       clock: { now: () => 1_776_444_000_000 },
       idGenerator: { generate: () => 'test-id' },
       inventoryRepository,
+      inventoryStateRepository,
+      productRepository,
       transactionManager,
     },
     getInventorySaveCount: () => inventorySaveCount,
     getInventoryListCount: () => inventoryListCount,
+    getInventoryStateListCount: () => inventoryStateListCount,
+    getProductListCount: () => productListCount,
     getTransactionCount: () => transactionCount,
   };
 }
@@ -62,17 +87,21 @@ test('composition exposes the application use cases and nothing else', () => {
     'createInventory',
     'createProduct',
     'getCurrentInventory',
+    'listProducts',
   ]);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.listProducts instanceof ListProductsUseCase);
 });
 
 test('composition performs no persistence automatically', () => {
   const {
     dependencies,
     getInventoryListCount,
+    getInventoryStateListCount,
     getInventorySaveCount,
+    getProductListCount,
     getTransactionCount,
   } = createDependencies();
 
@@ -80,7 +109,22 @@ test('composition performs no persistence automatically', () => {
 
   assert.equal(getInventorySaveCount(), 0);
   assert.equal(getInventoryListCount(), 0);
+  assert.equal(getInventoryStateListCount(), 0);
+  assert.equal(getProductListCount(), 0);
   assert.equal(getTransactionCount(), 0);
+});
+
+test('product list query uses the composed read repositories', async () => {
+  const { dependencies, getInventoryStateListCount, getProductListCount } =
+    createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  assert.deepEqual(
+    await services.listProducts.execute({ inventoryId: 'inventory-123' }),
+    [],
+  );
+  assert.equal(getInventoryStateListCount(), 1);
+  assert.equal(getProductListCount(), 1);
 });
 
 test('current Inventory query uses the composed repository', async () => {
@@ -106,6 +150,7 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.equal(initializationCount, 1);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.listProducts instanceof ListProductsUseCase);
 });
 
 test('composition propagates initialization failures unchanged', async () => {

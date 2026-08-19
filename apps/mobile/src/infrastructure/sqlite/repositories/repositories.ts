@@ -5,6 +5,7 @@ import type {
   ProductRepository,
   TransactionRepositories,
 } from '@stock-app/application';
+import { and, asc, desc, eq } from 'drizzle-orm';
 
 import type { AppDatabase } from '../database';
 import {
@@ -17,15 +18,16 @@ import {
   mapInventoryToRow,
   mapInventoryRowToDomain,
   mapInventoryMovementToRow,
+  mapInventoryStateRowToRecord,
   mapInventoryStateToRow,
+  mapProductRowToDomain,
   mapProductToRow,
 } from './mappers';
 
-type SqliteInsertExecutor = Pick<AppDatabase['db'], 'insert'>;
-type SqliteInventoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
+type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
 
 export function createInventoryRepository(
-  executor: SqliteInventoryExecutor,
+  executor: SqliteRepositoryExecutor,
 ): InventoryRepository {
   return {
     async list() {
@@ -40,9 +42,23 @@ export function createInventoryRepository(
 }
 
 export function createSqliteProductRepository(
-  executor: SqliteInsertExecutor,
+  executor: SqliteRepositoryExecutor,
 ): ProductRepository {
   return {
+    async listByInventory(inventoryId) {
+      const rows = await executor
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.inventoryId, inventoryId),
+            eq(products.isArchived, false),
+          ),
+        )
+        .orderBy(desc(products.createdAt), desc(products.id));
+
+      return rows.map(mapProductRowToDomain);
+    },
     async save(product) {
       executor.insert(products).values(mapProductToRow(product)).run();
     },
@@ -50,9 +66,18 @@ export function createSqliteProductRepository(
 }
 
 export function createSqliteInventoryStateRepository(
-  executor: SqliteInsertExecutor,
+  executor: SqliteRepositoryExecutor,
 ): InventoryStateRepository {
   return {
+    async listByInventory(inventoryId) {
+      const rows = await executor
+        .select()
+        .from(inventoryStates)
+        .where(eq(inventoryStates.inventoryId, inventoryId))
+        .orderBy(asc(inventoryStates.productId));
+
+      return rows.map(mapInventoryStateRowToRecord);
+    },
     async save(input) {
       executor
         .insert(inventoryStates)
@@ -63,7 +88,7 @@ export function createSqliteInventoryStateRepository(
 }
 
 export function createSqliteInventoryMovementRepository(
-  executor: SqliteInsertExecutor,
+  executor: SqliteRepositoryExecutor,
 ): InventoryMovementRepository {
   return {
     async save(movement) {
@@ -76,7 +101,7 @@ export function createSqliteInventoryMovementRepository(
 }
 
 export function createSqliteTransactionRepositories(
-  executor: SqliteInsertExecutor,
+  executor: SqliteRepositoryExecutor,
 ): TransactionRepositories {
   return Object.freeze({
     productRepository: createSqliteProductRepository(executor),

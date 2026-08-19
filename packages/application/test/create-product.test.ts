@@ -54,9 +54,15 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
 } {
   const generator = new FakeProductIdGenerator(ids);
   const productRepository: ProductRepository = {
+    async listByInventory() {
+      return [];
+    },
     async save() {},
   };
   const inventoryStateRepository: InventoryStateRepository = {
+    async listByInventory() {
+      return [];
+    },
     async save() {},
   };
   const inventoryMovementRepository: InventoryMovementRepository = {

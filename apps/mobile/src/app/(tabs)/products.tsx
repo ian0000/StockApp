@@ -1,29 +1,258 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import type { ProductSummary } from '@stock-app/application';
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
-import { colors, spacing, typography } from '@/ui/theme/tokens';
+import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
+import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
+import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
+
+type ProductsState =
+  | { readonly status: 'loading' }
+  | { readonly status: 'ready'; readonly products: readonly ProductSummary[] }
+  | { readonly status: 'error' };
 
 export default function ProductsScreen() {
+  const router = useRouter();
+  const { inventory, persistence, productServices } = useAppRuntime();
+  const requestIdRef = useRef(0);
+  const [state, setState] = useState<ProductsState>({ status: 'loading' });
+
+  const loadProducts = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
+    if (productServices === null) {
+      setState({ status: 'ready', products: [] });
+      return;
+    }
+
+    setState({ status: 'loading' });
+
+    try {
+      const products = await productServices.listProducts.execute({
+        inventoryId: inventory.id,
+      });
+
+      if (requestIdRef.current === requestId) {
+        setState({ status: 'ready', products });
+      }
+    } catch {
+      if (requestIdRef.current === requestId) {
+        setState({ status: 'error' });
+      }
+    }
+  }, [inventory.id, productServices]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadProducts();
+
+      return () => {
+        requestIdRef.current += 1;
+      };
+    }, [loadProducts]),
+  );
+
   return (
     <Screen>
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.title}>
           Productos
         </Text>
+        <Pressable
+          accessibilityLabel="Crear producto"
+          accessibilityRole="button"
+          onPress={() => router.push('/product/new')}
+          style={({ pressed }) => [
+            styles.addAction,
+            pressed && styles.addActionPressed,
+          ]}
+        >
+          <Text style={styles.addActionText}>+ Producto</Text>
+        </Pressable>
       </View>
-      <EmptyState message="Aún no tienes productos registrados." />
+
+      {persistence === 'web-preview' ? (
+        <Text style={styles.previewText}>
+          Vista previa web · La creación y persistencia están disponibles en iOS
+          y Android.
+        </Text>
+      ) : null}
+
+      {state.status === 'loading' ? (
+        <View style={styles.status}>
+          <ActivityIndicator color={colors.accent} />
+          <Text style={styles.statusText}>Cargando productos…</Text>
+        </View>
+      ) : null}
+
+      {state.status === 'error' ? (
+        <View style={styles.status}>
+          <Text accessibilityLiveRegion="assertive" style={styles.errorText}>
+            No pudimos cargar tus productos.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => void loadProducts()}
+            style={({ pressed }) => [
+              styles.retryAction,
+              pressed && styles.retryActionPressed,
+            ]}
+          >
+            <Text style={styles.retryActionText}>Reintentar</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {state.status === 'ready' && state.products.length === 0 ? (
+        <EmptyState
+          message="Aún no tienes productos."
+          supportingText="Crea el primero para comenzar a controlar tu stock."
+        />
+      ) : null}
+
+      {state.status === 'ready' && state.products.length > 0 ? (
+        <View accessibilityRole="list" style={styles.list}>
+          {state.products.map(({ product, state: inventoryState }) => (
+            <View
+              accessibilityRole="summary"
+              key={product.id}
+              style={styles.productRow}
+            >
+              <View style={styles.productCopy}>
+                <Text style={styles.productName}>{product.name}</Text>
+                {product.variant ? (
+                  <Text style={styles.productVariant}>{product.variant}</Text>
+                ) : null}
+                <Text style={styles.stockText}>
+                  {inventoryState.stock} unidades
+                </Text>
+              </View>
+              <Text style={styles.priceText}>
+                {formatMoneyForDisplay(
+                  product.regularSalePrice,
+                  inventory.currency,
+                )}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  addAction: {
+    alignItems: 'center',
+    backgroundColor: colors.accent,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  addActionPressed: {
+    backgroundColor: colors.accentPressed,
+  },
+  addActionText: {
+    color: colors.onAccent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: typography.size.body,
+    textAlign: 'center',
+  },
   header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
     paddingBottom: spacing.sm,
     paddingTop: spacing.sm,
   },
+  list: {
+    gap: spacing.md,
+  },
+  previewText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
+  },
+  priceText: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  productCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  productName: {
+    color: colors.text,
+    fontSize: typography.size.section,
+    fontWeight: typography.weight.semibold,
+  },
+  productRow: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    minHeight: 96,
+    padding: spacing.lg,
+  },
+  productVariant: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+  },
+  retryAction: {
+    borderColor: colors.accent,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  retryActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  retryActionText: {
+    color: colors.accent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  status: {
+    alignItems: 'center',
+    gap: spacing.md,
+    justifyContent: 'center',
+    minHeight: 180,
+  },
+  statusText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.body,
+  },
+  stockText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.body,
+  },
   title: {
     color: colors.text,
+    flexShrink: 1,
     fontSize: typography.size.display,
     fontWeight: typography.weight.bold,
     letterSpacing: -0.8,

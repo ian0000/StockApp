@@ -1,6 +1,12 @@
-import type { SaveInventoryStateInput } from '@stock-app/application';
+import type {
+  InventoryStateRecord,
+  SaveInventoryStateInput,
+} from '@stock-app/application';
 import {
   createInventory,
+  createInventoryState,
+  createProduct,
+  Money,
   type Inventory,
   type InventoryMovement,
   type Product,
@@ -54,6 +60,26 @@ export function mapProductToRow(
   };
 }
 
+export function mapProductRowToDomain(
+  row: typeof products.$inferSelect,
+): Product {
+  const product = createProduct({
+    id: row.id,
+    inventoryId: row.inventoryId,
+    name: row.name,
+    variant: row.variant,
+    barcode: row.barcode,
+    regularSalePrice: Money.fromScaledUnits(row.regularSalePriceUnits),
+    minimumStock: row.minimumStock,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
+
+  return row.isArchived
+    ? Object.freeze({ ...product, isArchived: true })
+    : product;
+}
+
 export function mapInventoryStateToRow({
   inventoryId,
   productId,
@@ -65,6 +91,22 @@ export function mapInventoryStateToRow({
     stock: state.stock,
     unitCostUnits: state.unitCost?.scaledUnits ?? null,
   };
+}
+
+export function mapInventoryStateRowToRecord(
+  row: typeof inventoryStates.$inferSelect,
+): InventoryStateRecord {
+  return Object.freeze({
+    inventoryId: row.inventoryId,
+    productId: row.productId,
+    state: createInventoryState({
+      stock: row.stock,
+      unitCost:
+        row.unitCostUnits === null
+          ? null
+          : Money.fromScaledUnits(row.unitCostUnits),
+    }),
+  });
 }
 
 export function mapInventoryMovementToRow(

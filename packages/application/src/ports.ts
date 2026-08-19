@@ -11,6 +11,7 @@ export interface InventoryRepository {
 }
 
 export interface ProductRepository {
+  listByInventory(inventoryId: string): Promise<readonly Product[]>;
   save(product: Product): Promise<void>;
 }
 
@@ -21,7 +22,16 @@ export interface SaveInventoryStateInput {
 }
 
 export interface InventoryStateRepository {
+  listByInventory(
+    inventoryId: string,
+  ): Promise<readonly InventoryStateRecord[]>;
   save(input: SaveInventoryStateInput): Promise<void>;
+}
+
+export interface InventoryStateRecord {
+  readonly inventoryId: string;
+  readonly productId: string;
+  readonly state: InventoryState;
 }
 
 export interface InventoryMovementRepository {

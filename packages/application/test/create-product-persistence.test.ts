@@ -109,6 +109,10 @@ class RecordingProductRepository implements ProductRepository {
     private readonly error: Error | null = null,
   ) {}
 
+  async listByInventory(): Promise<readonly Product[]> {
+    return [];
+  }
+
   async save(product: Product): Promise<void> {
     this.events.push('product');
     this.calls.push(product);
@@ -129,6 +133,10 @@ class RecordingInventoryStateRepository implements InventoryStateRepository {
     private readonly isTransactionActive: () => boolean,
     private readonly error: Error | null = null,
   ) {}
+
+  async listByInventory() {
+    return [];
+  }
 
   async save(input: SaveInventoryStateInput): Promise<void> {
     this.events.push('inventory');
@@ -411,8 +419,16 @@ test('execute resolves only after the transaction manager completes', async () =
     signalOperationComplete = resolve;
   });
   const productIdGenerator = new FakeProductIdGenerator(['product-123']);
-  const productRepository: ProductRepository = { async save() {} };
+  const productRepository: ProductRepository = {
+    async listByInventory() {
+      return [];
+    },
+    async save() {},
+  };
   const inventoryStateRepository: InventoryStateRepository = {
+    async listByInventory() {
+      return [];
+    },
     async save() {},
   };
   const inventoryMovementRepository: InventoryMovementRepository = {
@@ -464,12 +480,18 @@ test('repository writes are awaited sequentially', async () => {
   });
   let inventoryCalls = 0;
   const productRepository: ProductRepository = {
+    async listByInventory() {
+      return [];
+    },
     async save() {
       signalProductStarted?.();
       await productGate;
     },
   };
   const inventoryStateRepository: InventoryStateRepository = {
+    async listByInventory() {
+      return [];
+    },
     async save() {
       inventoryCalls += 1;
     },
