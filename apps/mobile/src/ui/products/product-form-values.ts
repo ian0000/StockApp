@@ -29,9 +29,29 @@ function parseNonNegativeSafeInteger(value: string): number | null {
   return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
+export function normalizeMoneyInput(value: string): string | null {
+  const normalized = value.trim();
+
+  if (!/^(?:\d+|\d*[.,]\d+)$/.test(normalized)) {
+    return null;
+  }
+
+  const withLeadingZero = /^[.,]/.test(normalized)
+    ? `0${normalized}`
+    : normalized;
+
+  return withLeadingZero.replace(',', '.');
+}
+
 function parseNonNegativeMoney(value: string): Money | null {
+  const normalized = normalizeMoneyInput(value);
+
+  if (normalized === null) {
+    return null;
+  }
+
   try {
-    const money = Money.fromDecimal(value);
+    const money = Money.fromDecimal(normalized);
     return money.compare(Money.zero()) >= 0 ? money : null;
   } catch {
     return null;

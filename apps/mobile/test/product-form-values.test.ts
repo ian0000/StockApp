@@ -5,6 +5,7 @@ import { Money } from '@stock-app/domain';
 
 import {
   formatMoneyForDisplay,
+  normalizeMoneyInput,
   parseProductFormValues,
   type ProductFormValues,
 } from '../src/ui/products/product-form-values';
@@ -34,6 +35,80 @@ test('parses valid Product form values without floating point conversion', () =>
     assert.equal(result.input.initialStock, 10);
     assert.equal(result.input.minimumStock, 2);
   }
+});
+
+test('normalizes comma and leading-separator money inputs', () => {
+  const examples = [
+    ['0,5', '0.5'],
+    [',5', '0.5'],
+    ['0.5', '0.5'],
+    ['.5', '0.5'],
+    ['1,25', '1.25'],
+    ['1.25', '1.25'],
+    ['0,00', '0.00'],
+    ['0', '0'],
+    ['10', '10'],
+    ['0,123456', '0.123456'],
+    ['0.123456', '0.123456'],
+  ] as const;
+
+  for (const [input, expected] of examples) {
+    assert.equal(normalizeMoneyInput(input), expected, input);
+  }
+});
+
+test('rejects malformed money input during normalization', () => {
+  for (const input of [
+    '',
+    ',',
+    '.',
+    '1,2,3',
+    '1.2.3',
+    '1,2.3',
+    '1.2,3',
+    'abc',
+  ]) {
+    assert.equal(normalizeMoneyInput(input), null, input);
+  }
+});
+
+test('accepts comma decimals for price and positive-stock initial cost', () => {
+  const result = parseProductFormValues(
+    validValues({ regularSalePrice: '0,5', initialUnitCost: '0,5' }),
+  );
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.input.regularSalePrice.scaledUnits, 500_000);
+    assert.equal(result.input.initialUnitCost?.scaledUnits, 500_000);
+  }
+});
+
+test('keeps Money six-decimal precision after comma normalization', () => {
+  const result = parseProductFormValues(
+    validValues({
+      regularSalePrice: '0,123456',
+      initialUnitCost: '0.123456',
+    }),
+  );
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.input.regularSalePrice.scaledUnits, 123_456);
+    assert.equal(result.input.initialUnitCost?.scaledUnits, 123_456);
+  }
+});
+
+test('continues rejecting money input with more than six decimals', () => {
+  assert.deepEqual(
+    parseProductFormValues(validValues({ regularSalePrice: '0,1234567' })),
+    { ok: false, message: 'Usa un precio habitual válido.' },
+  );
+
+  assert.deepEqual(
+    parseProductFormValues(validValues({ initialUnitCost: '0.1234567' })),
+    { ok: false, message: 'Usa un costo inicial válido.' },
+  );
 });
 
 test('preserves leading zeroes in barcode text', () => {
