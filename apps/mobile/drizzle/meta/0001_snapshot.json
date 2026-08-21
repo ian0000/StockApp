@@ -1,0 +1,703 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "14050ffc-ef8a-48b7-8a59-ed9d18d67975",
+  "prevId": "1f67a45c-13f4-4ef8-b8c7-6d90ea6a140e",
+  "tables": {
+    "inventories": {
+      "name": "inventories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventories_created_at_nonnegative": {
+          "name": "inventories_created_at_nonnegative",
+          "value": "\"inventories\".\"created_at\" >= 0"
+        },
+        "inventories_updated_at_valid": {
+          "name": "inventories_updated_at_valid",
+          "value": "\"inventories\".\"updated_at\" >= \"inventories\".\"created_at\""
+        }
+      }
+    },
+    "inventory_movements": {
+      "name": "inventory_movements",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_id": {
+          "name": "inventory_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_delta": {
+          "name": "quantity_delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_cost_snapshot_units": {
+          "name": "unit_cost_snapshot_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stock_before": {
+          "name": "stock_before",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock_after": {
+          "name": "stock_after",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "effective_at": {
+          "name": "effective_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_movements_inventory_effective_at_idx": {
+          "name": "inventory_movements_inventory_effective_at_idx",
+          "columns": ["inventory_id", "effective_at"],
+          "isUnique": false
+        },
+        "inventory_movements_product_effective_at_idx": {
+          "name": "inventory_movements_product_effective_at_idx",
+          "columns": ["product_id", "effective_at"],
+          "isUnique": false
+        },
+        "inventory_movements_source_idx": {
+          "name": "inventory_movements_source_idx",
+          "columns": ["source_type", "source_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "inventory_movements_product_fk": {
+          "name": "inventory_movements_product_fk",
+          "tableFrom": "inventory_movements",
+          "tableTo": "products",
+          "columnsFrom": ["inventory_id", "product_id"],
+          "columnsTo": ["inventory_id", "id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_movements_type_valid": {
+          "name": "inventory_movements_type_valid",
+          "value": "\"inventory_movements\".\"type\" in ('INITIAL_STOCK', 'PURCHASE', 'SALE', 'ADJUSTMENT_IN', 'ADJUSTMENT_OUT', 'REVERSAL')"
+        },
+        "inventory_movements_quantity_nonzero": {
+          "name": "inventory_movements_quantity_nonzero",
+          "value": "\"inventory_movements\".\"quantity_delta\" <> 0"
+        },
+        "inventory_movements_stock_transition_valid": {
+          "name": "inventory_movements_stock_transition_valid",
+          "value": "\"inventory_movements\".\"stock_after\" = \"inventory_movements\".\"stock_before\" + \"inventory_movements\".\"quantity_delta\""
+        },
+        "inventory_movements_cost_nonnegative": {
+          "name": "inventory_movements_cost_nonnegative",
+          "value": "\"inventory_movements\".\"unit_cost_snapshot_units\" is null or \"inventory_movements\".\"unit_cost_snapshot_units\" >= 0"
+        },
+        "inventory_movements_source_pair_valid": {
+          "name": "inventory_movements_source_pair_valid",
+          "value": "(\"inventory_movements\".\"source_type\" is null and \"inventory_movements\".\"source_id\" is null) or (\"inventory_movements\".\"source_type\" is not null and \"inventory_movements\".\"source_id\" is not null)"
+        },
+        "inventory_movements_effective_at_nonnegative": {
+          "name": "inventory_movements_effective_at_nonnegative",
+          "value": "\"inventory_movements\".\"effective_at\" >= 0"
+        },
+        "inventory_movements_created_at_nonnegative": {
+          "name": "inventory_movements_created_at_nonnegative",
+          "value": "\"inventory_movements\".\"created_at\" >= 0"
+        },
+        "inventory_movements_updated_at_valid": {
+          "name": "inventory_movements_updated_at_valid",
+          "value": "\"inventory_movements\".\"updated_at\" >= \"inventory_movements\".\"created_at\""
+        }
+      }
+    },
+    "inventory_states": {
+      "name": "inventory_states",
+      "columns": {
+        "inventory_id": {
+          "name": "inventory_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_cost_units": {
+          "name": "unit_cost_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "inventory_states_product_fk": {
+          "name": "inventory_states_product_fk",
+          "tableFrom": "inventory_states",
+          "tableTo": "products",
+          "columnsFrom": ["inventory_id", "product_id"],
+          "columnsTo": ["inventory_id", "id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "inventory_states_inventory_id_product_id_pk": {
+          "columns": ["inventory_id", "product_id"],
+          "name": "inventory_states_inventory_id_product_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_states_unit_cost_nonnegative": {
+          "name": "inventory_states_unit_cost_nonnegative",
+          "value": "\"inventory_states\".\"unit_cost_units\" is null or \"inventory_states\".\"unit_cost_units\" >= 0"
+        }
+      }
+    },
+    "products": {
+      "name": "products",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_id": {
+          "name": "inventory_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "barcode": {
+          "name": "barcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "regular_sale_price_units": {
+          "name": "regular_sale_price_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "minimum_stock": {
+          "name": "minimum_stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_archived": {
+          "name": "is_archived",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "products_inventory_id_id_unique": {
+          "name": "products_inventory_id_id_unique",
+          "columns": ["inventory_id", "id"],
+          "isUnique": true
+        },
+        "products_active_barcode_unique": {
+          "name": "products_active_barcode_unique",
+          "columns": ["inventory_id", "barcode"],
+          "isUnique": true,
+          "where": "\"products\".\"barcode\" is not null and \"products\".\"is_archived\" = 0"
+        },
+        "products_inventory_id_idx": {
+          "name": "products_inventory_id_idx",
+          "columns": ["inventory_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "products_inventory_id_inventories_id_fk": {
+          "name": "products_inventory_id_inventories_id_fk",
+          "tableFrom": "products",
+          "tableTo": "inventories",
+          "columnsFrom": ["inventory_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "products_regular_sale_price_nonnegative": {
+          "name": "products_regular_sale_price_nonnegative",
+          "value": "\"products\".\"regular_sale_price_units\" >= 0"
+        },
+        "products_minimum_stock_nonnegative": {
+          "name": "products_minimum_stock_nonnegative",
+          "value": "\"products\".\"minimum_stock\" is null or \"products\".\"minimum_stock\" >= 0"
+        },
+        "products_is_archived_boolean": {
+          "name": "products_is_archived_boolean",
+          "value": "\"products\".\"is_archived\" in (0, 1)"
+        },
+        "products_created_at_nonnegative": {
+          "name": "products_created_at_nonnegative",
+          "value": "\"products\".\"created_at\" >= 0"
+        },
+        "products_updated_at_valid": {
+          "name": "products_updated_at_valid",
+          "value": "\"products\".\"updated_at\" >= \"products\".\"created_at\""
+        }
+      }
+    },
+    "sale_items": {
+      "name": "sale_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_sale_price_units": {
+          "name": "unit_sale_price_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subtotal_units": {
+          "name": "subtotal_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_cost_snapshot_units": {
+          "name": "unit_cost_snapshot_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimated_cost_units": {
+          "name": "estimated_cost_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimated_profit_units": {
+          "name": "estimated_profit_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cost_status": {
+          "name": "cost_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sale_items_sale_id_idx": {
+          "name": "sale_items_sale_id_idx",
+          "columns": ["sale_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_items_sale_id_sales_id_fk": {
+          "name": "sale_items_sale_id_sales_id_fk",
+          "tableFrom": "sale_items",
+          "tableTo": "sales",
+          "columnsFrom": ["sale_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sale_items_product_id_products_id_fk": {
+          "name": "sale_items_product_id_products_id_fk",
+          "tableFrom": "sale_items",
+          "tableTo": "products",
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_items_quantity_positive": {
+          "name": "sale_items_quantity_positive",
+          "value": "\"sale_items\".\"quantity\" > 0"
+        },
+        "sale_items_unit_sale_price_positive": {
+          "name": "sale_items_unit_sale_price_positive",
+          "value": "\"sale_items\".\"unit_sale_price_units\" > 0"
+        },
+        "sale_items_subtotal_positive": {
+          "name": "sale_items_subtotal_positive",
+          "value": "\"sale_items\".\"subtotal_units\" > 0"
+        },
+        "sale_items_cost_status_valid": {
+          "name": "sale_items_cost_status_valid",
+          "value": "\"sale_items\".\"cost_status\" in ('KNOWN', 'UNKNOWN')"
+        },
+        "sale_items_cost_state_valid": {
+          "name": "sale_items_cost_state_valid",
+          "value": "(\"sale_items\".\"cost_status\" = 'KNOWN' and \"sale_items\".\"unit_cost_snapshot_units\" is not null and \"sale_items\".\"estimated_cost_units\" is not null and \"sale_items\".\"estimated_profit_units\" is not null and \"sale_items\".\"unit_cost_snapshot_units\" >= 0 and \"sale_items\".\"estimated_cost_units\" >= 0 and \"sale_items\".\"estimated_profit_units\" = \"sale_items\".\"subtotal_units\" - \"sale_items\".\"estimated_cost_units\") or (\"sale_items\".\"cost_status\" = 'UNKNOWN' and \"sale_items\".\"unit_cost_snapshot_units\" is null and \"sale_items\".\"estimated_cost_units\" is null and \"sale_items\".\"estimated_profit_units\" is null)"
+        },
+        "sale_items_created_at_nonnegative": {
+          "name": "sale_items_created_at_nonnegative",
+          "value": "\"sale_items\".\"created_at\" >= 0"
+        },
+        "sale_items_updated_at_valid": {
+          "name": "sale_items_updated_at_valid",
+          "value": "\"sale_items\".\"updated_at\" >= \"sale_items\".\"created_at\""
+        }
+      }
+    },
+    "sales": {
+      "name": "sales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_id": {
+          "name": "inventory_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "effective_at": {
+          "name": "effective_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_amount_units": {
+          "name": "total_amount_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_cost_units": {
+          "name": "estimated_cost_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimated_profit_units": {
+          "name": "estimated_profit_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sales_inventory_effective_at_idx": {
+          "name": "sales_inventory_effective_at_idx",
+          "columns": ["inventory_id", "effective_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sales_inventory_id_inventories_id_fk": {
+          "name": "sales_inventory_id_inventories_id_fk",
+          "tableFrom": "sales",
+          "tableTo": "inventories",
+          "columnsFrom": ["inventory_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sales_status_valid": {
+          "name": "sales_status_valid",
+          "value": "\"sales\".\"status\" in ('CONFIRMED', 'VOIDED')"
+        },
+        "sales_total_amount_positive": {
+          "name": "sales_total_amount_positive",
+          "value": "\"sales\".\"total_amount_units\" > 0"
+        },
+        "sales_estimates_pair_valid": {
+          "name": "sales_estimates_pair_valid",
+          "value": "(\"sales\".\"estimated_cost_units\" is null and \"sales\".\"estimated_profit_units\" is null) or (\"sales\".\"estimated_cost_units\" is not null and \"sales\".\"estimated_profit_units\" is not null)"
+        },
+        "sales_estimated_cost_nonnegative": {
+          "name": "sales_estimated_cost_nonnegative",
+          "value": "\"sales\".\"estimated_cost_units\" is null or \"sales\".\"estimated_cost_units\" >= 0"
+        },
+        "sales_estimated_profit_valid": {
+          "name": "sales_estimated_profit_valid",
+          "value": "\"sales\".\"estimated_profit_units\" is null or \"sales\".\"estimated_profit_units\" = \"sales\".\"total_amount_units\" - \"sales\".\"estimated_cost_units\""
+        },
+        "sales_effective_at_nonnegative": {
+          "name": "sales_effective_at_nonnegative",
+          "value": "\"sales\".\"effective_at\" >= 0"
+        },
+        "sales_created_at_nonnegative": {
+          "name": "sales_created_at_nonnegative",
+          "value": "\"sales\".\"created_at\" >= 0"
+        },
+        "sales_updated_at_valid": {
+          "name": "sales_updated_at_valid",
+          "value": "\"sales\".\"updated_at\" >= \"sales\".\"created_at\""
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

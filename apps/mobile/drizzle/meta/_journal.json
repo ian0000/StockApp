@@ -8,6 +8,13 @@
       "when": 1786987787012,
       "tag": "0000_cool_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787272561995,
+      "tag": "0001_confused_naoko",
+      "breakpoints": true
     }
   ]
 }

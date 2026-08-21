@@ -15,5 +15,7 @@ export {
   inventoryMovements,
   inventoryStates,
   products,
+  saleItems,
+  sales,
 } from './schema';
 export { createSqliteTransactionManager } from './transaction-manager';
