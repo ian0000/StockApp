@@ -10,6 +10,8 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  saleItems,
+  sales,
 } from '../../src/infrastructure/sqlite/schema';
 import { createSqliteTransactionManager } from '../../src/infrastructure/sqlite/transaction-manager';
 
@@ -45,7 +47,14 @@ export async function runSqliteTransactionSmokeTest(): Promise<SmokeResult> {
     );
 
     const db = drizzle(sqlite, {
-      schema: { inventories, inventoryMovements, inventoryStates, products },
+      schema: {
+        inventories,
+        inventoryMovements,
+        inventoryStates,
+        products,
+        saleItems,
+        sales,
+      },
     });
     await migrateDatabase({ db });
 
