@@ -10,12 +10,15 @@ import {
 } from 'react-native';
 
 import type { ProductSummary } from '@stock-app/application';
+import type { Sale } from '@stock-app/domain';
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
+import { InsufficientStockModal } from '@/ui/sales/InsufficientStockModal';
+import { SaleConfirmation } from '@/ui/sales/SaleConfirmation';
 import { SaleCartItemRow, SaleProductRow } from '@/ui/sales/SaleRows';
 import {
   addProductToCart,
@@ -23,7 +26,9 @@ import {
   decrementCartItem,
   filterSaleProducts,
   getCartSummary,
+  getInsufficientCartItems,
   incrementCartItem,
+  isCartReadyToRegister,
   removeCartItem,
   type SaleCartItem,
   updateCartItemPrice,
@@ -35,13 +40,23 @@ type ProductsState =
   | { readonly status: 'ready'; readonly products: readonly ProductSummary[] }
   | { readonly status: 'error' };
 
+type SalePhase =
+  | { readonly status: 'editing' }
+  | { readonly status: 'confirmed'; readonly sale: Sale };
+
 export default function NewSaleScreen() {
   const router = useRouter();
-  const { inventory, persistence, productServices } = useAppRuntime();
+  const { inventory, persistence, productServices, saleServices } =
+    useAppRuntime();
   const requestIdRef = useRef(0);
+  const submittingRef = useRef(false);
   const [searchText, setSearchText] = useState('');
   const [cart, setCart] = useState<readonly SaleCartItem[]>([]);
   const [state, setState] = useState<ProductsState>({ status: 'loading' });
+  const [phase, setPhase] = useState<SalePhase>({ status: 'editing' });
+  const [warningVisible, setWarningVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const loadProducts = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -88,220 +103,343 @@ export default function NewSaleScreen() {
   );
   const cartSummary = useMemo(() => getCartSummary(cart), [cart]);
   const cartTotal = useMemo(() => calculateCartTotal(cart), [cart]);
+  const insufficientItems = useMemo(
+    () => getInsufficientCartItems(cart),
+    [cart],
+  );
   const hasSearch = searchText.trim().length > 0;
   const hasProducts = state.status === 'ready' && state.products.length > 0;
+  const canRegister =
+    persistence === 'sqlite' &&
+    saleServices !== null &&
+    isCartReadyToRegister(cart) &&
+    !isSubmitting;
 
   const addProduct = (product: ProductSummary) => {
+    if (isSubmitting) {
+      return;
+    }
+
     setCart((currentCart) => addProductToCart(currentCart, product));
     setSearchText('');
   };
 
+  const registerCurrentCart = async () => {
+    if (
+      submittingRef.current ||
+      saleServices === null ||
+      !isCartReadyToRegister(cart)
+    ) {
+      return;
+    }
+
+    submittingRef.current = true;
+    setWarningVisible(false);
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const result = await saleServices.registerSale.execute({
+        inventoryId: inventory.id,
+        items: cart.map(({ productId, quantity, unitSalePrice }) => ({
+          productId,
+          quantity,
+          unitSalePrice,
+        })),
+      });
+
+      setCart([]);
+      setSearchText('');
+      setPhase({ status: 'confirmed', sale: result.sale });
+    } catch {
+      setSubmitError(
+        'No pudimos registrar la venta. Tus datos no fueron modificados.',
+      );
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const requestRegistration = () => {
+    if (!canRegister) {
+      return;
+    }
+
+    setSubmitError(null);
+
+    if (insufficientItems.length > 0) {
+      setWarningVisible(true);
+      return;
+    }
+
+    void registerCurrentCart();
+  };
+
+  const startNewSale = () => {
+    setCart([]);
+    setSearchText('');
+    setSubmitError(null);
+    setWarningVisible(false);
+    setPhase({ status: 'editing' });
+    void loadProducts();
+  };
+
+  if (phase.status === 'confirmed') {
+    return (
+      <Screen edges={['bottom']}>
+        <SaleConfirmation
+          currency={inventory.currency}
+          onGoHome={() => router.replace('/')}
+          onNewSale={startNewSale}
+          sale={phase.sale}
+        />
+      </Screen>
+    );
+  }
+
   return (
     <Screen edges={['bottom']}>
-      {persistence === 'web-preview' ? (
-        <Text style={styles.previewText}>
-          Vista previa web · Tus productos locales están disponibles en iOS y
-          Android.
-        </Text>
-      ) : null}
-
-      {state.status === 'loading' ? (
-        <View style={styles.status}>
-          <ActivityIndicator color={colors.accent} />
-          <Text style={styles.statusText}>Cargando productos…</Text>
-        </View>
-      ) : null}
-
-      {state.status === 'error' ? (
-        <View style={styles.status}>
-          <Text
-            accessibilityLiveRegion="assertive"
-            style={styles.loadErrorText}
-          >
-            No pudimos cargar tus productos.
+      <View
+        pointerEvents={isSubmitting ? 'none' : 'auto'}
+        style={[styles.editingContent, isSubmitting && styles.editingDisabled]}
+      >
+        {persistence === 'web-preview' ? (
+          <Text style={styles.previewText}>
+            Vista previa web · El registro de ventas está disponible en iOS y
+            Android con almacenamiento local.
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => void loadProducts()}
-            style={({ pressed }) => [
-              styles.retryAction,
-              pressed && styles.retryActionPressed,
-            ]}
-          >
-            <Text style={styles.retryActionText}>Reintentar</Text>
-          </Pressable>
-        </View>
-      ) : null}
+        ) : null}
 
-      {state.status === 'ready' && state.products.length === 0 ? (
-        <View style={styles.emptyInventory}>
-          <EmptyState
-            message="Aún no tienes productos."
-            supportingText="Crea tu primer producto desde Productos para comenzar a vender."
-          />
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.replace('/products')}
-            style={({ pressed }) => [
-              styles.primaryAction,
-              pressed && styles.primaryActionPressed,
-            ]}
-          >
-            <Text style={styles.primaryActionText}>Ir a Productos</Text>
-          </Pressable>
-        </View>
-      ) : null}
+        {state.status === 'loading' ? (
+          <View style={styles.status}>
+            <ActivityIndicator color={colors.accent} />
+            <Text style={styles.statusText}>Cargando productos…</Text>
+          </View>
+        ) : null}
 
-      {hasProducts ? (
-        <>
-          <View style={styles.searchRow}>
-            <View style={styles.searchField}>
-              <TextInput
-                accessibilityLabel="Buscar producto"
-                autoCorrect={false}
-                onChangeText={setSearchText}
-                placeholder="Buscar producto"
-                placeholderTextColor={colors.textSecondary}
-                returnKeyType="search"
-                selectionColor={colors.accent}
-                style={styles.searchInput}
-                value={searchText}
-              />
-
-              {searchText.length > 0 ? (
-                <Pressable
-                  accessibilityHint="Borra el texto escrito"
-                  accessibilityLabel="Limpiar búsqueda"
-                  accessibilityRole="button"
-                  hitSlop={8}
-                  onPress={() => setSearchText('')}
-                  style={({ pressed }) => [
-                    styles.clearAction,
-                    pressed && styles.clearActionPressed,
-                  ]}
-                >
-                  <Text style={styles.clearActionText}>Limpiar</Text>
-                </Pressable>
-              ) : null}
-            </View>
-
-            <Pressable
-              accessibilityHint="El escáner se habilitará en una etapa posterior"
-              accessibilityLabel="Escanear código, no disponible todavía"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: true }}
-              disabled
-              style={styles.scannerAction}
+        {state.status === 'error' ? (
+          <View style={styles.status}>
+            <Text
+              accessibilityLiveRegion="assertive"
+              style={styles.loadErrorText}
             >
-              <Text style={styles.scannerActionText}>Escanear</Text>
-              <Text style={styles.scannerStatus}>Próximamente</Text>
+              No pudimos cargar tus productos.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void loadProducts()}
+              style={({ pressed }) => [
+                styles.retryAction,
+                pressed && styles.retryActionPressed,
+              ]}
+            >
+              <Text style={styles.retryActionText}>Reintentar</Text>
             </Pressable>
           </View>
+        ) : null}
 
-          <View accessibilityLiveRegion="polite">
-            <Section
-              title={hasSearch ? 'RESULTADOS' : 'RECIENTES'}
-              titleVariant="eyebrow"
+        {state.status === 'ready' && state.products.length === 0 ? (
+          <View style={styles.emptyInventory}>
+            <EmptyState
+              message="Aún no tienes productos."
+              supportingText="Crea tu primer producto desde Productos para comenzar a vender."
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.replace('/products')}
+              style={({ pressed }) => [
+                styles.primaryAction,
+                pressed && styles.primaryActionPressed,
+              ]}
             >
-              {!hasSearch ? (
-                <Text style={styles.recentExplanation}>
-                  Productos creados recientemente
-                </Text>
-              ) : null}
-              {visibleProducts.length === 0 ? (
-                <EmptyState
-                  message="No encontramos productos"
-                  supportingText="Prueba con otro nombre, variante o código completo."
-                />
-              ) : (
-                <View accessibilityRole="list" style={styles.productList}>
-                  {visibleProducts.map((product) => (
-                    <SaleProductRow
-                      currency={inventory.currency}
-                      key={product.product.id}
-                      onAdd={() => addProduct(product)}
-                      summary={product}
-                    />
-                  ))}
-                </View>
-              )}
-            </Section>
+              <Text style={styles.primaryActionText}>Ir a Productos</Text>
+            </Pressable>
           </View>
+        ) : null}
 
-          {cart.length === 0 ? (
-            <View style={styles.basketEmptyState}>
-              <Text style={styles.basketTitle}>Tu venta está vacía</Text>
-              <Text style={styles.basketSupportingText}>
-                Busca un producto para comenzar.
-              </Text>
-            </View>
-          ) : (
-            <Section title="Tu venta">
-              <View style={styles.cartList}>
-                {cart.map((item) => (
-                  <SaleCartItemRow
-                    currency={inventory.currency}
-                    item={item}
-                    key={item.productId}
-                    onDecrement={() =>
-                      setCart((currentCart) =>
-                        decrementCartItem(currentCart, item.productId),
-                      )
-                    }
-                    onIncrement={() =>
-                      setCart((currentCart) =>
-                        incrementCartItem(currentCart, item.productId),
-                      )
-                    }
-                    onPriceChange={(value) =>
-                      setCart((currentCart) =>
-                        updateCartItemPrice(currentCart, item.productId, value),
-                      )
-                    }
-                    onRemove={() =>
-                      setCart((currentCart) =>
-                        removeCartItem(currentCart, item.productId),
-                      )
-                    }
-                  />
-                ))}
-              </View>
+        {hasProducts ? (
+          <>
+            <View style={styles.searchRow}>
+              <View style={styles.searchField}>
+                <TextInput
+                  accessibilityLabel="Buscar producto"
+                  autoCorrect={false}
+                  onChangeText={setSearchText}
+                  placeholder="Buscar producto"
+                  placeholderTextColor={colors.textSecondary}
+                  returnKeyType="search"
+                  selectionColor={colors.accent}
+                  style={styles.searchInput}
+                  value={searchText}
+                />
 
-              <View style={styles.cartSummary}>
-                <Text style={styles.summaryText}>
-                  {cartSummary.distinctProducts}{' '}
-                  {cartSummary.distinctProducts === 1
-                    ? 'producto'
-                    : 'productos'}
-                </Text>
-                <Text style={styles.summaryText}>
-                  {cartSummary.totalUnits}{' '}
-                  {cartSummary.totalUnits === 1 ? 'unidad' : 'unidades'}
-                </Text>
-                <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Total</Text>
-                  <Text style={styles.totalValue}>
-                    {formatMoneyForDisplay(cartTotal, inventory.currency)}
-                  </Text>
-                </View>
+                {searchText.length > 0 ? (
+                  <Pressable
+                    accessibilityHint="Borra el texto escrito"
+                    accessibilityLabel="Limpiar búsqueda"
+                    accessibilityRole="button"
+                    hitSlop={8}
+                    onPress={() => setSearchText('')}
+                    style={({ pressed }) => [
+                      styles.clearAction,
+                      pressed && styles.clearActionPressed,
+                    ]}
+                  >
+                    <Text style={styles.clearActionText}>Limpiar</Text>
+                  </Pressable>
+                ) : null}
               </View>
 
               <Pressable
-                accessibilityHint="El registro real de ventas se habilitará próximamente"
+                accessibilityHint="El escáner se habilitará en una etapa posterior"
+                accessibilityLabel="Escanear código, no disponible todavía"
                 accessibilityRole="button"
                 accessibilityState={{ disabled: true }}
                 disabled
-                style={styles.registerAction}
+                style={styles.scannerAction}
               >
-                <Text style={styles.registerActionText}>Registrar venta</Text>
+                <Text style={styles.scannerActionText}>Escanear</Text>
+                <Text style={styles.scannerStatus}>Próximamente</Text>
               </Pressable>
-              <Text style={styles.registerSupportingText}>
-                La confirmación estará disponible próximamente.
-              </Text>
-            </Section>
-          )}
-        </>
-      ) : null}
+            </View>
+
+            <View accessibilityLiveRegion="polite">
+              <Section
+                title={hasSearch ? 'RESULTADOS' : 'RECIENTES'}
+                titleVariant="eyebrow"
+              >
+                {!hasSearch ? (
+                  <Text style={styles.recentExplanation}>
+                    Productos creados recientemente
+                  </Text>
+                ) : null}
+                {visibleProducts.length === 0 ? (
+                  <EmptyState
+                    message="No encontramos productos"
+                    supportingText="Prueba con otro nombre, variante o código completo."
+                  />
+                ) : (
+                  <View accessibilityRole="list" style={styles.productList}>
+                    {visibleProducts.map((product) => (
+                      <SaleProductRow
+                        currency={inventory.currency}
+                        key={product.product.id}
+                        onAdd={() => addProduct(product)}
+                        summary={product}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Section>
+            </View>
+
+            {cart.length === 0 ? (
+              <View style={styles.basketEmptyState}>
+                <Text style={styles.basketTitle}>Tu venta está vacía</Text>
+                <Text style={styles.basketSupportingText}>
+                  Busca un producto para comenzar.
+                </Text>
+              </View>
+            ) : (
+              <Section title="Tu venta">
+                <View style={styles.cartList}>
+                  {cart.map((item) => (
+                    <SaleCartItemRow
+                      currency={inventory.currency}
+                      item={item}
+                      key={item.productId}
+                      onDecrement={() =>
+                        setCart((currentCart) =>
+                          decrementCartItem(currentCart, item.productId),
+                        )
+                      }
+                      onIncrement={() =>
+                        setCart((currentCart) =>
+                          incrementCartItem(currentCart, item.productId),
+                        )
+                      }
+                      onPriceChange={(value) =>
+                        setCart((currentCart) =>
+                          updateCartItemPrice(
+                            currentCart,
+                            item.productId,
+                            value,
+                          ),
+                        )
+                      }
+                      onRemove={() =>
+                        setCart((currentCart) =>
+                          removeCartItem(currentCart, item.productId),
+                        )
+                      }
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.cartSummary}>
+                  <Text style={styles.summaryText}>
+                    {cartSummary.distinctProducts}{' '}
+                    {cartSummary.distinctProducts === 1
+                      ? 'producto'
+                      : 'productos'}
+                  </Text>
+                  <Text style={styles.summaryText}>
+                    {cartSummary.totalUnits}{' '}
+                    {cartSummary.totalUnits === 1 ? 'unidad' : 'unidades'}
+                  </Text>
+                  <View style={styles.totalRow}>
+                    <Text style={styles.totalLabel}>Total</Text>
+                    <Text style={styles.totalValue}>
+                      {formatMoneyForDisplay(cartTotal, inventory.currency)}
+                    </Text>
+                  </View>
+                </View>
+
+                <Pressable
+                  accessibilityHint="Guarda la venta y actualiza el stock"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: !canRegister }}
+                  disabled={!canRegister}
+                  onPress={requestRegistration}
+                  style={({ pressed }) => [
+                    styles.registerAction,
+                    !canRegister && styles.registerActionDisabled,
+                    pressed && canRegister && styles.registerActionPressed,
+                  ]}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color={colors.onAccent} />
+                  ) : null}
+                  <Text
+                    style={[
+                      styles.registerActionText,
+                      !canRegister && styles.registerActionTextDisabled,
+                    ]}
+                  >
+                    {isSubmitting ? 'Registrando…' : 'Registrar venta'}
+                  </Text>
+                </Pressable>
+                {submitError ? (
+                  <Text
+                    accessibilityLiveRegion="assertive"
+                    style={styles.registerErrorText}
+                  >
+                    {submitError}
+                  </Text>
+                ) : null}
+              </Section>
+            )}
+          </>
+        ) : null}
+      </View>
+
+      <InsufficientStockModal
+        items={insufficientItems}
+        onContinue={() => void registerCurrentCart()}
+        onReview={() => setWarningVisible(false)}
+        visible={warningVisible}
+      />
     </Screen>
   );
 }
@@ -355,6 +493,12 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     paddingTop: spacing.lg,
   },
+  editingContent: {
+    gap: spacing.xl,
+  },
+  editingDisabled: {
+    opacity: 0.72,
+  },
   loadErrorText: {
     color: colors.danger,
     fontSize: typography.size.body,
@@ -393,25 +537,37 @@ const styles = StyleSheet.create({
   },
   registerAction: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
+    backgroundColor: colors.accent,
     borderRadius: radii.md,
-    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
     justifyContent: 'center',
     minHeight: 52,
-    opacity: 0.72,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
+  registerActionDisabled: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderWidth: 1,
+    opacity: 0.72,
+  },
+  registerActionPressed: {
+    backgroundColor: colors.accentPressed,
+  },
+  registerErrorText: {
+    color: colors.danger,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
   registerActionText: {
-    color: colors.textSecondary,
+    color: colors.onAccent,
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
   },
-  registerSupportingText: {
+  registerActionTextDisabled: {
     color: colors.textSecondary,
-    fontSize: typography.size.caption,
-    textAlign: 'center',
   },
   retryAction: {
     borderColor: colors.accent,
