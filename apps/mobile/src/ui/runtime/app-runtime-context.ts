@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import type {
   CreateProductUseCase,
   ListProductsUseCase,
+  RegisterSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 
@@ -11,10 +12,15 @@ export interface ProductRuntimeServices {
   readonly listProducts: ListProductsUseCase;
 }
 
+export interface SaleRuntimeServices {
+  readonly registerSale: RegisterSaleUseCase;
+}
+
 export interface AppRuntimeContextValue {
   readonly inventory: Inventory;
   readonly persistence: 'sqlite' | 'web-preview';
   readonly productServices: ProductRuntimeServices | null;
+  readonly saleServices: SaleRuntimeServices | null;
 }
 
 export const AppRuntimeContext = createContext<AppRuntimeContextValue | null>(

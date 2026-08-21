@@ -11,7 +11,9 @@ import {
   decrementCartItem,
   filterSaleProducts,
   getCartSummary,
+  getInsufficientCartItems,
   incrementCartItem,
+  isCartReadyToRegister,
   isCartItemStockInsufficient,
   removeCartItem,
   updateCartItemPrice,
@@ -253,6 +255,14 @@ test('marks quantity greater than positive stock as insufficient', () => {
   assert.equal(isCartItemStockInsufficient(cart[0]!), true);
 });
 
+test('stock equal to quantity remains sufficient', () => {
+  const product = summary({ id: 'coca', stock: 2 });
+  const cart = addProductToCart(addProductToCart([], product), product);
+
+  assert.equal(isCartItemStockInsufficient(cart[0]!), false);
+  assert.deepEqual(getInsufficientCartItems(cart), []);
+});
+
 test('marks any positive quantity with zero stock as insufficient', () => {
   const cart = addProductToCart([], summary({ id: 'water', stock: 0 }));
 
@@ -263,6 +273,28 @@ test('marks any positive quantity with negative stock as insufficient', () => {
   const cart = addProductToCart([], summary({ id: 'water', stock: -2 }));
 
   assert.equal(isCartItemStockInsufficient(cart[0]!), true);
+});
+
+test('returns every insufficient cart line and excludes sufficient ones', () => {
+  const sufficient = summary({ id: 'coca', stock: 2 });
+  let cart = addProductToCart([], sufficient);
+  cart = addProductToCart(cart, sufficient);
+  cart = addProductToCart(cart, summary({ id: 'water', stock: 0 }));
+  cart = addProductToCart(cart, summary({ id: 'chips', stock: -1 }));
+
+  assert.deepEqual(
+    getInsufficientCartItems(cart).map(({ productId }) => productId),
+    ['water', 'chips'],
+  );
+});
+
+test('cart is ready only when it has items and every price is valid', () => {
+  const validCart = addProductToCart([], summary({ id: 'coca' }));
+  const invalidCart = updateCartItemPrice(validCart, 'coca', 'abc');
+
+  assert.equal(isCartReadyToRegister([]), false);
+  assert.equal(isCartReadyToRegister(validCart), true);
+  assert.equal(isCartReadyToRegister(invalidCart), false);
 });
 
 test('summarizes distinct products and total units', () => {

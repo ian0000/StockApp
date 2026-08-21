@@ -188,6 +188,16 @@ export function isCartItemStockInsufficient(item: SaleCartItem): boolean {
   return item.quantity > item.availableStock;
 }
 
+export function getInsufficientCartItems(
+  cart: readonly SaleCartItem[],
+): readonly SaleCartItem[] {
+  return cart.filter(isCartItemStockInsufficient);
+}
+
+export function isCartReadyToRegister(cart: readonly SaleCartItem[]): boolean {
+  return cart.length > 0 && cart.every(({ priceError }) => priceError === null);
+}
+
 export function getCartSummary(cart: readonly SaleCartItem[]): SaleCartSummary {
   const totalUnits = cart.reduce((total, item) => {
     const nextTotal = total + item.quantity;
