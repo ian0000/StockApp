@@ -45,8 +45,8 @@ function inventoryStateRow(
   };
 }
 
-type ProductRepositoryExecutor = Parameters<
-  typeof createSqliteProductRepository
+type RepositoryExecutor = Parameters<
+  typeof createSqliteInventoryStateRepository
 >[0];
 
 class RecordingReadExecutor {
@@ -54,7 +54,7 @@ class RecordingReadExecutor {
   readonly whereExpressions: unknown[] = [];
   readonly orderExpressions: unknown[][] = [];
 
-  readonly executor: ProductRepositoryExecutor;
+  readonly executor: RepositoryExecutor;
 
   constructor(
     private readonly productRows: readonly ProductRow[] = [],
@@ -63,7 +63,7 @@ class RecordingReadExecutor {
     this.executor = {
       insert: (() => {
         throw new Error('Read tests must not insert.');
-      }) as ProductRepositoryExecutor['insert'],
+      }) as RepositoryExecutor['insert'],
       select: (() => ({
         from: (table: unknown) => {
           this.selectedTables.push(table);
@@ -82,7 +82,10 @@ class RecordingReadExecutor {
             },
           };
         },
-      })) as unknown as ProductRepositoryExecutor['select'],
+      })) as unknown as RepositoryExecutor['select'],
+      update: (() => {
+        throw new Error('Read tests must not update.');
+      }) as RepositoryExecutor['update'],
     };
   }
 }

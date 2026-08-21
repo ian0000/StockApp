@@ -88,6 +88,8 @@ class StubInventoryStateRepository implements InventoryStateRepository {
   }
 
   async save(): Promise<void> {}
+
+  async update(): Promise<void> {}
 }
 
 function createUseCase(

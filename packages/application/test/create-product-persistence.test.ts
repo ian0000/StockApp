@@ -147,6 +147,8 @@ class RecordingInventoryStateRepository implements InventoryStateRepository {
       throw this.error;
     }
   }
+
+  async update(): Promise<void> {}
 }
 
 class RecordingInventoryMovementRepository implements InventoryMovementRepository {
@@ -230,6 +232,8 @@ function createHarness(options: HarnessOptions = {}) {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    saleRepository: { async save() {} },
+    saleItemRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
@@ -430,6 +434,7 @@ test('execute resolves only after the transaction manager completes', async () =
       return [];
     },
     async save() {},
+    async update() {},
   };
   const inventoryMovementRepository: InventoryMovementRepository = {
     async save() {},
@@ -438,6 +443,8 @@ test('execute resolves only after the transaction manager completes', async () =
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    saleRepository: { async save() {} },
+    saleItemRepository: { async save() {} },
   };
   const transactionManager: TransactionManager = {
     async runInTransaction(operation) {
@@ -495,11 +502,14 @@ test('repository writes are awaited sequentially', async () => {
     async save() {
       inventoryCalls += 1;
     },
+    async update() {},
   };
   const repositories: TransactionRepositories = {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository: { async save() {} },
+    saleRepository: { async save() {} },
+    saleItemRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: new FakeProductIdGenerator(['product-123']),

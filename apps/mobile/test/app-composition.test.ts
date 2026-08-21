@@ -6,6 +6,7 @@ import {
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
   ListProductsUseCase,
+  RegisterSaleUseCase,
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
@@ -59,6 +60,7 @@ function createDependencies(): {
       return [];
     },
     async save() {},
+    async update() {},
   };
 
   return {
@@ -88,11 +90,13 @@ test('composition exposes the application use cases and nothing else', () => {
     'createProduct',
     'getCurrentInventory',
     'listProducts',
+    'registerSale',
   ]);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
+  assert.ok(services.registerSale instanceof RegisterSaleUseCase);
 });
 
 test('composition performs no persistence automatically', () => {

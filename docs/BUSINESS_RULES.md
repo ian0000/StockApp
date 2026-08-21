@@ -380,6 +380,10 @@ Cada línea conserva independientemente:
 - costo estimado;
 - ganancia estimada.
 
+Dentro de una misma venta, cada `productId` aparece como máximo una vez. Si el mismo producto se
+agrega nuevamente, la interfaz debe incrementar la cantidad de su línea; Application rechazará una
+operación que contenga líneas duplicadas en lugar de fusionarlas silenciosamente.
+
 ---
 
 # 15. Total de venta

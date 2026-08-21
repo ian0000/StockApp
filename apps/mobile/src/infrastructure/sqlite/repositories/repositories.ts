@@ -3,6 +3,8 @@ import type {
   InventoryMovementRepository,
   InventoryStateRepository,
   ProductRepository,
+  SaleItemRepository,
+  SaleRepository,
   TransactionRepositories,
 } from '@stock-app/application';
 import { and, asc, desc, eq } from 'drizzle-orm';
@@ -13,6 +15,8 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  saleItems,
+  sales,
 } from '../schema';
 import {
   mapInventoryToRow,
@@ -22,9 +26,15 @@ import {
   mapInventoryStateToRow,
   mapProductRowToDomain,
   mapProductToRow,
+  mapSaleItemToRow,
+  mapSaleToRow,
 } from './mappers';
 
 type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
+type SqliteInventoryStateExecutor = Pick<
+  AppDatabase['db'],
+  'insert' | 'select' | 'update'
+>;
 
 export function createInventoryRepository(
   executor: SqliteRepositoryExecutor,
@@ -66,7 +76,7 @@ export function createSqliteProductRepository(
 }
 
 export function createSqliteInventoryStateRepository(
-  executor: SqliteRepositoryExecutor,
+  executor: SqliteInventoryStateExecutor,
 ): InventoryStateRepository {
   return {
     async listByInventory(inventoryId) {
@@ -84,6 +94,27 @@ export function createSqliteInventoryStateRepository(
         .values(mapInventoryStateToRow(input))
         .run();
     },
+    async update(input) {
+      const result = executor
+        .update(inventoryStates)
+        .set({
+          stock: input.state.stock,
+          unitCostUnits: input.state.unitCost?.scaledUnits ?? null,
+        })
+        .where(
+          and(
+            eq(inventoryStates.inventoryId, input.inventoryId),
+            eq(inventoryStates.productId, input.productId),
+          ),
+        )
+        .run();
+
+      if (result.changes !== 1) {
+        throw new Error(
+          `Expected to update one InventoryState, updated ${result.changes}.`,
+        );
+      }
+    },
   };
 }
 
@@ -100,13 +131,35 @@ export function createSqliteInventoryMovementRepository(
   };
 }
 
+export function createSqliteSaleRepository(
+  executor: Pick<AppDatabase['db'], 'insert'>,
+): SaleRepository {
+  return {
+    async save(sale) {
+      executor.insert(sales).values(mapSaleToRow(sale)).run();
+    },
+  };
+}
+
+export function createSqliteSaleItemRepository(
+  executor: Pick<AppDatabase['db'], 'insert'>,
+): SaleItemRepository {
+  return {
+    async save(item) {
+      executor.insert(saleItems).values(mapSaleItemToRow(item)).run();
+    },
+  };
+}
+
 export function createSqliteTransactionRepositories(
-  executor: SqliteRepositoryExecutor,
+  executor: SqliteInventoryStateExecutor,
 ): TransactionRepositories {
   return Object.freeze({
     productRepository: createSqliteProductRepository(executor),
     inventoryStateRepository: createSqliteInventoryStateRepository(executor),
     inventoryMovementRepository:
       createSqliteInventoryMovementRepository(executor),
+    saleRepository: createSqliteSaleRepository(executor),
+    saleItemRepository: createSqliteSaleItemRepository(executor),
   });
 }
