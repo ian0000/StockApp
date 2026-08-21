@@ -481,6 +481,11 @@ notes
 Si cualquier `SaleItem` tiene `costStatus = UNKNOWN`, `Sale.estimatedCost` y
 `Sale.estimatedProfit` serán `null`; el total comercial de la venta continúa disponible.
 
+`notes` tiene representación canónica `string | null`. En la creación puede omitirse o recibirse
+como `null`; ambos casos se normalizan a `null`. Las cadenas se recortan en sus extremos y una
+cadena vacía o compuesta únicamente por espacios se normaliza a `null`. El contenido interno,
+incluidos espacios y saltos de línea, se conserva. V1 no define una longitud máxima.
+
 Estados:
 
 ```text
@@ -779,6 +784,21 @@ sourceId = purchase_456
 ```
 
 Así un movimiento no existe aislado de su evento original.
+
+Convención V1 para ventas y reversiones:
+
+```text
+SALE
+sourceType = SALE
+sourceId = Sale.id
+
+REVERSAL
+sourceType = INVENTORY_MOVEMENT
+sourceId = InventoryMovement.id original
+```
+
+La asociación `sourceType`/`sourceId` es polimórfica y V1 no agrega una foreign key SQL explícita.
+Domain y Application validarán que la relación corresponda a la operación ejecutada.
 
 ---
 
@@ -1096,6 +1116,9 @@ Coca-Cola +2
 ```
 
 vinculada al movimiento/venta original.
+
+En V1, deshacer una venta anula la venta completa. Las devoluciones, reembolsos y reversiones
+parciales quedan fuera del alcance de V1.
 
 ---
 
