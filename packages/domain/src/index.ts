@@ -27,6 +27,16 @@ export { Money } from './money/index';
 export { Percentage } from './percentage/index';
 export { createTimestampMs, type TimestampMs } from './timestamp/index';
 export {
+  createSale,
+  createSaleItem,
+  type CostStatus,
+  type CreateSaleInput,
+  type CreateSaleItemInput,
+  type Sale,
+  type SaleItem,
+  type SaleStatus,
+} from './sale/index';
+export {
   createProduct,
   type CreateProductInput,
   type Product,
