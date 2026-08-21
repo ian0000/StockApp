@@ -59,8 +59,11 @@ function createHarness() {
         return [];
       },
       async save() {},
+      async update() {},
     },
     inventoryMovementRepository: movementRepository,
+    saleRepository: { async save() {} },
+    saleItemRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: productIds,

@@ -9,6 +9,8 @@ export {
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
+  createSqliteSaleItemRepository,
+  createSqliteSaleRepository,
 } from './repositories';
 export {
   inventories,

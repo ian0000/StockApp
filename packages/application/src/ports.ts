@@ -3,6 +3,8 @@ import type {
   InventoryMovement,
   InventoryState,
   Product,
+  Sale,
+  SaleItem,
 } from '@stock-app/domain';
 
 export interface InventoryRepository {
@@ -26,7 +28,10 @@ export interface InventoryStateRepository {
     inventoryId: string,
   ): Promise<readonly InventoryStateRecord[]>;
   save(input: SaveInventoryStateInput): Promise<void>;
+  update(input: UpdateInventoryStateInput): Promise<void>;
 }
+
+export type UpdateInventoryStateInput = SaveInventoryStateInput;
 
 export interface InventoryStateRecord {
   readonly inventoryId: string;
@@ -38,10 +43,20 @@ export interface InventoryMovementRepository {
   save(movement: InventoryMovement): Promise<void>;
 }
 
+export interface SaleRepository {
+  save(sale: Sale): Promise<void>;
+}
+
+export interface SaleItemRepository {
+  save(item: SaleItem): Promise<void>;
+}
+
 export interface TransactionRepositories {
   readonly productRepository: ProductRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
   readonly inventoryMovementRepository: InventoryMovementRepository;
+  readonly saleRepository: SaleRepository;
+  readonly saleItemRepository: SaleItemRepository;
 }
 
 export interface TransactionManager {

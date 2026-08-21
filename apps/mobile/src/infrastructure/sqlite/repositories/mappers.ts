@@ -10,6 +10,8 @@ import {
   type Inventory,
   type InventoryMovement,
   type Product,
+  type Sale,
+  type SaleItem,
 } from '@stock-app/domain';
 
 import {
@@ -17,6 +19,8 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  saleItems,
+  sales,
 } from '../schema';
 
 export function mapInventoryToRow(
@@ -127,5 +131,39 @@ export function mapInventoryMovementToRow(
     effectiveAt: movement.effectiveAt,
     createdAt: movement.createdAt,
     updatedAt: movement.updatedAt,
+  };
+}
+
+export function mapSaleToRow(sale: Sale): typeof sales.$inferInsert {
+  return {
+    id: sale.id,
+    inventoryId: sale.inventoryId,
+    effectiveAt: sale.effectiveAt,
+    createdAt: sale.createdAt,
+    updatedAt: sale.updatedAt,
+    status: sale.status,
+    totalAmountUnits: sale.totalAmount.scaledUnits,
+    estimatedCostUnits: sale.estimatedCost?.scaledUnits ?? null,
+    estimatedProfitUnits: sale.estimatedProfit?.scaledUnits ?? null,
+    notes: sale.notes,
+  };
+}
+
+export function mapSaleItemToRow(
+  item: SaleItem,
+): typeof saleItems.$inferInsert {
+  return {
+    id: item.id,
+    saleId: item.saleId,
+    productId: item.productId,
+    quantity: item.quantity,
+    unitSalePriceUnits: item.unitSalePrice.scaledUnits,
+    subtotalUnits: item.subtotal.scaledUnits,
+    unitCostSnapshotUnits: item.unitCostSnapshot?.scaledUnits ?? null,
+    estimatedCostUnits: item.estimatedCost?.scaledUnits ?? null,
+    estimatedProfitUnits: item.estimatedProfit?.scaledUnits ?? null,
+    costStatus: item.costStatus,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
   };
 }
