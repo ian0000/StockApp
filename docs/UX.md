@@ -1244,6 +1244,10 @@ Esto puede ser más rápido que buscar para usuarios sin códigos de barras.
 
 Debe evaluarse durante prototipado.
 
+Mientras todavía no existan métricas de ventas, `Recientes` en Nueva Venta funciona únicamente como
+acceso rápido a los productos creados más recientemente, respetando el orden `createdAt`
+descendente del listado. No representa productos recientemente vendidos ni más vendidos.
+
 ---
 
 # 46. Favoritos
