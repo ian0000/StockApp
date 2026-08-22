@@ -9,6 +9,7 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  purchases,
   saleItems,
   sales,
 } from '../../src/infrastructure/sqlite/schema';
@@ -39,6 +40,7 @@ export async function runSalesMigrationSmokeTest(): Promise<SalesMigrationSmokeR
         inventoryMovements,
         inventoryStates,
         products,
+        purchases,
         saleItems,
         sales,
       },

@@ -119,6 +119,74 @@ export const products = sqliteTable(
   ],
 );
 
+export const purchases = sqliteTable(
+  'purchases',
+  {
+    id: text('id').primaryKey(),
+    inventoryId: text('inventory_id').notNull(),
+    productId: text('product_id').notNull(),
+    quantity: integer('quantity').notNull(),
+    unitCostUnits: integer('unit_cost_units').notNull(),
+    totalAmountUnits: integer('total_amount_units').notNull(),
+    effectiveAt: integer('effective_at').notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+    status: text('status', { enum: ['CONFIRMED', 'VOIDED'] }).notNull(),
+    notes: text('notes'),
+    averageCostBeforeUnits: integer('average_cost_before_units'),
+    averageCostAfterUnits: integer('average_cost_after_units').notNull(),
+    stockBefore: integer('stock_before').notNull(),
+    stockAfter: integer('stock_after').notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: 'purchases_product_fk',
+      columns: [table.inventoryId, table.productId],
+      foreignColumns: [products.inventoryId, products.id],
+    }),
+    index('purchases_inventory_effective_at_idx').on(
+      table.inventoryId,
+      table.effectiveAt,
+    ),
+    check('purchases_quantity_positive', sql`${table.quantity} > 0`),
+    check('purchases_unit_cost_nonnegative', sql`${table.unitCostUnits} >= 0`),
+    check(
+      'purchases_total_amount_nonnegative',
+      sql`${table.totalAmountUnits} >= 0`,
+    ),
+    check(
+      'purchases_status_valid',
+      sql`${table.status} in ('CONFIRMED', 'VOIDED')`,
+    ),
+    check(
+      'purchases_average_cost_before_nonnegative',
+      sql`${table.averageCostBeforeUnits} is null or ${table.averageCostBeforeUnits} >= 0`,
+    ),
+    check(
+      'purchases_average_cost_before_required_for_positive_stock',
+      sql`${table.stockBefore} <= 0 or ${table.averageCostBeforeUnits} is not null`,
+    ),
+    check(
+      'purchases_average_cost_after_nonnegative',
+      sql`${table.averageCostAfterUnits} >= 0`,
+    ),
+    check(
+      'purchases_nonpositive_stock_cost_valid',
+      sql`${table.stockBefore} > 0 or ${table.averageCostAfterUnits} = ${table.unitCostUnits}`,
+    ),
+    check(
+      'purchases_stock_transition_valid',
+      sql`${table.stockAfter} = ${table.stockBefore} + ${table.quantity}`,
+    ),
+    check('purchases_effective_at_nonnegative', sql`${table.effectiveAt} >= 0`),
+    check('purchases_created_at_nonnegative', sql`${table.createdAt} >= 0`),
+    check(
+      'purchases_updated_at_valid',
+      sql`${table.updatedAt} >= 0 and ${table.updatedAt} >= ${table.createdAt}`,
+    ),
+  ],
+);
+
 export const saleItems = sqliteTable(
   'sale_items',
   {

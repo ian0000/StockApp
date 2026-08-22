@@ -1,0 +1,32 @@
+CREATE TABLE `purchases` (
+	`id` text PRIMARY KEY NOT NULL,
+	`inventory_id` text NOT NULL,
+	`product_id` text NOT NULL,
+	`quantity` integer NOT NULL,
+	`unit_cost_units` integer NOT NULL,
+	`total_amount_units` integer NOT NULL,
+	`effective_at` integer NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`status` text NOT NULL,
+	`notes` text,
+	`average_cost_before_units` integer,
+	`average_cost_after_units` integer NOT NULL,
+	`stock_before` integer NOT NULL,
+	`stock_after` integer NOT NULL,
+	FOREIGN KEY (`inventory_id`,`product_id`) REFERENCES `products`(`inventory_id`,`id`) ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "purchases_quantity_positive" CHECK("purchases"."quantity" > 0),
+	CONSTRAINT "purchases_unit_cost_nonnegative" CHECK("purchases"."unit_cost_units" >= 0),
+	CONSTRAINT "purchases_total_amount_nonnegative" CHECK("purchases"."total_amount_units" >= 0),
+	CONSTRAINT "purchases_status_valid" CHECK("purchases"."status" in ('CONFIRMED', 'VOIDED')),
+	CONSTRAINT "purchases_average_cost_before_nonnegative" CHECK("purchases"."average_cost_before_units" is null or "purchases"."average_cost_before_units" >= 0),
+	CONSTRAINT "purchases_average_cost_before_required_for_positive_stock" CHECK("purchases"."stock_before" <= 0 or "purchases"."average_cost_before_units" is not null),
+	CONSTRAINT "purchases_average_cost_after_nonnegative" CHECK("purchases"."average_cost_after_units" >= 0),
+	CONSTRAINT "purchases_nonpositive_stock_cost_valid" CHECK("purchases"."stock_before" > 0 or "purchases"."average_cost_after_units" = "purchases"."unit_cost_units"),
+	CONSTRAINT "purchases_stock_transition_valid" CHECK("purchases"."stock_after" = "purchases"."stock_before" + "purchases"."quantity"),
+	CONSTRAINT "purchases_effective_at_nonnegative" CHECK("purchases"."effective_at" >= 0),
+	CONSTRAINT "purchases_created_at_nonnegative" CHECK("purchases"."created_at" >= 0),
+	CONSTRAINT "purchases_updated_at_valid" CHECK("purchases"."updated_at" >= 0 and "purchases"."updated_at" >= "purchases"."created_at")
+);
+--> statement-breakpoint
+CREATE INDEX `purchases_inventory_effective_at_idx` ON `purchases` (`inventory_id`,`effective_at`);
