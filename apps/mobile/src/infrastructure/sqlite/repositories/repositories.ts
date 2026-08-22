@@ -5,9 +5,11 @@ import type {
   ProductRepository,
   SaleItemRepository,
   SaleRepository,
+  SalesSummaryReader,
   TransactionRepositories,
 } from '@stock-app/application';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, lt, sql } from 'drizzle-orm';
+import { Money } from '@stock-app/domain';
 
 import type { AppDatabase } from '../database';
 import {
@@ -31,6 +33,7 @@ import {
 } from './mappers';
 
 type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
+type SqliteReadExecutor = Pick<AppDatabase['db'], 'select'>;
 type SqliteInventoryStateExecutor = Pick<
   AppDatabase['db'],
   'insert' | 'select' | 'update'
@@ -147,6 +150,140 @@ export function createSqliteSaleItemRepository(
   return {
     async save(item) {
       executor.insert(saleItems).values(mapSaleItemToRow(item)).run();
+    },
+  };
+}
+
+function requireSafeAggregate(
+  value: number | null,
+  label: string,
+  fallback: number,
+): number {
+  const aggregate = value ?? fallback;
+
+  if (!Number.isSafeInteger(aggregate)) {
+    throw new RangeError(`${label} must be a safe integer.`);
+  }
+
+  return aggregate;
+}
+
+function requireNonNegativeAggregate(
+  value: number | null,
+  label: string,
+  fallback: number,
+): number {
+  const aggregate = requireSafeAggregate(value, label, fallback);
+
+  if (aggregate < 0) {
+    throw new RangeError(`${label} must not be negative.`);
+  }
+
+  return aggregate;
+}
+
+function requirePresentSafeAggregate(
+  value: number | null,
+  label: string,
+): number {
+  if (value === null) {
+    throw new Error(`${label} is missing.`);
+  }
+
+  return requireSafeAggregate(value, label, 0);
+}
+
+export function createSqliteSalesSummaryReader(
+  executor: SqliteReadExecutor,
+): SalesSummaryReader {
+  return {
+    async getSummary({ inventoryId, fromInclusive, toExclusive }) {
+      const confirmedInRange = and(
+        eq(sales.inventoryId, inventoryId),
+        eq(sales.status, 'CONFIRMED'),
+        gte(sales.effectiveAt, fromInclusive),
+        lt(sales.effectiveAt, toExclusive),
+      );
+      const [saleAggregates, unitAggregates] = await Promise.all([
+        executor
+          .select({
+            saleCount: count(),
+            knownProfitCount: count(sales.estimatedProfitUnits),
+            totalAmountUnits: sql<
+              number | null
+            >`sum(${sales.totalAmountUnits})`,
+            estimatedProfitUnits: sql<
+              number | null
+            >`sum(${sales.estimatedProfitUnits})`,
+          })
+          .from(sales)
+          .where(confirmedInRange),
+        executor
+          .select({
+            unitsSold: sql<number | null>`sum(${saleItems.quantity})`,
+          })
+          .from(saleItems)
+          .innerJoin(sales, eq(saleItems.saleId, sales.id))
+          .where(confirmedInRange),
+      ]);
+      const saleAggregate = saleAggregates[0];
+      const unitAggregate = unitAggregates[0];
+
+      if (saleAggregate === undefined || unitAggregate === undefined) {
+        throw new Error('SQLite sales summary aggregate is missing.');
+      }
+
+      const saleCount = requireNonNegativeAggregate(
+        saleAggregate.saleCount,
+        'Sale count',
+        0,
+      );
+      const knownProfitCount = requireNonNegativeAggregate(
+        saleAggregate.knownProfitCount,
+        'Known profit count',
+        0,
+      );
+
+      if (knownProfitCount > saleCount) {
+        throw new RangeError('Known profit count must not exceed sale count.');
+      }
+
+      const totalAmountUnits =
+        saleCount === 0
+          ? 0
+          : requirePresentSafeAggregate(
+              saleAggregate.totalAmountUnits,
+              'Total sales scaled units',
+            );
+      const knownProfitUnits =
+        saleAggregate.estimatedProfitUnits === null
+          ? null
+          : requireSafeAggregate(
+              saleAggregate.estimatedProfitUnits,
+              'Estimated profit scaled units',
+              0,
+            );
+      const estimatedProfit =
+        saleCount === 0
+          ? Money.zero()
+          : knownProfitCount < saleCount
+            ? null
+            : Money.fromScaledUnits(
+                requirePresentSafeAggregate(
+                  knownProfitUnits,
+                  'Estimated profit scaled units',
+                ),
+              );
+
+      return Object.freeze({
+        totalAmount: Money.fromScaledUnits(totalAmountUnits),
+        estimatedProfit,
+        unitsSold: requireNonNegativeAggregate(
+          unitAggregate.unitsSold,
+          'Units sold',
+          0,
+        ),
+      });
     },
   };
 }

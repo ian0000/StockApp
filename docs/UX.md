@@ -189,9 +189,9 @@ Coca-Cola
 
 No habrá gráficos obligatorios.
 
-Si alguna venta del período tiene costo desconocido, `Ganancia estimada` mostrará `No disponible`
-con una explicación breve. La UI nunca sumará esos costos como cero ni presentará un total parcial
-como si estuviera completo.
+Si alguna venta del período tiene costo desconocido, `Ganancia estimada` mostrará `—` junto con una
+explicación breve de que el valor no está disponible. La UI nunca sumará esos costos como cero ni
+presentará un total parcial como si estuviera completo.
 
 ---
 

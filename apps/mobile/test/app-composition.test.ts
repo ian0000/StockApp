@@ -5,13 +5,16 @@ import {
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
+  GetSalesSummaryUseCase,
   ListProductsUseCase,
   RegisterSaleUseCase,
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type SalesSummaryReader,
   type TransactionManager,
 } from '@stock-app/application';
+import { Money } from '@stock-app/domain';
 
 import {
   assembleAppServices,
@@ -25,12 +28,14 @@ function createDependencies(): {
   readonly getInventoryListCount: () => number;
   readonly getInventoryStateListCount: () => number;
   readonly getProductListCount: () => number;
+  readonly getSalesSummaryReadCount: () => number;
   readonly getTransactionCount: () => number;
 } {
   let inventorySaveCount = 0;
   let inventoryListCount = 0;
   let inventoryStateListCount = 0;
   let productListCount = 0;
+  let salesSummaryReadCount = 0;
   let transactionCount = 0;
   const inventoryRepository: InventoryRepository = {
     async list() {
@@ -62,6 +67,16 @@ function createDependencies(): {
     async save() {},
     async update() {},
   };
+  const salesSummaryReader: SalesSummaryReader = {
+    async getSummary() {
+      salesSummaryReadCount += 1;
+      return {
+        totalAmount: Money.zero(),
+        estimatedProfit: Money.zero(),
+        unitsSold: 0,
+      };
+    },
+  };
 
   return {
     dependencies: {
@@ -70,12 +85,14 @@ function createDependencies(): {
       inventoryRepository,
       inventoryStateRepository,
       productRepository,
+      salesSummaryReader,
       transactionManager,
     },
     getInventorySaveCount: () => inventorySaveCount,
     getInventoryListCount: () => inventoryListCount,
     getInventoryStateListCount: () => inventoryStateListCount,
     getProductListCount: () => productListCount,
+    getSalesSummaryReadCount: () => salesSummaryReadCount,
     getTransactionCount: () => transactionCount,
   };
 }
@@ -89,12 +106,14 @@ test('composition exposes the application use cases and nothing else', () => {
     'createInventory',
     'createProduct',
     'getCurrentInventory',
+    'getSalesSummary',
     'listProducts',
     'registerSale',
   ]);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
 });
@@ -106,6 +125,7 @@ test('composition performs no persistence automatically', () => {
     getInventoryStateListCount,
     getInventorySaveCount,
     getProductListCount,
+    getSalesSummaryReadCount,
     getTransactionCount,
   } = createDependencies();
 
@@ -115,6 +135,7 @@ test('composition performs no persistence automatically', () => {
   assert.equal(getInventoryListCount(), 0);
   assert.equal(getInventoryStateListCount(), 0);
   assert.equal(getProductListCount(), 0);
+  assert.equal(getSalesSummaryReadCount(), 0);
   assert.equal(getTransactionCount(), 0);
 });
 
@@ -139,6 +160,19 @@ test('current Inventory query uses the composed repository', async () => {
   assert.equal(getInventoryListCount(), 1);
 });
 
+test('sales summary query uses the composed reader', async () => {
+  const { dependencies, getSalesSummaryReadCount } = createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  await services.getSalesSummary.execute({
+    inventoryId: 'inventory-123',
+    fromInclusive: 1_000,
+    toExclusive: 2_000,
+  });
+
+  assert.equal(getSalesSummaryReadCount(), 1);
+});
+
 test('composition initialization is deferred until explicitly requested', async () => {
   let initializationCount = 0;
   const { dependencies } = createDependencies();
@@ -154,6 +188,7 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.equal(initializationCount, 1);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
 });
 

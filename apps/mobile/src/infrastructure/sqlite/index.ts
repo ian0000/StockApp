@@ -11,6 +11,7 @@ export {
   createSqliteProductRepository,
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
+  createSqliteSalesSummaryReader,
 } from './repositories';
 export {
   inventories,

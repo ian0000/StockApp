@@ -1,17 +1,34 @@
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import type { SalesSummary } from '@stock-app/application';
+import { Money } from '@stock-app/domain';
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
+import { getLocalDayRange } from '@/ui/home/local-day-range';
+import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 
-const INITIAL_SUMMARY = Object.freeze({
-  estimatedProfit: '$0.00',
-  sales: '$0.00',
-  units: '0',
+const EMPTY_SUMMARY: SalesSummary = Object.freeze({
+  estimatedProfit: Money.zero(),
+  totalAmount: Money.zero(),
+  unitsSold: 0,
 });
+
+type SummaryState =
+  | { readonly status: 'loading' }
+  | { readonly status: 'ready'; readonly summary: SalesSummary }
+  | { readonly status: 'error' };
 
 interface MetricProps {
   readonly label: string;
@@ -29,7 +46,60 @@ function Metric({ label, value }: MetricProps) {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { inventory, persistence } = useAppRuntime();
+  const { inventory, persistence, saleServices } = useAppRuntime();
+  const requestIdRef = useRef(0);
+  const [summaryState, setSummaryState] = useState<SummaryState>({
+    status: 'loading',
+  });
+
+  const loadSummary = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
+    if (saleServices === null) {
+      setSummaryState({ status: 'ready', summary: EMPTY_SUMMARY });
+      return;
+    }
+
+    setSummaryState({ status: 'loading' });
+
+    try {
+      const range = getLocalDayRange(Date.now());
+      const summary = await saleServices.getSalesSummary.execute({
+        inventoryId: inventory.id,
+        ...range,
+      });
+
+      if (requestIdRef.current === requestId) {
+        setSummaryState({ status: 'ready', summary });
+      }
+    } catch {
+      if (requestIdRef.current === requestId) {
+        setSummaryState({ status: 'error' });
+      }
+    }
+  }, [inventory.id, saleServices]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadSummary();
+
+      return () => {
+        requestIdRef.current += 1;
+      };
+    }, [loadSummary]),
+  );
+
+  const summary = summaryState.status === 'ready' ? summaryState.summary : null;
+  const salesValue =
+    summary === null
+      ? '—'
+      : formatMoneyForDisplay(summary.totalAmount, inventory.currency);
+  const profitValue =
+    summary === null || summary.estimatedProfit === null
+      ? '—'
+      : formatMoneyForDisplay(summary.estimatedProfit, inventory.currency);
+  const unitsValue = summary === null ? '—' : String(summary.unitsSold);
 
   return (
     <Screen>
@@ -45,16 +115,45 @@ export default function HomeScreen() {
       </View>
 
       <Section title="Hoy">
-        <View style={styles.summaryCard}>
-          <Metric label="Ventas" value={INITIAL_SUMMARY.sales} />
+        <View accessibilityLiveRegion="polite" style={styles.summaryCard}>
+          <Metric label="Ventas" value={salesValue} />
           <View style={styles.metricDivider} />
-          <Metric
-            label="Ganancia estimada"
-            value={INITIAL_SUMMARY.estimatedProfit}
-          />
+          <Metric label="Ganancia estimada" value={profitValue} />
           <View style={styles.metricDivider} />
-          <Metric label="Unidades" value={INITIAL_SUMMARY.units} />
+          <Metric label="Unidades" value={unitsValue} />
         </View>
+        {summaryState.status === 'loading' ? (
+          <View style={styles.summaryStatus}>
+            <ActivityIndicator color={colors.accent} size="small" />
+            <Text style={styles.summaryStatusText}>Actualizando resumen…</Text>
+          </View>
+        ) : null}
+        {summaryState.status === 'ready' &&
+        summaryState.summary.estimatedProfit === null ? (
+          <Text style={styles.summarySupportingText}>
+            Ganancia no disponible porque alguna venta no tiene costo conocido.
+          </Text>
+        ) : null}
+        {summaryState.status === 'error' ? (
+          <View style={styles.summaryError}>
+            <Text
+              accessibilityLiveRegion="assertive"
+              style={styles.summaryErrorText}
+            >
+              No pudimos cargar el resumen de hoy.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void loadSummary()}
+              style={({ pressed }) => [
+                styles.retryAction,
+                pressed && styles.retryActionPressed,
+              ]}
+            >
+              <Text style={styles.retryActionText}>Reintentar</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </Section>
 
       <View style={styles.actions}>
@@ -162,6 +261,22 @@ const styles = StyleSheet.create({
     fontSize: typography.size.caption,
     lineHeight: 18,
   },
+  retryAction: {
+    borderColor: colors.accent,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    minHeight: 44,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  retryActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  retryActionText: {
+    color: colors.accent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
   secondaryAction: {
     backgroundColor: colors.surface,
     borderColor: colors.accent,
@@ -183,6 +298,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     padding: spacing.lg,
+  },
+  summaryError: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  summaryErrorText: {
+    color: colors.danger,
+    fontSize: typography.size.caption,
+    textAlign: 'center',
+  },
+  summaryStatus: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'center',
+  },
+  summaryStatusText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+  },
+  summarySupportingText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
   },
   title: {
     color: colors.text,

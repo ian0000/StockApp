@@ -2,6 +2,7 @@ import {
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
+  GetSalesSummaryUseCase,
   ListProductsUseCase,
   RegisterSaleUseCase,
   type Clock,
@@ -11,6 +12,7 @@ import {
   type InventoryStateRepository,
   type ProductIdGenerator,
   type ProductRepository,
+  type SalesSummaryReader,
   type SaleIdGenerator,
   type SaleItemIdGenerator,
   type TransactionManager,
@@ -26,6 +28,7 @@ export interface AppServices {
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
+  readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly listProducts: ListProductsUseCase;
   readonly registerSale: RegisterSaleUseCase;
 }
@@ -36,6 +39,7 @@ export interface AppServiceDependencies {
   readonly inventoryRepository: InventoryRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
   readonly productRepository: ProductRepository;
+  readonly salesSummaryReader: SalesSummaryReader;
   readonly transactionManager: TransactionManager;
 }
 
@@ -45,6 +49,7 @@ export function assembleAppServices({
   inventoryRepository,
   inventoryStateRepository,
   productRepository,
+  salesSummaryReader,
   transactionManager,
 }: AppServiceDependencies): AppServices {
   return Object.freeze({
@@ -60,6 +65,7 @@ export function assembleAppServices({
       transactionManager,
     }),
     getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
+    getSalesSummary: new GetSalesSummaryUseCase(salesSummaryReader),
     listProducts: new ListProductsUseCase({
       inventoryStateRepository,
       productRepository,
