@@ -5,4 +5,5 @@ export {
   createSqliteProductRepository,
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
+  createSqliteSalesSummaryReader,
 } from './repositories';

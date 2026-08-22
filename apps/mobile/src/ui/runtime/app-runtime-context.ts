@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 import type {
   CreateProductUseCase,
+  GetSalesSummaryUseCase,
   ListProductsUseCase,
   RegisterSaleUseCase,
 } from '@stock-app/application';
@@ -13,6 +14,7 @@ export interface ProductRuntimeServices {
 }
 
 export interface SaleRuntimeServices {
+  readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly registerSale: RegisterSaleUseCase;
 }
 

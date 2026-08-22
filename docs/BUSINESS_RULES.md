@@ -429,6 +429,14 @@ Si cualquier línea tiene costo desconocido, la ganancia estimada de esa línea 
 se muestra como no disponible. Los agregados por día o período tampoco tratarán esos costos como
 cero ni presentarán como completo un total que no puede calcularse.
 
+Para un resumen de ventas por día o período:
+
+- solo participan ventas confirmadas cuya fecha efectiva pertenece al rango;
+- si no existen ventas, la ganancia estimada es cero;
+- si todas las ventas tienen ganancia estimada conocida, se suman sus valores exactos;
+- si al menos una venta tiene ganancia estimada desconocida, el agregado completo queda no
+  disponible.
+
 ---
 
 # 17. No es utilidad neta
