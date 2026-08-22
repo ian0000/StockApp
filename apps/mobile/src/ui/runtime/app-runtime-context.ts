@@ -4,6 +4,7 @@ import type {
   CreateProductUseCase,
   GetSalesSummaryUseCase,
   ListProductsUseCase,
+  RegisterPurchaseUseCase,
   RegisterSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
@@ -18,10 +19,15 @@ export interface SaleRuntimeServices {
   readonly registerSale: RegisterSaleUseCase;
 }
 
+export interface PurchaseRuntimeServices {
+  readonly registerPurchase: RegisterPurchaseUseCase;
+}
+
 export interface AppRuntimeContextValue {
   readonly inventory: Inventory;
   readonly persistence: 'sqlite' | 'web-preview';
   readonly productServices: ProductRuntimeServices | null;
+  readonly purchaseServices: PurchaseRuntimeServices | null;
   readonly saleServices: SaleRuntimeServices | null;
 }
 
