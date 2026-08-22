@@ -1,4 +1,11 @@
 export {
+  MissingPurchaseInventoryStateError,
+  PurchaseProductUnavailableError,
+  RegisterPurchaseUseCase,
+  type PurchaseIdGenerator,
+  type RegisterPurchaseInput,
+} from './register-purchase';
+export {
   CreateInventoryUseCase,
   type CreateInventoryInput,
   type InventoryIdGenerator,
@@ -44,6 +51,7 @@ export {
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type PurchaseRepository,
   type SaleItemRepository,
   type SaleRepository,
   type SaveInventoryStateInput,

@@ -13,6 +13,7 @@ function purchaseDraft(
   overrides: Partial<Parameters<typeof createPurchaseMovement>[0]> = {},
 ) {
   return createPurchaseMovement({
+    purchaseId: 'purchase-1',
     quantity: 5,
     unitCost: Money.fromDecimal('8'),
     stockBefore: 0,
@@ -38,6 +39,13 @@ function genericDraft(
 
 test('creates a purchase movement draft', () => {
   assert.equal(purchaseDraft().type, 'PURCHASE');
+});
+
+test('links a purchase movement to its Purchase identity', () => {
+  const movement = purchaseDraft({ purchaseId: '  purchase-123  ' });
+
+  assert.equal(movement.sourceType, 'PURCHASE');
+  assert.equal(movement.sourceId, 'purchase-123');
 });
 
 test('uses purchased quantity as a positive delta', () => {

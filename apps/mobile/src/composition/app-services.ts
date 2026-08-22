@@ -4,6 +4,7 @@ import {
   GetCurrentInventoryUseCase,
   GetSalesSummaryUseCase,
   ListProductsUseCase,
+  RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   type Clock,
   type InventoryIdGenerator,
@@ -12,6 +13,7 @@ import {
   type InventoryStateRepository,
   type ProductIdGenerator,
   type ProductRepository,
+  type PurchaseIdGenerator,
   type SalesSummaryReader,
   type SaleIdGenerator,
   type SaleItemIdGenerator,
@@ -21,6 +23,7 @@ import {
 type AppIdGenerator = InventoryIdGenerator &
   ProductIdGenerator &
   InventoryMovementIdGenerator &
+  PurchaseIdGenerator &
   SaleIdGenerator &
   SaleItemIdGenerator;
 
@@ -30,6 +33,7 @@ export interface AppServices {
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly listProducts: ListProductsUseCase;
+  readonly registerPurchase: RegisterPurchaseUseCase;
   readonly registerSale: RegisterSaleUseCase;
 }
 
@@ -69,6 +73,12 @@ export function assembleAppServices({
     listProducts: new ListProductsUseCase({
       inventoryStateRepository,
       productRepository,
+    }),
+    registerPurchase: new RegisterPurchaseUseCase({
+      purchaseIdGenerator: idGenerator,
+      inventoryMovementIdGenerator: idGenerator,
+      clock,
+      transactionManager,
     }),
     registerSale: new RegisterSaleUseCase({
       saleIdGenerator: idGenerator,

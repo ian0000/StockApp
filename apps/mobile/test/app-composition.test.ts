@@ -7,6 +7,7 @@ import {
   GetCurrentInventoryUseCase,
   GetSalesSummaryUseCase,
   ListProductsUseCase,
+  RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   type InventoryRepository,
   type InventoryStateRepository,
@@ -108,6 +109,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'getCurrentInventory',
     'getSalesSummary',
     'listProducts',
+    'registerPurchase',
     'registerSale',
   ]);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
@@ -115,6 +117,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
+  assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
 });
 

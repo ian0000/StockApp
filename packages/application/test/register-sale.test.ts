@@ -212,6 +212,7 @@ function createHarness(options: HarnessOptions = {}) {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    purchaseRepository: { async save() {} },
     saleRepository,
     saleItemRepository,
   };

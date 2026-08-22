@@ -5,6 +5,7 @@ import type { SaveInventoryStateInput } from '@stock-app/application';
 import {
   createInventoryMovement,
   createProduct,
+  createPurchase,
   createSale,
   createSaleItem,
   Money,
@@ -15,6 +16,7 @@ import {
   mapInventoryMovementToRow,
   mapInventoryStateToRow,
   mapProductToRow,
+  mapPurchaseToRow,
   mapSaleItemToRow,
   mapSaleToRow,
 } from '../src/infrastructure/sqlite/repositories/mappers';
@@ -95,6 +97,73 @@ test('maps nullable Product fields and archived state without substitutes', () =
   });
   assert.equal(products.isArchived.mapToDriverValue(true), 1);
   assert.equal(products.isArchived.mapToDriverValue(false), 0);
+});
+
+test('maps every Purchase field to exact persistence values', () => {
+  const purchase = createPurchase({
+    id: 'purchase-123',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
+    quantity: 10,
+    unitCost: Money.fromDecimal('12'),
+    totalAmount: Money.fromDecimal('120'),
+    effectiveAt: TIMESTAMP,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP + 1,
+    status: 'CONFIRMED',
+    notes: 'Supplier delivery',
+    averageCostBefore: Money.fromDecimal('10'),
+    averageCostAfter: Money.fromDecimal('10.666667'),
+    stockBefore: 20,
+    stockAfter: 30,
+  });
+
+  assert.deepEqual(mapPurchaseToRow(purchase), {
+    id: 'purchase-123',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
+    quantity: 10,
+    unitCostUnits: 12_000_000,
+    totalAmountUnits: 120_000_000,
+    effectiveAt: TIMESTAMP,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP + 1,
+    status: 'CONFIRMED',
+    notes: 'Supplier delivery',
+    averageCostBeforeUnits: 10_000_000,
+    averageCostAfterUnits: 10_666_667,
+    stockBefore: 20,
+    stockAfter: 30,
+  });
+});
+
+test('Purchase mapping preserves null, known zero and negative stock snapshots', () => {
+  const purchase = createPurchase({
+    id: 'purchase-negative',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
+    quantity: 4,
+    unitCost: Money.zero(),
+    totalAmount: Money.zero(),
+    effectiveAt: TIMESTAMP,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP,
+    status: 'CONFIRMED',
+    notes: null,
+    averageCostBefore: null,
+    averageCostAfter: Money.zero(),
+    stockBefore: -10,
+    stockAfter: -6,
+  });
+  const row = mapPurchaseToRow(purchase);
+
+  assert.equal(row.unitCostUnits, 0);
+  assert.equal(row.totalAmountUnits, 0);
+  assert.equal(row.averageCostBeforeUnits, null);
+  assert.equal(row.averageCostAfterUnits, 0);
+  assert.equal(row.stockBefore, -10);
+  assert.equal(row.stockAfter, -6);
+  assert.equal(row.notes, null);
 });
 
 test('maps positive InventoryState and its scaled cost', () => {

@@ -3,6 +3,7 @@ import type {
   InventoryMovementRepository,
   InventoryStateRepository,
   ProductRepository,
+  PurchaseRepository,
   SaleItemRepository,
   SaleRepository,
   SalesSummaryReader,
@@ -17,6 +18,7 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  purchases,
   saleItems,
   sales,
 } from '../schema';
@@ -28,6 +30,7 @@ import {
   mapInventoryStateToRow,
   mapProductRowToDomain,
   mapProductToRow,
+  mapPurchaseToRow,
   mapSaleItemToRow,
   mapSaleToRow,
 } from './mappers';
@@ -130,6 +133,16 @@ export function createSqliteInventoryMovementRepository(
         .insert(inventoryMovements)
         .values(mapInventoryMovementToRow(movement))
         .run();
+    },
+  };
+}
+
+export function createSqlitePurchaseRepository(
+  executor: Pick<AppDatabase['db'], 'insert'>,
+): PurchaseRepository {
+  return {
+    async save(purchase) {
+      executor.insert(purchases).values(mapPurchaseToRow(purchase)).run();
     },
   };
 }
@@ -296,6 +309,7 @@ export function createSqliteTransactionRepositories(
     inventoryStateRepository: createSqliteInventoryStateRepository(executor),
     inventoryMovementRepository:
       createSqliteInventoryMovementRepository(executor),
+    purchaseRepository: createSqlitePurchaseRepository(executor),
     saleRepository: createSqliteSaleRepository(executor),
     saleItemRepository: createSqliteSaleItemRepository(executor),
   });

@@ -62,6 +62,7 @@ function createHarness() {
       async update() {},
     },
     inventoryMovementRepository: movementRepository,
+    purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
   };

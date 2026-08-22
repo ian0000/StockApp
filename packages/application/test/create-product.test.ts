@@ -73,6 +73,7 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
   };
