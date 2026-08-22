@@ -924,6 +924,37 @@ Se podrá filtrar posteriormente por:
 
 Los filtros avanzados no son prioritarios.
 
+La cronología principal de V1 contiene operaciones comerciales y ajustes:
+
+```text
+SALE
+PURCHASE
+ADJUSTMENT_IN
+ADJUSTMENT_OUT
+```
+
+`INITIAL_STOCK` no aparece como fila del Historial principal. Un movimiento técnico `REVERSAL`
+tampoco aparece como fila independiente: la operación comercial original conserva y presenta su
+estado anulado. Una venta anulada se muestra como `VENTA ANULADA` y conserva su total, unidades y
+fecha/hora originales.
+
+El orden es determinista:
+
+```text
+effectiveAt DESC
+createdAt DESC
+id DESC
+```
+
+Las filas `VENTA` y `COMPRA` son navegables a sus respectivos detalles. Los ajustes no requieren un
+detalle propio en V1.
+
+La carga inicial muestra las 50 operaciones más recientes. V1 no requiere paginación visible ni
+scroll infinito inicialmente.
+
+`RECIENTES` en Inicio utiliza el mismo modelo conceptual unificado, limitado a las tres operaciones
+más recientes de tipo venta, compra o ajuste. Excluye stock inicial y reversiones técnicas.
+
 ---
 
 # 33. Detalle de venta

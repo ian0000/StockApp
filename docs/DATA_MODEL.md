@@ -445,6 +445,34 @@ CONFIRMED
 VOIDED
 ```
 
+Todos los campos son obligatorios salvo `notes` y `averageCostBefore`, que son nullable.
+`unitCost`, `totalAmount` y `averageCostAfter` siempre son valores `Money` conocidos; un costo real
+de cero se conserva como cero. `averageCostBefore` es exactamente `InventoryState.unitCost` antes
+de aplicar la compra y puede ser `null` cuando todavía no existía un costo conocido.
+`averageCostAfter` es exactamente el costo del estado resultante y nunca es `null` porque toda compra
+registrada requiere un costo unitario conocido.
+
+Los snapshots deben cumplir:
+
+```text
+stockAfter = stockBefore + quantity
+
+stockBefore > 0
+→ averageCostBefore es obligatorio
+→ averageCostAfter usa el costo promedio ponderado aprobado
+
+stockBefore <= 0
+→ averageCostAfter = unitCost
+```
+
+El stock anterior y posterior puede ser negativo. La cantidad es un entero seguro mayor que cero y
+el costo unitario no puede ser negativo.
+
+`notes` tiene representación canónica `string | null`. En la creación puede omitirse o recibirse
+como `null`; ambos casos se normalizan a `null`. Las cadenas se recortan en sus extremos y una
+cadena vacía o compuesta únicamente por espacios se normaliza a `null`. El contenido interno,
+incluidos espacios y saltos de línea, se conserva. V1 no define una longitud máxima.
+
 ---
 
 # 16. Compra sin líneas
@@ -780,14 +808,19 @@ O:
 
 ```text
 type = PURCHASE
+sourceType = PURCHASE
 sourceId = purchase_456
 ```
 
 Así un movimiento no existe aislado de su evento original.
 
-Convención V1 para ventas y reversiones:
+Convención V1 para compras, ventas y reversiones:
 
 ```text
+PURCHASE
+sourceType = PURCHASE
+sourceId = Purchase.id
+
 SALE
 sourceType = SALE
 sourceId = Sale.id

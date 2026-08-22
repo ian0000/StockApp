@@ -25,6 +25,12 @@ export {
 } from './inventory/index';
 export { Money } from './money/index';
 export { Percentage } from './percentage/index';
+export {
+  createPurchase,
+  type CreatePurchaseInput,
+  type Purchase,
+  type PurchaseStatus,
+} from './purchase/index';
 export { createTimestampMs, type TimestampMs } from './timestamp/index';
 export {
   createSale,
