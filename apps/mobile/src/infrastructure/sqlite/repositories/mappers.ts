@@ -10,6 +10,7 @@ import {
   type Inventory,
   type InventoryMovement,
   type Product,
+  type Purchase,
   type Sale,
   type SaleItem,
 } from '@stock-app/domain';
@@ -19,6 +20,7 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  purchases,
   saleItems,
   sales,
 } from '../schema';
@@ -82,6 +84,28 @@ export function mapProductRowToDomain(
   return row.isArchived
     ? Object.freeze({ ...product, isArchived: true })
     : product;
+}
+
+export function mapPurchaseToRow(
+  purchase: Purchase,
+): typeof purchases.$inferInsert {
+  return {
+    id: purchase.id,
+    inventoryId: purchase.inventoryId,
+    productId: purchase.productId,
+    quantity: purchase.quantity,
+    unitCostUnits: purchase.unitCost.scaledUnits,
+    totalAmountUnits: purchase.totalAmount.scaledUnits,
+    effectiveAt: purchase.effectiveAt,
+    createdAt: purchase.createdAt,
+    updatedAt: purchase.updatedAt,
+    status: purchase.status,
+    notes: purchase.notes,
+    averageCostBeforeUnits: purchase.averageCostBefore?.scaledUnits ?? null,
+    averageCostAfterUnits: purchase.averageCostAfter.scaledUnits,
+    stockBefore: purchase.stockBefore,
+    stockAfter: purchase.stockAfter,
+  };
 }
 
 export function mapInventoryStateToRow({

@@ -50,6 +50,7 @@ export interface CreateInventoryMovementInput extends CreateInventoryMovementDra
 }
 
 export interface CreatePurchaseMovementInput {
+  readonly purchaseId: string;
   readonly quantity: number;
   readonly unitCost: Money;
   readonly stockBefore: number;
@@ -180,6 +181,7 @@ export function createInventoryMovement({
 }
 
 export function createPurchaseMovement({
+  purchaseId,
   quantity,
   unitCost,
   stockBefore,
@@ -203,8 +205,8 @@ export function createPurchaseMovement({
     unitCostSnapshot: unitCost,
     stockBefore,
     stockAfter,
-    sourceType: null,
-    sourceId: null,
+    sourceType: 'PURCHASE',
+    sourceId: purchaseId,
     metadata: null,
   });
 }

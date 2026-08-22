@@ -3,6 +3,7 @@ export {
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
+  createSqlitePurchaseRepository,
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
   createSqliteSalesSummaryReader,

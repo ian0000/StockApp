@@ -227,6 +227,7 @@ test('movement metadata defaults to null', () => {
 
 test('purchase movement remains a draft with explicit stock snapshots', () => {
   const draft = createPurchaseMovement({
+    purchaseId: 'purchase-1',
     quantity: 3,
     unitCost: Money.fromDecimal('4'),
     stockBefore: -1,
@@ -235,4 +236,6 @@ test('purchase movement remains a draft with explicit stock snapshots', () => {
   assert.equal(draft.stockBefore, -1);
   assert.equal(draft.stockAfter, 2);
   assert.equal(draft.unitCostSnapshot?.scaledUnits, 4_000_000);
+  assert.equal(draft.sourceType, 'PURCHASE');
+  assert.equal(draft.sourceId, 'purchase-1');
 });

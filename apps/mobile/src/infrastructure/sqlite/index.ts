@@ -9,6 +9,7 @@ export {
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
+  createSqlitePurchaseRepository,
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
   createSqliteSalesSummaryReader,
@@ -18,6 +19,7 @@ export {
   inventoryMovements,
   inventoryStates,
   products,
+  purchases,
   saleItems,
   sales,
 } from './schema';

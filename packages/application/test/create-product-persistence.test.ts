@@ -232,6 +232,7 @@ function createHarness(options: HarnessOptions = {}) {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
   };
@@ -443,6 +444,7 @@ test('execute resolves only after the transaction manager completes', async () =
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository,
+    purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
   };
@@ -508,6 +510,7 @@ test('repository writes are awaited sequentially', async () => {
     productRepository,
     inventoryStateRepository,
     inventoryMovementRepository: { async save() {} },
+    purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
   };
