@@ -10,6 +10,7 @@ import {
   inventoryMovements,
   inventoryStates,
   products,
+  purchases,
   saleItems,
   sales,
 } from '../../src/infrastructure/sqlite/schema';
@@ -52,6 +53,7 @@ export async function runSqliteTransactionSmokeTest(): Promise<SmokeResult> {
         inventoryMovements,
         inventoryStates,
         products,
+        purchases,
         saleItems,
         sales,
       },

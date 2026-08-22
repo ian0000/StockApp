@@ -8,12 +8,13 @@ import {
   inventories,
   inventoryMovements,
   inventoryStates,
+  purchases,
   products,
   saleItems,
   sales,
 } from '../src/infrastructure/sqlite/schema';
 
-test('defines the six approved Baseline persistence tables', () => {
+test('defines the seven approved Baseline persistence tables', () => {
   assert.deepEqual(
     [
       inventories,
@@ -22,6 +23,7 @@ test('defines the six approved Baseline persistence tables', () => {
       inventoryMovements,
       sales,
       saleItems,
+      purchases,
     ].map(getTableName),
     [
       'inventories',
@@ -30,6 +32,7 @@ test('defines the six approved Baseline persistence tables', () => {
       'inventory_movements',
       'sales',
       'sale_items',
+      'purchases',
     ],
   );
 });
@@ -39,6 +42,7 @@ test('stores monetary values and timestamps as SQLite integers', () => {
   const movementColumns = getTableColumns(inventoryMovements);
   const saleColumns = getTableColumns(sales);
   const saleItemColumns = getTableColumns(saleItems);
+  const purchaseColumns = getTableColumns(purchases);
 
   assert.equal(productColumns.regularSalePriceUnits.getSQLType(), 'integer');
   assert.equal(productColumns.createdAt.getSQLType(), 'integer');
@@ -56,6 +60,13 @@ test('stores monetary values and timestamps as SQLite integers', () => {
   assert.equal(saleItemColumns.unitCostSnapshotUnits.getSQLType(), 'integer');
   assert.equal(saleItemColumns.estimatedCostUnits.getSQLType(), 'integer');
   assert.equal(saleItemColumns.estimatedProfitUnits.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.unitCostUnits.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.totalAmountUnits.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.averageCostBeforeUnits.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.averageCostAfterUnits.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.effectiveAt.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.createdAt.getSQLType(), 'integer');
+  assert.equal(purchaseColumns.updatedAt.getSQLType(), 'integer');
 });
 
 test('keeps unknown inventory cost nullable and negative stock allowed', () => {
@@ -81,6 +92,62 @@ test('keeps product relationships enforced by foreign keys', () => {
   assert.equal(getTableConfig(inventoryMovements).foreignKeys.length, 1);
   assert.equal(getTableConfig(sales).foreignKeys.length, 1);
   assert.equal(getTableConfig(saleItems).foreignKeys.length, 2);
+  assert.equal(getTableConfig(purchases).foreignKeys.length, 1);
+});
+
+test('defines exact Purchase columns, nullability, constraints, and history index', () => {
+  const columns = getTableColumns(purchases);
+  const config = getTableConfig(purchases);
+
+  assert.deepEqual(
+    Object.values(columns).map((column) => column.name),
+    [
+      'id',
+      'inventory_id',
+      'product_id',
+      'quantity',
+      'unit_cost_units',
+      'total_amount_units',
+      'effective_at',
+      'created_at',
+      'updated_at',
+      'status',
+      'notes',
+      'average_cost_before_units',
+      'average_cost_after_units',
+      'stock_before',
+      'stock_after',
+    ],
+  );
+  assert.equal(columns.id.primary, true);
+  assert.equal(columns.inventoryId.notNull, true);
+  assert.equal(columns.productId.notNull, true);
+  assert.equal(columns.quantity.notNull, true);
+  assert.equal(columns.unitCostUnits.notNull, true);
+  assert.equal(columns.totalAmountUnits.notNull, true);
+  assert.equal(columns.notes.notNull, false);
+  assert.equal(columns.averageCostBeforeUnits.notNull, false);
+  assert.equal(columns.averageCostAfterUnits.notNull, true);
+  assert.equal(columns.stockBefore.notNull, true);
+  assert.equal(columns.stockAfter.notNull, true);
+  assert.deepEqual(config.checks.map((constraint) => constraint.name).sort(), [
+    'purchases_average_cost_after_nonnegative',
+    'purchases_average_cost_before_nonnegative',
+    'purchases_average_cost_before_required_for_positive_stock',
+    'purchases_created_at_nonnegative',
+    'purchases_effective_at_nonnegative',
+    'purchases_nonpositive_stock_cost_valid',
+    'purchases_quantity_positive',
+    'purchases_status_valid',
+    'purchases_stock_transition_valid',
+    'purchases_total_amount_nonnegative',
+    'purchases_unit_cost_nonnegative',
+    'purchases_updated_at_valid',
+  ]);
+  assert.deepEqual(
+    config.indexes.map((schemaIndex) => schemaIndex.config.name),
+    ['purchases_inventory_effective_at_idx'],
+  );
 });
 
 test('defines exact Sale columns, nullability, constraints, and history index', () => {
