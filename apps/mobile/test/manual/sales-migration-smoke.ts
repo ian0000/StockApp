@@ -12,6 +12,7 @@ import {
   purchases,
   saleItems,
   sales,
+  stockAdjustments,
 } from '../../src/infrastructure/sqlite/schema';
 
 interface SalesMigrationSmokeResult {
@@ -43,6 +44,7 @@ export async function runSalesMigrationSmokeTest(): Promise<SalesMigrationSmokeR
         purchases,
         saleItems,
         sales,
+        stockAdjustments,
       },
     });
     const initialJournalEntry = migrations.journal.entries[0];

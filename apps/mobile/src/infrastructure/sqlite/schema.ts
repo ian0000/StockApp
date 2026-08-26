@@ -187,6 +187,83 @@ export const purchases = sqliteTable(
   ],
 );
 
+export const stockAdjustments = sqliteTable(
+  'stock_adjustments',
+  {
+    id: text('id').primaryKey(),
+    inventoryId: text('inventory_id').notNull(),
+    productId: text('product_id').notNull(),
+    stockBefore: integer('stock_before').notNull(),
+    actualStock: integer('actual_stock').notNull(),
+    difference: integer('difference').notNull(),
+    reason: text('reason', {
+      enum: ['COUNT_CORRECTION', 'DAMAGED', 'LOST', 'INTERNAL_USE', 'OTHER'],
+    }).notNull(),
+    costMode: text('cost_mode', {
+      enum: ['USE_CURRENT_COST', 'CUSTOM_COST'],
+    }),
+    unitCostUnits: integer('unit_cost_units').notNull(),
+    effectiveAt: integer('effective_at').notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: 'stock_adjustments_product_fk',
+      columns: [table.inventoryId, table.productId],
+      foreignColumns: [products.inventoryId, products.id],
+    }),
+    index('stock_adjustments_inventory_effective_at_idx').on(
+      table.inventoryId,
+      table.effectiveAt,
+    ),
+    check(
+      'stock_adjustments_actual_stock_nonnegative',
+      sql`${table.actualStock} >= 0`,
+    ),
+    check(
+      'stock_adjustments_difference_nonzero',
+      sql`${table.difference} <> 0`,
+    ),
+    check(
+      'stock_adjustments_stock_transition_valid',
+      sql`${table.actualStock} = ${table.stockBefore} + ${table.difference}`,
+    ),
+    check(
+      'stock_adjustments_reason_valid',
+      sql`${table.reason} in ('COUNT_CORRECTION', 'DAMAGED', 'LOST', 'INTERNAL_USE', 'OTHER')`,
+    ),
+    check(
+      'stock_adjustments_reason_direction_valid',
+      sql`${table.difference} < 0 or (${table.difference} > 0 and ${table.reason} in ('COUNT_CORRECTION', 'OTHER'))`,
+    ),
+    check(
+      'stock_adjustments_cost_mode_valid',
+      sql`${table.costMode} is null or ${table.costMode} in ('USE_CURRENT_COST', 'CUSTOM_COST')`,
+    ),
+    check(
+      'stock_adjustments_cost_mode_direction_valid',
+      sql`(${table.difference} > 0 and ${table.costMode} is not null) or (${table.difference} < 0 and ${table.costMode} is null)`,
+    ),
+    check(
+      'stock_adjustments_unit_cost_nonnegative',
+      sql`${table.unitCostUnits} >= 0`,
+    ),
+    check(
+      'stock_adjustments_effective_at_nonnegative',
+      sql`${table.effectiveAt} >= 0`,
+    ),
+    check(
+      'stock_adjustments_created_at_nonnegative',
+      sql`${table.createdAt} >= 0`,
+    ),
+    check(
+      'stock_adjustments_updated_at_valid',
+      sql`${table.updatedAt} >= 0 and ${table.updatedAt} >= ${table.createdAt}`,
+    ),
+  ],
+);
+
 export const saleItems = sqliteTable(
   'sale_items',
   {

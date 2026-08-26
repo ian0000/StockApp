@@ -13,6 +13,7 @@ import {
   purchases,
   saleItems,
   sales,
+  stockAdjustments,
 } from '../../src/infrastructure/sqlite/schema';
 import { createSqliteTransactionManager } from '../../src/infrastructure/sqlite/transaction-manager';
 
@@ -56,6 +57,7 @@ export async function runSqliteTransactionSmokeTest(): Promise<SmokeResult> {
         purchases,
         saleItems,
         sales,
+        stockAdjustments,
       },
     });
     await migrateDatabase({ db });
