@@ -860,6 +860,18 @@ createdAt
 updatedAt
 ```
 
+`stockBefore` es un entero seguro y puede ser positivo, cero o negativo. `actualStock` representa el
+conteo físico resultante y debe ser un entero seguro mayor o igual que cero. `difference` se almacena
+y debe ser exactamente:
+
+```text
+actualStock - stockBefore
+```
+
+Una diferencia cero no representa un `StockAdjustment` válido y no genera `InventoryMovement`.
+La entidad no tiene estado, notas ni motivo libre en V1; es un hecho histórico inmutable y un conteo
+incorrecto se corrige con otro ajuste.
+
 ---
 
 # 27. Adjustment.reason
@@ -883,6 +895,9 @@ Perdido
 Consumo interno
 Otro
 ```
+
+`reason` es obligatorio. Un incremento solo admite `COUNT_CORRECTION` u `OTHER`; una reducción
+admite cualquiera de los cinco valores. `OTHER` no requiere texto adicional en V1.
 
 ---
 
@@ -918,6 +933,14 @@ unitCost = 0.65
 `USE_CURRENT_COST` se precarga y recomienda cuando existe un costo actual. Si no existe, el usuario
 debe proporcionar `CUSTOM_COST`. V1 no permite un ajuste positivo con costo desconocido.
 
+Para una diferencia positiva, `costMode` y `unitCost` son obligatorios y `unitCost` debe ser mayor o
+igual que cero. Cero conocido es válido. `USE_CURRENT_COST` conserva exactamente el costo vigente y
+`CUSTOM_COST` conserva el costo aceptado explícitamente.
+
+El ajuste se costea como una entrada conocida: con `stockBefore > 0` se aplica el promedio ponderado
+existente; con `stockBefore <= 0` el stock anterior no participa y el nuevo costo es exactamente
+`unitCost`, incluso si se venía de stock negativo.
+
 ---
 
 # 29. Ajuste negativo
@@ -929,7 +952,33 @@ difference = -2
 reason = DAMAGED
 ```
 
-El movimiento utiliza como snapshot el costo promedio actual cuando esté disponible.
+La representación canónica es:
+
+```text
+costMode = null
+unitCost = costo promedio vigente antes del ajuste
+```
+
+El stock resultante es `actualStock` y el costo vigente no cambia. Un ajuste negativo válido parte
+de stock positivo, por lo que su costo es conocido; nunca se sustituye un costo desconocido por cero.
+
+La futura asociación con movimientos es:
+
+```text
+difference > 0 → InventoryMovement.type = ADJUSTMENT_IN
+difference < 0 → InventoryMovement.type = ADJUSTMENT_OUT
+
+sourceType = STOCK_ADJUSTMENT
+sourceId = StockAdjustment.id
+quantityDelta = difference
+stockBefore = StockAdjustment.stockBefore
+stockAfter = StockAdjustment.actualStock
+```
+
+En una entrada, `unitCostSnapshot` es el costo resuelto del ajuste, no el nuevo promedio ponderado.
+En una salida, es el costo promedio vigente antes del ajuste. Cero conocido se conserva como cero.
+Solo la creación del producto genera `INITIAL_STOCK`; una corrección posterior siempre utiliza
+`StockAdjustment`, y una adquisición comercial conocida utiliza `Purchase`.
 
 ---
 
