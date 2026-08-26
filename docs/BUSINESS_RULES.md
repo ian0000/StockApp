@@ -833,7 +833,9 @@ En el ejemplo, el resultado es stock `8` con costo promedio `$12`.
 
 # 31. Ajustes
 
-Los ajustes sirven para reconciliar el inventario registrado con el inventario físico.
+Los ajustes sirven para reconciliar el inventario registrado con el inventario físico. El usuario
+indica el stock físico actual, que debe ser un entero seguro mayor o igual que cero. El stock
+registrado anterior puede ser positivo, cero o negativo.
 
 Ejemplo:
 
@@ -845,7 +847,14 @@ Ajuste:
 -2
 ```
 
-El usuario preferiblemente indicará un motivo.
+La diferencia se deriva siempre como:
+
+```text
+difference = actualStock - stockBefore
+```
+
+Si la diferencia es cero, no existe un ajuste válido ni se crea un movimiento. Todo ajuste requiere
+un motivo.
 
 Opciones iniciales:
 
@@ -855,15 +864,21 @@ Opciones iniciales:
 - consumo interno;
 - otro.
 
+Para un ajuste positivo solo se permiten `COUNT_CORRECTION` y `OTHER`. Para un ajuste negativo se
+permite cualquiera de los cinco motivos. `OTHER` no requiere texto adicional en V1.
+
 ---
 
 # 32. Ajuste negativo
 
-Un ajuste negativo reduce stock.
+Un ajuste negativo reduce stock. No permite seleccionar ni introducir otro costo.
 
-Por defecto utilizará el costo promedio vigente para estimar el valor de las unidades retiradas.
+Utiliza como snapshot el costo promedio vigente antes del ajuste para estimar el valor de las
+unidades retiradas.
 
-No modifica el costo promedio de las unidades restantes.
+El stock resultante es el conteo físico indicado y el costo vigente de las unidades restantes no
+cambia. En V1 un ajuste negativo válido parte de stock positivo y, por tanto, de un costo conocido;
+nunca se sustituye un costo desconocido por cero.
 
 ---
 
@@ -887,6 +902,17 @@ En V1 existen únicamente estas opciones:
 
 Si todavía no existe costo actual, el usuario deberá indicar `Otro costo`. No existe la opción `No
 sé`. La aplicación nunca inventará un costo distinto del que el usuario haya aceptado.
+
+El costo aceptado puede ser cero conocido, pero nunca desconocido. Si el stock registrado es
+positivo, el nuevo costo utiliza la misma fórmula y redondeo de promedio ponderado que una entrada
+con costo conocido. Si el stock registrado es cero o negativo, no participa en la ponderación y el
+costo posterior es exactamente el costo aceptado para el ajuste.
+
+Un ajuste no reemplaza una compra comercial. Tampoco crea stock inicial: solo la creación inicial
+del producto puede generar `INITIAL_STOCK`.
+
+Los ajustes son hechos históricos inmutables y no tienen estado en V1. No existe Undo, anulación ni
+reversión de un ajuste; un conteo incorrecto se corrige mediante otro conteo físico.
 
 ---
 

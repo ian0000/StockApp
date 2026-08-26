@@ -835,6 +835,12 @@ Diferencia
 +2
 ```
 
+El conteo físico debe ser un entero seguro mayor o igual que cero. La aplicación deriva la
+diferencia; el usuario no introduce el delta. Si el conteo coincide con el stock registrado, no hay
+un ajuste que guardar.
+
+Todo ajuste requiere un motivo. `Otro` no solicita explicación adicional en V1.
+
 ---
 
 # 30. Ajuste positivo
@@ -861,6 +867,8 @@ La opción precargada será utilizar el costo actual conocido.
 
 El usuario conserva la posibilidad de indicar otro costo. Si todavía no existe un costo actual,
 deberá indicar `Otro costo`. La aplicación nunca inventará un costo que el usuario no haya aceptado.
+El costo explícito puede ser cero conocido. Para incrementos solo están disponibles los motivos
+`Conteo incorrecto` y `Otro`.
 
 ---
 
@@ -885,6 +893,10 @@ Opciones iniciales:
 - otro.
 
 La aplicación utilizará el costo promedio vigente para estimar el valor de la salida.
+
+El ajuste negativo no muestra selector de costo ni permite ingresar otro costo. El costo vigente de
+las unidades restantes no cambia. Si el conteo fue incorrecto, V1 registra un nuevo ajuste físico;
+no ofrece Undo ni anulación del ajuste anterior.
 
 ---
 
@@ -915,6 +927,9 @@ Doritos
 Producto dañado
 08:32
 ```
+
+La fila de ajuste muestra el producto, la diferencia, el motivo y la hora. No muestra costo
+unitario, costo promedio ni total financiero.
 
 Se podrá filtrar posteriormente por:
 
