@@ -69,17 +69,30 @@ export default function ProductsScreen() {
         <Text accessibilityRole="header" style={styles.title}>
           Productos
         </Text>
-        <Pressable
-          accessibilityLabel="Crear producto"
-          accessibilityRole="button"
-          onPress={() => router.push('/product/new')}
-          style={({ pressed }) => [
-            styles.addAction,
-            pressed && styles.addActionPressed,
-          ]}
-        >
-          <Text style={styles.addActionText}>+ Producto</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            accessibilityLabel="Ajustar stock"
+            accessibilityRole="button"
+            onPress={() => router.push('/adjustment')}
+            style={({ pressed }) => [
+              styles.adjustAction,
+              pressed && styles.adjustActionPressed,
+            ]}
+          >
+            <Text style={styles.adjustActionText}>Ajustar stock</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Crear producto"
+            accessibilityRole="button"
+            onPress={() => router.push('/product/new')}
+            style={({ pressed }) => [
+              styles.addAction,
+              pressed && styles.addActionPressed,
+            ]}
+          >
+            <Text style={styles.addActionText}>+ Producto</Text>
+          </Pressable>
+        </View>
       </View>
 
       {persistence === 'web-preview' ? (
@@ -153,6 +166,24 @@ export default function ProductsScreen() {
 }
 
 const styles = StyleSheet.create({
+  adjustAction: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  adjustActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  adjustActionText: {
+    color: colors.accent,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
+  },
   addAction: {
     alignItems: 'center',
     backgroundColor: colors.accent,
@@ -176,12 +207,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   header: {
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: spacing.md,
     justifyContent: 'space-between',
     paddingBottom: spacing.sm,
     paddingTop: spacing.sm,
+  },
+  headerActions: {
+    alignItems: 'stretch',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    justifyContent: 'flex-end',
   },
   list: {
     gap: spacing.md,

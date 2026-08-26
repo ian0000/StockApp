@@ -127,6 +127,9 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
   return (
     <AppRuntimeContext.Provider
       value={{
+        adjustmentServices: {
+          adjustStock: state.services.adjustStock,
+        },
         inventory: state.inventory,
         persistence: 'sqlite',
         productServices: {

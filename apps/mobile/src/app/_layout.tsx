@@ -22,6 +22,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="sale" options={{ title: 'Nueva venta' }} />
         <Stack.Screen name="purchase" options={{ title: 'Nueva compra' }} />
+        <Stack.Screen name="adjustment" options={{ title: 'Ajustar stock' }} />
         <Stack.Screen
           name="product/new"
           options={{ title: 'Nuevo producto' }}
