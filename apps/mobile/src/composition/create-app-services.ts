@@ -1,5 +1,6 @@
 import {
   createInventoryRepository,
+  createSqliteHistoryReader,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
   createSqliteSalesSummaryReader,
@@ -38,6 +39,7 @@ export async function createAppRuntime(
     const services = assembleAppServices({
       clock,
       idGenerator,
+      historyReader: createSqliteHistoryReader(database.db),
       inventoryRepository: createInventoryRepository(database.db),
       inventoryStateRepository,
       productRepository,

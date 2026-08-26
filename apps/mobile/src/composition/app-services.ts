@@ -4,10 +4,12 @@ import {
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
   GetSalesSummaryUseCase,
+  ListHistoryUseCase,
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   type Clock,
+  type HistoryReader,
   type InventoryIdGenerator,
   type InventoryMovementIdGenerator,
   type InventoryRepository,
@@ -36,6 +38,7 @@ export interface AppServices {
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
+  readonly listHistory: ListHistoryUseCase;
   readonly listProducts: ListProductsUseCase;
   readonly registerPurchase: RegisterPurchaseUseCase;
   readonly registerSale: RegisterSaleUseCase;
@@ -44,6 +47,7 @@ export interface AppServices {
 export interface AppServiceDependencies {
   readonly clock: Clock;
   readonly idGenerator: AppIdGenerator;
+  readonly historyReader: HistoryReader;
   readonly inventoryRepository: InventoryRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
   readonly productRepository: ProductRepository;
@@ -54,6 +58,7 @@ export interface AppServiceDependencies {
 export function assembleAppServices({
   clock,
   idGenerator,
+  historyReader,
   inventoryRepository,
   inventoryStateRepository,
   productRepository,
@@ -80,6 +85,7 @@ export function assembleAppServices({
     }),
     getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
     getSalesSummary: new GetSalesSummaryUseCase(salesSummaryReader),
+    listHistory: new ListHistoryUseCase(historyReader),
     listProducts: new ListProductsUseCase({
       inventoryStateRepository,
       productRepository,

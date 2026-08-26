@@ -13,6 +13,7 @@ const WEB_PREVIEW_RUNTIME = Object.freeze({
     createdAt: 0,
     updatedAt: 0,
   }),
+  historyServices: null,
   persistence: 'web-preview' as const,
   productServices: null,
   purchaseServices: null,

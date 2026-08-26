@@ -7,9 +7,11 @@ import {
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
   GetSalesSummaryUseCase,
+  ListHistoryUseCase,
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  type HistoryReader,
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
@@ -29,6 +31,7 @@ function createDependencies(): {
   readonly getInventorySaveCount: () => number;
   readonly getInventoryListCount: () => number;
   readonly getInventoryStateListCount: () => number;
+  readonly getHistoryReadCount: () => number;
   readonly getProductListCount: () => number;
   readonly getSalesSummaryReadCount: () => number;
   readonly getTransactionCount: () => number;
@@ -36,6 +39,7 @@ function createDependencies(): {
   let inventorySaveCount = 0;
   let inventoryListCount = 0;
   let inventoryStateListCount = 0;
+  let historyReadCount = 0;
   let productListCount = 0;
   let salesSummaryReadCount = 0;
   let transactionCount = 0;
@@ -79,11 +83,18 @@ function createDependencies(): {
       };
     },
   };
+  const historyReader: HistoryReader = {
+    async listRecent() {
+      historyReadCount += 1;
+      return [];
+    },
+  };
 
   return {
     dependencies: {
       clock: { now: () => 1_776_444_000_000 },
       idGenerator: { generate: () => 'test-id' },
+      historyReader,
       inventoryRepository,
       inventoryStateRepository,
       productRepository,
@@ -93,6 +104,7 @@ function createDependencies(): {
     getInventorySaveCount: () => inventorySaveCount,
     getInventoryListCount: () => inventoryListCount,
     getInventoryStateListCount: () => inventoryStateListCount,
+    getHistoryReadCount: () => historyReadCount,
     getProductListCount: () => productListCount,
     getSalesSummaryReadCount: () => salesSummaryReadCount,
     getTransactionCount: () => transactionCount,
@@ -110,6 +122,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'createProduct',
     'getCurrentInventory',
     'getSalesSummary',
+    'listHistory',
     'listProducts',
     'registerPurchase',
     'registerSale',
@@ -119,6 +132,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
+  assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
   assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
@@ -128,6 +142,7 @@ test('composition performs no persistence automatically', () => {
   const {
     dependencies,
     getInventoryListCount,
+    getHistoryReadCount,
     getInventoryStateListCount,
     getInventorySaveCount,
     getProductListCount,
@@ -139,6 +154,7 @@ test('composition performs no persistence automatically', () => {
 
   assert.equal(getInventorySaveCount(), 0);
   assert.equal(getInventoryListCount(), 0);
+  assert.equal(getHistoryReadCount(), 0);
   assert.equal(getInventoryStateListCount(), 0);
   assert.equal(getProductListCount(), 0);
   assert.equal(getSalesSummaryReadCount(), 0);
@@ -179,6 +195,15 @@ test('sales summary query uses the composed reader', async () => {
   assert.equal(getSalesSummaryReadCount(), 1);
 });
 
+test('history query uses the composed reader', async () => {
+  const { dependencies, getHistoryReadCount } = createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  await services.listHistory.execute({ inventoryId: 'inventory-123' });
+
+  assert.equal(getHistoryReadCount(), 1);
+});
+
 test('composition initialization is deferred until explicitly requested', async () => {
   let initializationCount = 0;
   const { dependencies } = createDependencies();
@@ -195,6 +220,7 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
+  assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
 });
 
