@@ -131,6 +131,9 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
           adjustStock: state.services.adjustStock,
         },
         inventory: state.inventory,
+        historyServices: {
+          listHistory: state.services.listHistory,
+        },
         persistence: 'sqlite',
         productServices: {
           createProduct: state.services.createProduct,

@@ -4,6 +4,7 @@ import type {
   AdjustStockUseCase,
   CreateProductUseCase,
   GetSalesSummaryUseCase,
+  ListHistoryUseCase,
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
@@ -28,9 +29,14 @@ export interface AdjustmentRuntimeServices {
   readonly adjustStock: AdjustStockUseCase;
 }
 
+export interface HistoryRuntimeServices {
+  readonly listHistory: ListHistoryUseCase;
+}
+
 export interface AppRuntimeContextValue {
   readonly adjustmentServices: AdjustmentRuntimeServices | null;
   readonly inventory: Inventory;
+  readonly historyServices: HistoryRuntimeServices | null;
   readonly persistence: 'sqlite' | 'web-preview';
   readonly productServices: ProductRuntimeServices | null;
   readonly purchaseServices: PurchaseRuntimeServices | null;

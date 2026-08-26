@@ -1,4 +1,7 @@
-import type {
+import {
+  compareHistoryEntriesNewestFirst,
+  type HistoryEntry,
+  type HistoryReader,
   InventoryRepository,
   InventoryMovementRepository,
   InventoryStateRepository,
@@ -11,7 +14,7 @@ import type {
   TransactionRepositories,
 } from '@stock-app/application';
 import { and, asc, count, desc, eq, gte, lt, sql } from 'drizzle-orm';
-import { Money } from '@stock-app/domain';
+import { createTimestampMs, Money } from '@stock-app/domain';
 
 import type { AppDatabase } from '../database';
 import {
@@ -313,6 +316,204 @@ export function createSqliteSalesSummaryReader(
           0,
         ),
       });
+    },
+  };
+}
+
+function requireSafeInteger(value: number, label: string): number {
+  if (!Number.isSafeInteger(value)) {
+    throw new RangeError(`${label} must be a safe integer.`);
+  }
+
+  return value;
+}
+
+function requirePositiveSafeInteger(value: number, label: string): number {
+  const normalized = requireSafeInteger(value, label);
+
+  if (normalized <= 0) {
+    throw new RangeError(`${label} must be greater than zero.`);
+  }
+
+  return normalized;
+}
+
+function requireNonZeroSafeInteger(value: number, label: string): number {
+  const normalized = requireSafeInteger(value, label);
+
+  if (normalized === 0) {
+    throw new RangeError(`${label} must be non-zero.`);
+  }
+
+  return normalized;
+}
+
+function moneyFromScaledUnits(value: number, label: string): Money {
+  try {
+    return Money.fromScaledUnits(value);
+  } catch (error) {
+    throw new RangeError(`${label} must contain safe integer scaled units.`, {
+      cause: error,
+    });
+  }
+}
+
+export function createSqliteHistoryReader(
+  executor: SqliteReadExecutor,
+): HistoryReader {
+  return {
+    async listRecent({ inventoryId, limit }) {
+      const [saleRows, purchaseRows, adjustmentRows] = await Promise.all([
+        executor
+          .select({
+            id: sales.id,
+            totalAmountUnits: sales.totalAmountUnits,
+            status: sales.status,
+            effectiveAt: sales.effectiveAt,
+            createdAt: sales.createdAt,
+            units: sql<number>`sum(${saleItems.quantity})`,
+          })
+          .from(sales)
+          .innerJoin(saleItems, eq(saleItems.saleId, sales.id))
+          .where(eq(sales.inventoryId, inventoryId))
+          .groupBy(
+            sales.id,
+            sales.totalAmountUnits,
+            sales.status,
+            sales.effectiveAt,
+            sales.createdAt,
+          )
+          .orderBy(
+            desc(sales.effectiveAt),
+            desc(sales.createdAt),
+            desc(sales.id),
+          )
+          .limit(limit),
+        executor
+          .select({
+            id: purchases.id,
+            productId: purchases.productId,
+            productName: products.name,
+            productVariant: products.variant,
+            quantity: purchases.quantity,
+            unitCostUnits: purchases.unitCostUnits,
+            totalAmountUnits: purchases.totalAmountUnits,
+            status: purchases.status,
+            effectiveAt: purchases.effectiveAt,
+            createdAt: purchases.createdAt,
+          })
+          .from(purchases)
+          .innerJoin(
+            products,
+            and(
+              eq(products.inventoryId, purchases.inventoryId),
+              eq(products.id, purchases.productId),
+            ),
+          )
+          .where(eq(purchases.inventoryId, inventoryId))
+          .orderBy(
+            desc(purchases.effectiveAt),
+            desc(purchases.createdAt),
+            desc(purchases.id),
+          )
+          .limit(limit),
+        executor
+          .select({
+            id: stockAdjustments.id,
+            productId: stockAdjustments.productId,
+            productName: products.name,
+            productVariant: products.variant,
+            difference: stockAdjustments.difference,
+            reason: stockAdjustments.reason,
+            effectiveAt: stockAdjustments.effectiveAt,
+            createdAt: stockAdjustments.createdAt,
+          })
+          .from(stockAdjustments)
+          .innerJoin(
+            products,
+            and(
+              eq(products.inventoryId, stockAdjustments.inventoryId),
+              eq(products.id, stockAdjustments.productId),
+            ),
+          )
+          .where(eq(stockAdjustments.inventoryId, inventoryId))
+          .orderBy(
+            desc(stockAdjustments.effectiveAt),
+            desc(stockAdjustments.createdAt),
+            desc(stockAdjustments.id),
+          )
+          .limit(limit),
+      ]);
+
+      const saleEntries: HistoryEntry[] = saleRows.map((row) =>
+        Object.freeze({
+          type: 'SALE' as const,
+          id: row.id,
+          totalAmount: moneyFromScaledUnits(
+            row.totalAmountUnits,
+            'Sale total amount',
+          ),
+          units: requirePositiveSafeInteger(row.units, 'Sale units'),
+          status: row.status,
+          effectiveAt: createTimestampMs(row.effectiveAt, 'Sale effective at'),
+          createdAt: createTimestampMs(row.createdAt, 'Sale created at'),
+        }),
+      );
+      const purchaseEntries: HistoryEntry[] = purchaseRows.map((row) =>
+        Object.freeze({
+          type: 'PURCHASE' as const,
+          id: row.id,
+          productId: row.productId,
+          productName: row.productName,
+          productVariant: row.productVariant,
+          quantity: requirePositiveSafeInteger(
+            row.quantity,
+            'Purchase quantity',
+          ),
+          unitCost: moneyFromScaledUnits(
+            row.unitCostUnits,
+            'Purchase unit cost',
+          ),
+          totalAmount: moneyFromScaledUnits(
+            row.totalAmountUnits,
+            'Purchase total amount',
+          ),
+          status: row.status,
+          effectiveAt: createTimestampMs(
+            row.effectiveAt,
+            'Purchase effective at',
+          ),
+          createdAt: createTimestampMs(row.createdAt, 'Purchase created at'),
+        }),
+      );
+      const adjustmentEntries: HistoryEntry[] = adjustmentRows.map((row) =>
+        Object.freeze({
+          type: 'ADJUSTMENT' as const,
+          id: row.id,
+          productId: row.productId,
+          productName: row.productName,
+          productVariant: row.productVariant,
+          difference: requireNonZeroSafeInteger(
+            row.difference,
+            'Stock adjustment difference',
+          ),
+          reason: row.reason,
+          effectiveAt: createTimestampMs(
+            row.effectiveAt,
+            'Stock adjustment effective at',
+          ),
+          createdAt: createTimestampMs(
+            row.createdAt,
+            'Stock adjustment created at',
+          ),
+        }),
+      );
+
+      return Object.freeze(
+        [...saleEntries, ...purchaseEntries, ...adjustmentEntries]
+          .sort(compareHistoryEntriesNewestFirst)
+          .slice(0, limit),
+      );
     },
   };
 }

@@ -45,6 +45,19 @@ export {
   type ProductSummary,
 } from './list-products';
 export {
+  compareHistoryEntriesNewestFirst,
+  DEFAULT_HISTORY_LIMIT,
+  ListHistoryUseCase,
+  MAX_HISTORY_LIMIT,
+  type HistoryEntry,
+  type HistoryReader,
+  type ListHistoryInput,
+  type ListHistoryReaderInput,
+  type PurchaseHistoryEntry,
+  type SaleHistoryEntry,
+  type StockAdjustmentHistoryEntry,
+} from './list-history';
+export {
   DuplicateSaleProductError,
   EmptySaleError,
   MissingInventoryStateError,
