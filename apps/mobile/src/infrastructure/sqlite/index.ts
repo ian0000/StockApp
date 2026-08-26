@@ -22,5 +22,6 @@ export {
   purchases,
   saleItems,
   sales,
+  stockAdjustments,
 } from './schema';
 export { createSqliteTransactionManager } from './transaction-manager';

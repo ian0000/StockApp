@@ -482,7 +482,7 @@ test('generated migration metadata and Expo registry contain ordered 0000-0002 e
 
   assert.equal(journal.dialect, 'sqlite');
   assert.deepEqual(
-    journal.entries.map(({ idx, tag }) => ({ idx, tag })),
+    journal.entries.slice(0, 3).map(({ idx, tag }) => ({ idx, tag })),
     [
       { idx: 0, tag: '0000_cool_purple_man' },
       { idx: 1, tag: '0001_confused_naoko' },

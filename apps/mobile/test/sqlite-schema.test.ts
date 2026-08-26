@@ -12,9 +12,10 @@ import {
   products,
   saleItems,
   sales,
+  stockAdjustments,
 } from '../src/infrastructure/sqlite/schema';
 
-test('defines the seven approved Baseline persistence tables', () => {
+test('defines the eight approved Baseline persistence tables', () => {
   assert.deepEqual(
     [
       inventories,
@@ -24,6 +25,7 @@ test('defines the seven approved Baseline persistence tables', () => {
       sales,
       saleItems,
       purchases,
+      stockAdjustments,
     ].map(getTableName),
     [
       'inventories',
@@ -33,6 +35,7 @@ test('defines the seven approved Baseline persistence tables', () => {
       'sales',
       'sale_items',
       'purchases',
+      'stock_adjustments',
     ],
   );
 });
@@ -43,6 +46,7 @@ test('stores monetary values and timestamps as SQLite integers', () => {
   const saleColumns = getTableColumns(sales);
   const saleItemColumns = getTableColumns(saleItems);
   const purchaseColumns = getTableColumns(purchases);
+  const adjustmentColumns = getTableColumns(stockAdjustments);
 
   assert.equal(productColumns.regularSalePriceUnits.getSQLType(), 'integer');
   assert.equal(productColumns.createdAt.getSQLType(), 'integer');
@@ -67,6 +71,10 @@ test('stores monetary values and timestamps as SQLite integers', () => {
   assert.equal(purchaseColumns.effectiveAt.getSQLType(), 'integer');
   assert.equal(purchaseColumns.createdAt.getSQLType(), 'integer');
   assert.equal(purchaseColumns.updatedAt.getSQLType(), 'integer');
+  assert.equal(adjustmentColumns.unitCostUnits.getSQLType(), 'integer');
+  assert.equal(adjustmentColumns.effectiveAt.getSQLType(), 'integer');
+  assert.equal(adjustmentColumns.createdAt.getSQLType(), 'integer');
+  assert.equal(adjustmentColumns.updatedAt.getSQLType(), 'integer');
 });
 
 test('keeps unknown inventory cost nullable and negative stock allowed', () => {
@@ -93,6 +101,59 @@ test('keeps product relationships enforced by foreign keys', () => {
   assert.equal(getTableConfig(sales).foreignKeys.length, 1);
   assert.equal(getTableConfig(saleItems).foreignKeys.length, 2);
   assert.equal(getTableConfig(purchases).foreignKeys.length, 1);
+  assert.equal(getTableConfig(stockAdjustments).foreignKeys.length, 1);
+});
+
+test('defines exact StockAdjustment columns, nullability, constraints, and history index', () => {
+  const columns = getTableColumns(stockAdjustments);
+  const config = getTableConfig(stockAdjustments);
+
+  assert.deepEqual(
+    Object.values(columns).map((column) => column.name),
+    [
+      'id',
+      'inventory_id',
+      'product_id',
+      'stock_before',
+      'actual_stock',
+      'difference',
+      'reason',
+      'cost_mode',
+      'unit_cost_units',
+      'effective_at',
+      'created_at',
+      'updated_at',
+    ],
+  );
+  assert.equal(columns.id.primary, true);
+  assert.equal(columns.inventoryId.notNull, true);
+  assert.equal(columns.productId.notNull, true);
+  assert.equal(columns.stockBefore.notNull, true);
+  assert.equal(columns.actualStock.notNull, true);
+  assert.equal(columns.difference.notNull, true);
+  assert.equal(columns.reason.notNull, true);
+  assert.equal(columns.costMode.notNull, false);
+  assert.equal(columns.unitCostUnits.notNull, true);
+  assert.equal(columns.effectiveAt.notNull, true);
+  assert.equal(columns.createdAt.notNull, true);
+  assert.equal(columns.updatedAt.notNull, true);
+  assert.deepEqual(config.checks.map((constraint) => constraint.name).sort(), [
+    'stock_adjustments_actual_stock_nonnegative',
+    'stock_adjustments_cost_mode_direction_valid',
+    'stock_adjustments_cost_mode_valid',
+    'stock_adjustments_created_at_nonnegative',
+    'stock_adjustments_difference_nonzero',
+    'stock_adjustments_effective_at_nonnegative',
+    'stock_adjustments_reason_direction_valid',
+    'stock_adjustments_reason_valid',
+    'stock_adjustments_stock_transition_valid',
+    'stock_adjustments_unit_cost_nonnegative',
+    'stock_adjustments_updated_at_valid',
+  ]);
+  assert.deepEqual(
+    config.indexes.map((schemaIndex) => schemaIndex.config.name),
+    ['stock_adjustments_inventory_effective_at_idx'],
+  );
 });
 
 test('defines exact Purchase columns, nullability, constraints, and history index', () => {
