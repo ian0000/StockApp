@@ -1103,7 +1103,8 @@ Un producto archivado:
 
 - conserva historial;
 - conserva movimientos;
-- deja de aparecer normalmente en selección de venta/compra;
+- no acepta nuevas ventas, compras ni ajustes de inventario;
+- deja de aparecer normalmente en selecciones operativas;
 - puede restaurarse.
 
 No se elimina físicamente si posee historial.

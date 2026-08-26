@@ -76,6 +76,7 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    stockAdjustmentRepository: { async save() {} },
   };
   const transactionManager: TransactionManager = {
     runInTransaction: (operation) => operation(repositories),

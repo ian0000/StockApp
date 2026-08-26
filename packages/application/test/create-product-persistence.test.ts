@@ -235,6 +235,7 @@ function createHarness(options: HarnessOptions = {}) {
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    stockAdjustmentRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
@@ -447,6 +448,7 @@ test('execute resolves only after the transaction manager completes', async () =
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    stockAdjustmentRepository: { async save() {} },
   };
   const transactionManager: TransactionManager = {
     async runInTransaction(operation) {
@@ -513,6 +515,7 @@ test('repository writes are awaited sequentially', async () => {
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    stockAdjustmentRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: new FakeProductIdGenerator(['product-123']),

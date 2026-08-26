@@ -182,6 +182,11 @@ function createHarness(options: HarnessOptions = {}) {
     purchaseRepository,
     saleRepository,
     saleItemRepository,
+    stockAdjustmentRepository: {
+      async save() {
+        throw new Error('RegisterPurchase must not save StockAdjustments.');
+      },
+    },
   };
   const transactionManager: TransactionManager & { calls: number } = {
     calls: 0,

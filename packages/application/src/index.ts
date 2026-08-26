@@ -1,4 +1,15 @@
 export {
+  AdjustStockUseCase,
+  AdjustmentCurrentCostRequiredError,
+  AdjustmentProductUnavailableError,
+  InvalidAdjustmentCostModeError,
+  MissingAdjustmentInventoryStateError,
+  NoStockAdjustmentNeededError,
+  type AdjustStockInput,
+  type AdjustStockResult,
+  type StockAdjustmentIdGenerator,
+} from './adjust-stock';
+export {
   MissingPurchaseInventoryStateError,
   PurchaseProductUnavailableError,
   RegisterPurchaseUseCase,
@@ -54,6 +65,7 @@ export {
   type PurchaseRepository,
   type SaleItemRepository,
   type SaleRepository,
+  type StockAdjustmentRepository,
   type SaveInventoryStateInput,
   type TransactionManager,
   type TransactionRepositories,

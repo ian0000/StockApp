@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  AdjustStockUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
@@ -104,6 +105,7 @@ test('composition exposes the application use cases and nothing else', () => {
   const services = assembleAppServices(dependencies);
 
   assert.deepEqual(Object.keys(services).sort(), [
+    'adjustStock',
     'createInventory',
     'createProduct',
     'getCurrentInventory',
@@ -112,6 +114,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'registerPurchase',
     'registerSale',
   ]);
+  assert.ok(services.adjustStock instanceof AdjustStockUseCase);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
