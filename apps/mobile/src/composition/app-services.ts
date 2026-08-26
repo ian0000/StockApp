@@ -1,4 +1,5 @@
 import {
+  AdjustStockUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
@@ -17,6 +18,7 @@ import {
   type SalesSummaryReader,
   type SaleIdGenerator,
   type SaleItemIdGenerator,
+  type StockAdjustmentIdGenerator,
   type TransactionManager,
 } from '@stock-app/application';
 
@@ -25,9 +27,11 @@ type AppIdGenerator = InventoryIdGenerator &
   InventoryMovementIdGenerator &
   PurchaseIdGenerator &
   SaleIdGenerator &
-  SaleItemIdGenerator;
+  SaleItemIdGenerator &
+  StockAdjustmentIdGenerator;
 
 export interface AppServices {
+  readonly adjustStock: AdjustStockUseCase;
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
@@ -57,6 +61,12 @@ export function assembleAppServices({
   transactionManager,
 }: AppServiceDependencies): AppServices {
   return Object.freeze({
+    adjustStock: new AdjustStockUseCase({
+      stockAdjustmentIdGenerator: idGenerator,
+      inventoryMovementIdGenerator: idGenerator,
+      clock,
+      transactionManager,
+    }),
     createInventory: new CreateInventoryUseCase({
       inventoryIdGenerator: idGenerator,
       clock,

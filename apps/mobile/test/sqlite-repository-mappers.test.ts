@@ -8,6 +8,7 @@ import {
   createPurchase,
   createSale,
   createSaleItem,
+  createStockAdjustment,
   Money,
   type InventoryMovement,
 } from '@stock-app/domain';
@@ -19,6 +20,7 @@ import {
   mapPurchaseToRow,
   mapSaleItemToRow,
   mapSaleToRow,
+  mapStockAdjustmentToRow,
 } from '../src/infrastructure/sqlite/repositories/mappers';
 import { products } from '../src/infrastructure/sqlite/schema';
 
@@ -365,4 +367,59 @@ test('maps a negative SaleItem estimated profit exactly', () => {
   assert.equal(row.estimatedProfitUnits, -500_000);
   assert.equal(row.createdAt, TIMESTAMP);
   assert.equal(row.updatedAt, TIMESTAMP + 1);
+});
+
+test('maps a positive StockAdjustment to exact persistence values', () => {
+  const adjustment = createStockAdjustment({
+    id: 'adjustment-1',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
+    stockBefore: 10,
+    actualStock: 15,
+    difference: 5,
+    reason: 'COUNT_CORRECTION',
+    costMode: 'CUSTOM_COST',
+    unitCost: Money.fromDecimal('4.000001'),
+    effectiveAt: TIMESTAMP,
+    createdAt: TIMESTAMP + 1,
+    updatedAt: TIMESTAMP + 2,
+  });
+
+  assert.deepEqual(mapStockAdjustmentToRow(adjustment), {
+    id: 'adjustment-1',
+    inventoryId: 'inventory-123',
+    productId: 'product-123',
+    stockBefore: 10,
+    actualStock: 15,
+    difference: 5,
+    reason: 'COUNT_CORRECTION',
+    costMode: 'CUSTOM_COST',
+    unitCostUnits: 4_000_001,
+    effectiveAt: TIMESTAMP,
+    createdAt: TIMESTAMP + 1,
+    updatedAt: TIMESTAMP + 2,
+  });
+});
+
+test('maps negative StockAdjustment null mode and known zero cost', () => {
+  const row = mapStockAdjustmentToRow(
+    createStockAdjustment({
+      id: 'adjustment-zero',
+      inventoryId: 'inventory-123',
+      productId: 'product-123',
+      stockBefore: 3,
+      actualStock: 1,
+      difference: -2,
+      reason: 'DAMAGED',
+      costMode: null,
+      unitCost: Money.zero(),
+      effectiveAt: TIMESTAMP,
+      createdAt: TIMESTAMP,
+      updatedAt: TIMESTAMP,
+    }),
+  );
+
+  assert.equal(row.difference, -2);
+  assert.equal(row.costMode, null);
+  assert.equal(row.unitCostUnits, 0);
 });

@@ -6,6 +6,7 @@ import type {
   InventoryMovementIdGenerator,
   ProductIdGenerator,
   PurchaseIdGenerator,
+  StockAdjustmentIdGenerator,
 } from '@stock-app/application';
 import { parse, validate, version } from 'uuid';
 
@@ -114,6 +115,15 @@ test('UuidV7Generator satisfies InventoryMovementIdGenerator structurally', () =
 
 test('UuidV7Generator satisfies PurchaseIdGenerator structurally', () => {
   type IsCompatible = UuidV7Generator extends PurchaseIdGenerator
+    ? true
+    : false;
+  const isCompatible: IsCompatible = true;
+
+  assert.equal(isCompatible, true);
+});
+
+test('UuidV7Generator satisfies StockAdjustmentIdGenerator structurally', () => {
+  type IsCompatible = UuidV7Generator extends StockAdjustmentIdGenerator
     ? true
     : false;
   const isCompatible: IsCompatible = true;

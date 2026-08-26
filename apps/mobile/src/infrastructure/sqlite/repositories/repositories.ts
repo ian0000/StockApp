@@ -7,6 +7,7 @@ import type {
   SaleItemRepository,
   SaleRepository,
   SalesSummaryReader,
+  StockAdjustmentRepository,
   TransactionRepositories,
 } from '@stock-app/application';
 import { and, asc, count, desc, eq, gte, lt, sql } from 'drizzle-orm';
@@ -21,6 +22,7 @@ import {
   purchases,
   saleItems,
   sales,
+  stockAdjustments,
 } from '../schema';
 import {
   mapInventoryToRow,
@@ -33,6 +35,7 @@ import {
   mapPurchaseToRow,
   mapSaleItemToRow,
   mapSaleToRow,
+  mapStockAdjustmentToRow,
 } from './mappers';
 
 type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
@@ -163,6 +166,19 @@ export function createSqliteSaleItemRepository(
   return {
     async save(item) {
       executor.insert(saleItems).values(mapSaleItemToRow(item)).run();
+    },
+  };
+}
+
+export function createSqliteStockAdjustmentRepository(
+  executor: Pick<AppDatabase['db'], 'insert'>,
+): StockAdjustmentRepository {
+  return {
+    async save(adjustment) {
+      executor
+        .insert(stockAdjustments)
+        .values(mapStockAdjustmentToRow(adjustment))
+        .run();
     },
   };
 }
@@ -312,5 +328,6 @@ export function createSqliteTransactionRepositories(
     purchaseRepository: createSqlitePurchaseRepository(executor),
     saleRepository: createSqliteSaleRepository(executor),
     saleItemRepository: createSqliteSaleItemRepository(executor),
+    stockAdjustmentRepository: createSqliteStockAdjustmentRepository(executor),
   });
 }

@@ -65,6 +65,7 @@ function createHarness() {
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    stockAdjustmentRepository: { async save() {} },
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: productIds,

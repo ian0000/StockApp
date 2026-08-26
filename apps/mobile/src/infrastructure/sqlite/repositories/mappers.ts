@@ -13,6 +13,7 @@ import {
   type Purchase,
   type Sale,
   type SaleItem,
+  type StockAdjustment,
 } from '@stock-app/domain';
 
 import {
@@ -23,6 +24,7 @@ import {
   purchases,
   saleItems,
   sales,
+  stockAdjustments,
 } from '../schema';
 
 export function mapInventoryToRow(
@@ -189,5 +191,28 @@ export function mapSaleItemToRow(
     costStatus: item.costStatus,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
+  };
+}
+
+export function mapStockAdjustmentToRow(
+  adjustment: StockAdjustment,
+): typeof stockAdjustments.$inferInsert {
+  if (adjustment.unitCost === null) {
+    throw new Error('A valid StockAdjustment must have a resolved unit cost.');
+  }
+
+  return {
+    id: adjustment.id,
+    inventoryId: adjustment.inventoryId,
+    productId: adjustment.productId,
+    stockBefore: adjustment.stockBefore,
+    actualStock: adjustment.actualStock,
+    difference: adjustment.difference,
+    reason: adjustment.reason,
+    costMode: adjustment.costMode,
+    unitCostUnits: adjustment.unitCost.scaledUnits,
+    effectiveAt: adjustment.effectiveAt,
+    createdAt: adjustment.createdAt,
+    updatedAt: adjustment.updatedAt,
   };
 }

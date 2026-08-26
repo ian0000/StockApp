@@ -7,4 +7,5 @@ export {
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
   createSqliteSalesSummaryReader,
+  createSqliteStockAdjustmentRepository,
 } from './repositories';

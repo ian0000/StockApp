@@ -6,6 +6,7 @@ import type {
   Purchase,
   Sale,
   SaleItem,
+  StockAdjustment,
 } from '@stock-app/domain';
 
 export interface InventoryRepository {
@@ -56,6 +57,10 @@ export interface SaleItemRepository {
   save(item: SaleItem): Promise<void>;
 }
 
+export interface StockAdjustmentRepository {
+  save(adjustment: StockAdjustment): Promise<void>;
+}
+
 export interface TransactionRepositories {
   readonly productRepository: ProductRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
@@ -63,6 +68,7 @@ export interface TransactionRepositories {
   readonly purchaseRepository: PurchaseRepository;
   readonly saleRepository: SaleRepository;
   readonly saleItemRepository: SaleItemRepository;
+  readonly stockAdjustmentRepository: StockAdjustmentRepository;
 }
 
 export interface TransactionManager {
