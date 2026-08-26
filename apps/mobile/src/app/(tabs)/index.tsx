@@ -14,6 +14,13 @@ import { Money } from '@stock-app/domain';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
+import { HistoryOperationRow } from '@/ui/history/HistoryOperationRow';
+import {
+  createRecentOperationsRequest,
+  getRecentOperationsContentKind,
+  HISTORY_TAB_ROUTE,
+  type RecentOperationsState,
+} from '@/ui/history/history-presentation';
 import { getLocalDayRange } from '@/ui/home/local-day-range';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
@@ -46,15 +53,19 @@ function Metric({ label, value }: MetricProps) {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { inventory, persistence, saleServices } = useAppRuntime();
-  const requestIdRef = useRef(0);
+  const { historyServices, inventory, persistence, saleServices } =
+    useAppRuntime();
+  const summaryRequestIdRef = useRef(0);
+  const recentRequestIdRef = useRef(0);
   const [summaryState, setSummaryState] = useState<SummaryState>({
     status: 'loading',
   });
+  const [recentOperationsState, setRecentOperationsState] =
+    useState<RecentOperationsState>({ status: 'loading' });
 
   const loadSummary = useCallback(async () => {
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
+    const requestId = summaryRequestIdRef.current + 1;
+    summaryRequestIdRef.current = requestId;
 
     if (saleServices === null) {
       setSummaryState({ status: 'ready', summary: EMPTY_SUMMARY });
@@ -70,24 +81,52 @@ export default function HomeScreen() {
         ...range,
       });
 
-      if (requestIdRef.current === requestId) {
+      if (summaryRequestIdRef.current === requestId) {
         setSummaryState({ status: 'ready', summary });
       }
     } catch {
-      if (requestIdRef.current === requestId) {
+      if (summaryRequestIdRef.current === requestId) {
         setSummaryState({ status: 'error' });
       }
     }
   }, [inventory.id, saleServices]);
 
+  const loadRecentOperations = useCallback(async () => {
+    const requestId = recentRequestIdRef.current + 1;
+    recentRequestIdRef.current = requestId;
+
+    if (historyServices === null) {
+      setRecentOperationsState({ status: 'ready', entries: [] });
+      return;
+    }
+
+    setRecentOperationsState({ status: 'loading' });
+
+    try {
+      const entries = await historyServices.listHistory.execute(
+        createRecentOperationsRequest(inventory.id),
+      );
+
+      if (recentRequestIdRef.current === requestId) {
+        setRecentOperationsState({ status: 'ready', entries });
+      }
+    } catch {
+      if (recentRequestIdRef.current === requestId) {
+        setRecentOperationsState({ status: 'error' });
+      }
+    }
+  }, [historyServices, inventory.id]);
+
   useFocusEffect(
     useCallback(() => {
       void loadSummary();
+      void loadRecentOperations();
 
       return () => {
-        requestIdRef.current += 1;
+        summaryRequestIdRef.current += 1;
+        recentRequestIdRef.current += 1;
       };
-    }, [loadSummary]),
+    }, [loadRecentOperations, loadSummary]),
   );
 
   const summary = summaryState.status === 'ready' ? summaryState.summary : null;
@@ -100,6 +139,9 @@ export default function HomeScreen() {
       ? '—'
       : formatMoneyForDisplay(summary.estimatedProfit, inventory.currency);
   const unitsValue = summary === null ? '—' : String(summary.unitsSold);
+  const recentContentKind = getRecentOperationsContentKind(
+    recentOperationsState,
+  );
 
   return (
     <Screen>
@@ -194,10 +236,66 @@ export default function HomeScreen() {
       </Section>
 
       <Section title="RECIENTES" titleVariant="eyebrow">
-        <EmptyState
-          message="Aún no hay movimientos"
-          supportingText="Tus ventas y compras recientes aparecerán aquí."
-        />
+        {recentContentKind === 'loading' ? (
+          <View accessibilityLiveRegion="polite" style={styles.recentStatus}>
+            <ActivityIndicator color={colors.accent} size="small" />
+            <Text style={styles.summaryStatusText}>Cargando operaciones…</Text>
+          </View>
+        ) : null}
+
+        {recentContentKind === 'error' ? (
+          <View style={styles.recentStatus}>
+            <Text
+              accessibilityLiveRegion="assertive"
+              style={styles.summaryErrorText}
+            >
+              No pudimos cargar las operaciones recientes.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void loadRecentOperations()}
+              style={({ pressed }) => [
+                styles.retryAction,
+                pressed && styles.retryActionPressed,
+              ]}
+            >
+              <Text style={styles.retryActionText}>Reintentar</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {recentContentKind === 'empty' ? (
+          <EmptyState
+            message="Aún no hay operaciones"
+            supportingText="Tus ventas, compras y ajustes recientes aparecerán aquí."
+          />
+        ) : null}
+
+        {recentOperationsState.status === 'ready' &&
+        recentOperationsState.entries.length > 0 ? (
+          <View accessibilityRole="list" style={styles.recentList}>
+            {recentOperationsState.entries.map((entry) => (
+              <HistoryOperationRow
+                currency={inventory.currency}
+                entry={entry}
+                key={`${entry.type}:${entry.id}`}
+                variant="recent"
+              />
+            ))}
+          </View>
+        ) : null}
+
+        <Pressable
+          accessibilityHint="Abre el historial completo"
+          accessibilityRole="link"
+          onPress={() => router.push(HISTORY_TAB_ROUTE)}
+          style={({ pressed }) => [
+            styles.historyAction,
+            pressed && styles.historyActionPressed,
+          ]}
+        >
+          <Text style={styles.historyActionText}>Ver historial</Text>
+        </Pressable>
       </Section>
     </Screen>
   );
@@ -223,6 +321,21 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: spacing.xs,
     paddingTop: spacing.sm,
+  },
+  historyAction: {
+    alignSelf: 'flex-start',
+    borderRadius: radii.sm,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  historyActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  historyActionText: {
+    color: colors.accent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
   },
   metric: {
     flex: 1,
@@ -255,6 +368,15 @@ const styles = StyleSheet.create({
     color: colors.onAccent,
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
+  },
+  recentList: {
+    gap: spacing.sm,
+  },
+  recentStatus: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    justifyContent: 'center',
+    minHeight: 96,
   },
   previewText: {
     color: colors.textSecondary,
