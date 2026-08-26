@@ -8,18 +8,16 @@ import {
   View,
 } from 'react-native';
 
-import type { ProductSummary } from '@stock-app/application';
-
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
-import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
+import {
+  createProductListRequest,
+  createProductListRowPresentation,
+  getProductsContentKind,
+  type ProductsState,
+} from '@/ui/products/product-list-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
-
-type ProductsState =
-  | { readonly status: 'loading' }
-  | { readonly status: 'ready'; readonly products: readonly ProductSummary[] }
-  | { readonly status: 'error' };
 
 export default function ProductsScreen() {
   const router = useRouter();
@@ -39,9 +37,9 @@ export default function ProductsScreen() {
     setState({ status: 'loading' });
 
     try {
-      const products = await productServices.listProducts.execute({
-        inventoryId: inventory.id,
-      });
+      const products = await productServices.listProducts.execute(
+        createProductListRequest(inventory.id),
+      );
 
       if (requestIdRef.current === requestId) {
         setState({ status: 'ready', products });
@@ -62,6 +60,8 @@ export default function ProductsScreen() {
       };
     }, [loadProducts]),
   );
+
+  const contentKind = getProductsContentKind(state);
 
   return (
     <Screen>
@@ -102,14 +102,14 @@ export default function ProductsScreen() {
         </Text>
       ) : null}
 
-      {state.status === 'loading' ? (
+      {contentKind === 'loading' ? (
         <View style={styles.status}>
           <ActivityIndicator color={colors.accent} />
           <Text style={styles.statusText}>Cargando productos…</Text>
         </View>
       ) : null}
 
-      {state.status === 'error' ? (
+      {contentKind === 'error' ? (
         <View style={styles.status}>
           <Text accessibilityLiveRegion="assertive" style={styles.errorText}>
             No pudimos cargar tus productos.
@@ -127,7 +127,7 @@ export default function ProductsScreen() {
         </View>
       ) : null}
 
-      {state.status === 'ready' && state.products.length === 0 ? (
+      {contentKind === 'empty' ? (
         <EmptyState
           message="Aún no tienes productos."
           supportingText="Crea el primero para comenzar a controlar tu stock."
@@ -136,29 +136,37 @@ export default function ProductsScreen() {
 
       {state.status === 'ready' && state.products.length > 0 ? (
         <View accessibilityRole="list" style={styles.list}>
-          {state.products.map(({ product, state: inventoryState }) => (
-            <View
-              accessibilityRole="summary"
-              key={product.id}
-              style={styles.productRow}
-            >
-              <View style={styles.productCopy}>
-                <Text style={styles.productName}>{product.name}</Text>
-                {product.variant ? (
-                  <Text style={styles.productVariant}>{product.variant}</Text>
-                ) : null}
-                <Text style={styles.stockText}>
-                  {inventoryState.stock} unidades
-                </Text>
+          {state.products.map((summary) => {
+            const row = createProductListRowPresentation(
+              summary,
+              inventory.currency,
+            );
+
+            return (
+              <View
+                accessibilityRole="summary"
+                key={summary.product.id}
+                style={styles.productRow}
+              >
+                <View style={styles.productCopy}>
+                  <Text style={styles.productName}>{row.name}</Text>
+                  {row.variant ? (
+                    <Text style={styles.productVariant}>{row.variant}</Text>
+                  ) : null}
+                  <Text
+                    style={[
+                      styles.stockText,
+                      row.stockStatus === 'negative' &&
+                        styles.negativeStockText,
+                    ]}
+                  >
+                    {row.stockLabel}
+                  </Text>
+                </View>
+                <Text style={styles.priceText}>{row.priceLabel}</Text>
               </View>
-              <Text style={styles.priceText}>
-                {formatMoneyForDisplay(
-                  product.regularSalePrice,
-                  inventory.currency,
-                )}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       ) : null}
     </Screen>
@@ -222,6 +230,9 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.md,
+  },
+  negativeStockText: {
+    color: colors.danger,
   },
   previewText: {
     color: colors.textSecondary,
