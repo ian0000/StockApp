@@ -5,6 +5,7 @@ import { createInventory } from '@stock-app/domain';
 import { AppRuntimeContext } from './app-runtime-context';
 
 const WEB_PREVIEW_RUNTIME = Object.freeze({
+  adjustmentServices: null,
   inventory: createInventory({
     id: 'web-preview',
     name: 'Mi Negocio',

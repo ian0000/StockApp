@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import type {
+  AdjustStockUseCase,
   CreateProductUseCase,
   GetSalesSummaryUseCase,
   ListProductsUseCase,
@@ -23,7 +24,12 @@ export interface PurchaseRuntimeServices {
   readonly registerPurchase: RegisterPurchaseUseCase;
 }
 
+export interface AdjustmentRuntimeServices {
+  readonly adjustStock: AdjustStockUseCase;
+}
+
 export interface AppRuntimeContextValue {
+  readonly adjustmentServices: AdjustmentRuntimeServices | null;
   readonly inventory: Inventory;
   readonly persistence: 'sqlite' | 'web-preview';
   readonly productServices: ProductRuntimeServices | null;
