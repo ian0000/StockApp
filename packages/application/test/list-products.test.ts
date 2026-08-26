@@ -197,6 +197,21 @@ test('preserves negative current stock', async () => {
   assert.equal(result[0]?.state.stock, -4);
 });
 
+test('preserves zero stock and the exact regular sale price', async () => {
+  const existingProduct = product('product-zero-stock', {
+    regularSalePrice: Money.fromDecimal('2.125'),
+  });
+  const { useCase } = createUseCase(
+    [existingProduct],
+    [state(existingProduct.id)],
+  );
+
+  const result = await useCase.execute({ inventoryId: INVENTORY_ID });
+
+  assert.equal(result[0]?.state.stock, 0);
+  assert.equal(result[0]?.product.regularSalePrice.scaledUnits, 2_125_000);
+});
+
 test('preserves an unknown current cost as null', async () => {
   const existingProduct = product('product-unknown-cost');
   const { useCase } = createUseCase(
