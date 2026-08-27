@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -17,6 +18,7 @@ import {
   getProductsContentKind,
   type ProductsState,
 } from '@/ui/products/product-list-presentation';
+import { filterProductSummaries } from '@/ui/products/product-search';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
@@ -25,6 +27,7 @@ export default function ProductsScreen() {
   const { inventory, persistence, productServices } = useAppRuntime();
   const requestIdRef = useRef(0);
   const [state, setState] = useState<ProductsState>({ status: 'loading' });
+  const [searchText, setSearchText] = useState('');
 
   const loadProducts = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -62,7 +65,14 @@ export default function ProductsScreen() {
     }, [loadProducts]),
   );
 
-  const contentKind = getProductsContentKind(state);
+  const visibleProducts = useMemo(
+    () =>
+      state.status === 'ready'
+        ? filterProductSummaries(state.products, searchText)
+        : [],
+    [searchText, state],
+  );
+  const contentKind = getProductsContentKind(state, visibleProducts);
 
   return (
     <Screen>
@@ -136,8 +146,50 @@ export default function ProductsScreen() {
       ) : null}
 
       {state.status === 'ready' && state.products.length > 0 ? (
+        <View style={styles.searchField}>
+          <TextInput
+            accessibilityLabel="Buscar producto"
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={setSearchText}
+            placeholder="Buscar producto"
+            placeholderTextColor={colors.textSecondary}
+            returnKeyType="search"
+            selectionColor={colors.accent}
+            style={styles.searchInput}
+            value={searchText}
+          />
+
+          {searchText.length > 0 ? (
+            <Pressable
+              accessibilityHint="Borra el texto escrito"
+              accessibilityLabel="Limpiar búsqueda"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setSearchText('')}
+              style={({ pressed }) => [
+                styles.clearAction,
+                pressed && styles.clearActionPressed,
+              ]}
+            >
+              <Text style={styles.clearActionText}>Limpiar</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {contentKind === 'no-results' ? (
+        <View accessibilityLiveRegion="polite">
+          <EmptyState
+            message={`No encontramos productos para “${searchText.trim()}”.`}
+            supportingText="Prueba con otro nombre, variante o código."
+          />
+        </View>
+      ) : null}
+
+      {contentKind === 'ready' ? (
         <View accessibilityRole="list" style={styles.list}>
-          {state.products.map((summary) => {
+          {visibleProducts.map((summary) => {
             const row = createProductListRowPresentation(
               summary,
               inventory.currency,
@@ -223,6 +275,20 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
   },
+  clearAction: {
+    borderRadius: radii.sm,
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
+  clearActionPressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  clearActionText: {
+    color: colors.accent,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
+  },
   errorText: {
     color: colors.danger,
     fontSize: typography.size.body,
@@ -305,6 +371,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  searchField: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 56,
+    paddingHorizontal: spacing.md,
+  },
+  searchInput: {
+    color: colors.text,
+    flex: 1,
+    fontSize: typography.size.body,
+    minHeight: 52,
+    minWidth: 0,
+    paddingVertical: spacing.md,
   },
   disclosure: {
     color: colors.textSecondary,
