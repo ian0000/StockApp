@@ -3,6 +3,7 @@ import {
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
+  GetProductDetailsUseCase,
   GetSalesSummaryUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
@@ -37,6 +38,7 @@ export interface AppServices {
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
+  readonly getProductDetails: GetProductDetailsUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly listHistory: ListHistoryUseCase;
   readonly listProducts: ListProductsUseCase;
@@ -84,6 +86,10 @@ export function assembleAppServices({
       transactionManager,
     }),
     getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
+    getProductDetails: new GetProductDetailsUseCase({
+      inventoryStateRepository,
+      productRepository,
+    }),
     getSalesSummary: new GetSalesSummaryUseCase(salesSummaryReader),
     listHistory: new ListHistoryUseCase(historyReader),
     listProducts: new ListProductsUseCase({

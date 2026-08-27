@@ -6,6 +6,7 @@ import {
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
+  GetProductDetailsUseCase,
   GetSalesSummaryUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
@@ -121,6 +122,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'createInventory',
     'createProduct',
     'getCurrentInventory',
+    'getProductDetails',
     'getSalesSummary',
     'listHistory',
     'listProducts',
@@ -131,6 +133,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
@@ -169,6 +172,22 @@ test('product list query uses the composed read repositories', async () => {
   assert.deepEqual(
     await services.listProducts.execute({ inventoryId: 'inventory-123' }),
     [],
+  );
+  assert.equal(getInventoryStateListCount(), 1);
+  assert.equal(getProductListCount(), 1);
+});
+
+test('product detail query uses the same composed read repositories', async () => {
+  const { dependencies, getInventoryStateListCount, getProductListCount } =
+    createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  assert.equal(
+    await services.getProductDetails.execute({
+      inventoryId: 'inventory-123',
+      productId: 'product-123',
+    }),
+    null,
   );
   assert.equal(getInventoryStateListCount(), 1);
   assert.equal(getProductListCount(), 1);
@@ -219,6 +238,7 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.equal(initializationCount, 1);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
