@@ -19,6 +19,11 @@ export interface ProductRepository {
   save(product: Product): Promise<void>;
 }
 
+export interface ProductManagementRepository {
+  findById(inventoryId: string, productId: string): Promise<Product | null>;
+  update(product: Product): Promise<void>;
+}
+
 export interface SaveInventoryStateInput {
   readonly inventoryId: string;
   readonly productId: string;

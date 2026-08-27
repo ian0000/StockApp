@@ -17,6 +17,7 @@ import {
   normalizeProductIdParam,
   type ProductDetailsState,
 } from '@/ui/products/product-details-presentation';
+import { createProductEditRoute } from '@/ui/products/product-edit-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
@@ -26,9 +27,14 @@ export default function ProductDetailsScreen() {
   const productId = normalizeProductIdParam(params.id);
   const { inventory, persistence, productServices } = useAppRuntime();
   const requestIdRef = useRef(0);
+  const archivingRef = useRef(false);
   const [state, setState] = useState<ProductDetailsState>({
     status: 'loading',
   });
+  const [archiveConfirmationVisible, setArchiveConfirmationVisible] =
+    useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const loadDetails = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -58,6 +64,8 @@ export default function ProductDetailsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      setArchiveConfirmationVisible(false);
+      setArchiveError(null);
       void loadDetails();
 
       return () => {
@@ -65,6 +73,34 @@ export default function ProductDetailsScreen() {
       };
     }, [loadDetails]),
   );
+
+  async function handleArchive() {
+    if (
+      archivingRef.current ||
+      productServices === null ||
+      productId === null
+    ) {
+      return;
+    }
+
+    setArchiveError(null);
+    archivingRef.current = true;
+    setIsArchiving(true);
+
+    try {
+      await productServices.archiveProduct.execute({
+        inventoryId: inventory.id,
+        productId,
+      });
+      router.replace('/products');
+    } catch {
+      setArchiveError(
+        'No pudimos archivar el producto. Tus datos no fueron modificados.',
+      );
+      archivingRef.current = false;
+      setIsArchiving(false);
+    }
+  }
 
   const contentKind = getProductDetailsContentKind(state);
   const presentation =
@@ -165,6 +201,98 @@ export default function ProductDetailsScreen() {
               />
             </View>
           </Section>
+
+          <Section title="Gestionar producto" titleVariant="eyebrow">
+            <View style={styles.managementActions}>
+              <Pressable
+                accessibilityLabel="Editar producto"
+                accessibilityRole="button"
+                disabled={isArchiving || productId === null}
+                onPress={() => {
+                  if (productId !== null) {
+                    router.push(createProductEditRoute(productId));
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.editAction,
+                  pressed && styles.editActionPressed,
+                ]}
+              >
+                <Text style={styles.editActionText}>Editar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="Archivar producto"
+                accessibilityRole="button"
+                disabled={isArchiving}
+                onPress={() => {
+                  setArchiveError(null);
+                  setArchiveConfirmationVisible(true);
+                }}
+                style={({ pressed }) => [
+                  styles.archiveAction,
+                  pressed && styles.archiveActionPressed,
+                ]}
+              >
+                <Text style={styles.archiveActionText}>Archivar</Text>
+              </Pressable>
+            </View>
+
+            {archiveConfirmationVisible ? (
+              <View
+                accessibilityLiveRegion="polite"
+                style={styles.archiveConfirmation}
+              >
+                <Text style={styles.archiveConfirmationTitle}>
+                  ¿Archivar producto?
+                </Text>
+                <Text style={styles.archiveConfirmationText}>
+                  Dejará de aparecer en tu lista de productos, pero sus
+                  operaciones anteriores se conservarán.
+                </Text>
+                <View style={styles.confirmationActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={isArchiving}
+                    onPress={() => setArchiveConfirmationVisible(false)}
+                    style={({ pressed }) => [
+                      styles.cancelAction,
+                      pressed && styles.cancelActionPressed,
+                    ]}
+                  >
+                    <Text style={styles.cancelActionText}>Cancelar</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ busy: isArchiving }}
+                    disabled={isArchiving}
+                    onPress={() => void handleArchive()}
+                    style={({ pressed }) => [
+                      styles.confirmArchiveAction,
+                      pressed && styles.confirmArchiveActionPressed,
+                      isArchiving && styles.disabledAction,
+                    ]}
+                  >
+                    {isArchiving ? (
+                      <ActivityIndicator color={colors.onAccent} />
+                    ) : (
+                      <Text style={styles.confirmArchiveActionText}>
+                        Archivar
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+
+            {archiveError ? (
+              <Text
+                accessibilityLiveRegion="assertive"
+                style={styles.errorText}
+              >
+                {archiveError}
+              </Text>
+            ) : null}
+          </Section>
         </View>
       ) : null}
     </Screen>
@@ -235,6 +363,42 @@ function StatusMessage({
 }
 
 const styles = StyleSheet.create({
+  archiveAction: {
+    alignItems: 'center',
+    borderColor: colors.danger,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  archiveActionPressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  archiveActionText: {
+    color: colors.danger,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  archiveConfirmation: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  archiveConfirmationText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.body,
+    lineHeight: 24,
+  },
+  archiveConfirmationTitle: {
+    color: colors.text,
+    fontSize: typography.size.section,
+    fontWeight: typography.weight.bold,
+  },
   backAction: {
     alignItems: 'center',
     borderColor: colors.border,
@@ -253,6 +417,24 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     fontWeight: typography.weight.semibold,
   },
+  cancelAction: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  cancelActionPressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  cancelActionText: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
+  },
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -262,6 +444,28 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: spacing.xl,
+  },
+  confirmationActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  confirmArchiveAction: {
+    alignItems: 'center',
+    backgroundColor: colors.danger,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  confirmArchiveActionPressed: {
+    opacity: 0.82,
+  },
+  confirmArchiveActionText: {
+    color: colors.onAccent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
   },
   detailLabel: {
     color: colors.textSecondary,
@@ -287,6 +491,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     height: StyleSheet.hairlineWidth,
   },
+  disabledAction: {
+    opacity: 0.58,
+  },
+  editAction: {
+    alignItems: 'center',
+    backgroundColor: colors.accent,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  editActionPressed: {
+    backgroundColor: colors.accentPressed,
+  },
+  editActionText: {
+    color: colors.onAccent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
+  },
   identity: {
     gap: spacing.xs,
   },
@@ -296,6 +525,11 @@ const styles = StyleSheet.create({
   },
   negativeValue: {
     color: colors.danger,
+  },
+  managementActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   previewText: {
     color: colors.textSecondary,

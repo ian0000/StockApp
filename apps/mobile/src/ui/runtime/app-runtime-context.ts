@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 import type {
   AdjustStockUseCase,
+  ArchiveProductUseCase,
   CreateProductUseCase,
   GetProductDetailsUseCase,
   GetSalesSummaryUseCase,
@@ -9,13 +10,16 @@ import type {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  UpdateProductUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 
 export interface ProductRuntimeServices {
+  readonly archiveProduct: ArchiveProductUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
   readonly listProducts: ListProductsUseCase;
+  readonly updateProduct: UpdateProductUseCase;
 }
 
 export interface SaleRuntimeServices {

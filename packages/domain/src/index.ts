@@ -53,9 +53,12 @@ export {
   type SaleStatus,
 } from './sale/index';
 export {
+  archiveProduct,
   createProduct,
+  updateProduct,
   type CreateProductInput,
   type Product,
+  type UpdateProductInput,
 } from './product/index';
 export {
   calculateEstimatedProfit,

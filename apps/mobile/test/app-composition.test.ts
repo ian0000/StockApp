@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   AdjustStockUseCase,
+  ArchiveProductUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
@@ -12,10 +13,12 @@ import {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  UpdateProductUseCase,
   type HistoryReader,
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type ProductManagementRepository,
   type SalesSummaryReader,
   type TransactionManager,
 } from '@stock-app/application';
@@ -59,12 +62,16 @@ function createDependencies(): {
       throw new Error('A use case was executed during composition.');
     },
   };
-  const productRepository: ProductRepository = {
+  const productRepository: ProductRepository & ProductManagementRepository = {
+    async findById() {
+      return null;
+    },
     async listByInventory() {
       productListCount += 1;
       return [];
     },
     async save() {},
+    async update() {},
   };
   const inventoryStateRepository: InventoryStateRepository = {
     async listByInventory() {
@@ -119,6 +126,7 @@ test('composition exposes the application use cases and nothing else', () => {
 
   assert.deepEqual(Object.keys(services).sort(), [
     'adjustStock',
+    'archiveProduct',
     'createInventory',
     'createProduct',
     'getCurrentInventory',
@@ -128,8 +136,10 @@ test('composition exposes the application use cases and nothing else', () => {
     'listProducts',
     'registerPurchase',
     'registerSale',
+    'updateProduct',
   ]);
   assert.ok(services.adjustStock instanceof AdjustStockUseCase);
+  assert.ok(services.archiveProduct instanceof ArchiveProductUseCase);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
@@ -139,6 +149,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.listProducts instanceof ListProductsUseCase);
   assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
+  assert.ok(services.updateProduct instanceof UpdateProductUseCase);
 });
 
 test('composition performs no persistence automatically', () => {

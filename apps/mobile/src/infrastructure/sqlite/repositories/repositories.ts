@@ -5,6 +5,7 @@ import {
   InventoryRepository,
   InventoryMovementRepository,
   InventoryStateRepository,
+  ProductManagementRepository,
   ProductRepository,
   PurchaseRepository,
   SaleItemRepository,
@@ -43,6 +44,10 @@ import {
 
 type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
 type SqliteReadExecutor = Pick<AppDatabase['db'], 'select'>;
+type SqliteProductRepositoryExecutor = Pick<
+  AppDatabase['db'],
+  'insert' | 'select' | 'update'
+>;
 type SqliteInventoryStateExecutor = Pick<
   AppDatabase['db'],
   'insert' | 'select' | 'update'
@@ -64,9 +69,24 @@ export function createInventoryRepository(
 }
 
 export function createSqliteProductRepository(
-  executor: SqliteRepositoryExecutor,
-): ProductRepository {
+  executor: SqliteProductRepositoryExecutor,
+): ProductRepository & ProductManagementRepository {
   return {
+    async findById(inventoryId, productId) {
+      const rows = await executor
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.inventoryId, inventoryId),
+            eq(products.id, productId),
+          ),
+        )
+        .limit(1);
+
+      const row = rows[0];
+      return row === undefined ? null : mapProductRowToDomain(row);
+    },
     async listByInventory(inventoryId) {
       const rows = await executor
         .select()
@@ -83,6 +103,32 @@ export function createSqliteProductRepository(
     },
     async save(product) {
       executor.insert(products).values(mapProductToRow(product)).run();
+    },
+    async update(product) {
+      const result = executor
+        .update(products)
+        .set({
+          name: product.name,
+          variant: product.variant,
+          barcode: product.barcode,
+          regularSalePriceUnits: product.regularSalePrice.scaledUnits,
+          minimumStock: product.minimumStock,
+          isArchived: product.isArchived,
+          updatedAt: product.updatedAt,
+        })
+        .where(
+          and(
+            eq(products.inventoryId, product.inventoryId),
+            eq(products.id, product.id),
+          ),
+        )
+        .run();
+
+      if (result.changes !== 1) {
+        throw new Error(
+          `Expected to update one Product, updated ${result.changes}.`,
+        );
+      }
     },
   };
 }

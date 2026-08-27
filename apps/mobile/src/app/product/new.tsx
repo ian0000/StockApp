@@ -5,12 +5,11 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
-  type TextInputProps,
 } from 'react-native';
 
 import { Screen } from '@/ui/components/Screen';
+import { ProductFormField } from '@/ui/products/ProductFormField';
 import {
   parseProductFormValues,
   type ProductFormValues,
@@ -97,7 +96,7 @@ export default function NewProductScreen() {
       ) : null}
 
       <View style={styles.form}>
-        <FormField
+        <ProductFormField
           inputProps={{
             autoCapitalize: 'words',
             autoCorrect: false,
@@ -110,7 +109,7 @@ export default function NewProductScreen() {
           label="Nombre *"
         />
 
-        <FormField
+        <ProductFormField
           inputProps={{
             autoCapitalize: 'sentences',
             autoCorrect: false,
@@ -124,7 +123,7 @@ export default function NewProductScreen() {
           optional
         />
 
-        <FormField
+        <ProductFormField
           hint="Se guarda como texto para conservar ceros iniciales."
           inputProps={{
             autoCapitalize: 'none',
@@ -139,7 +138,7 @@ export default function NewProductScreen() {
           optional
         />
 
-        <FormField
+        <ProductFormField
           inputProps={{
             editable: !isSubmitting,
             keyboardType: 'decimal-pad',
@@ -151,7 +150,7 @@ export default function NewProductScreen() {
           label={`Precio habitual (${inventory.currency}) *`}
         />
 
-        <FormField
+        <ProductFormField
           hint="Usa únicamente unidades enteras."
           inputProps={{
             editable: !isSubmitting,
@@ -165,7 +164,7 @@ export default function NewProductScreen() {
         />
 
         {requiresInitialCost ? (
-          <FormField
+          <ProductFormField
             hint="Se utiliza para estimar la ganancia de estas unidades."
             inputProps={{
               editable: !isSubmitting,
@@ -183,7 +182,7 @@ export default function NewProductScreen() {
           </Text>
         )}
 
-        <FormField
+        <ProductFormField
           hint="Déjalo vacío si todavía no deseas una alerta de stock bajo."
           inputProps={{
             editable: !isSubmitting,
@@ -229,40 +228,11 @@ export default function NewProductScreen() {
   );
 }
 
-interface FormFieldProps {
-  readonly hint?: string;
-  readonly inputProps: TextInputProps;
-  readonly label: string;
-  readonly optional?: boolean;
-}
-
-function FormField({ hint, inputProps, label, optional }: FormFieldProps) {
-  return (
-    <View style={styles.field}>
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
-        {optional ? <Text style={styles.optionalText}>Opcional</Text> : null}
-      </View>
-      <TextInput
-        accessibilityLabel={label.replace(' *', '')}
-        placeholderTextColor={colors.textSecondary}
-        selectionColor={colors.accent}
-        style={styles.input}
-        {...inputProps}
-      />
-      {hint ? <Text style={styles.fieldHint}>{hint}</Text> : null}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   errorText: {
     color: colors.danger,
     fontSize: typography.size.caption,
     lineHeight: 18,
-  },
-  field: {
-    gap: spacing.sm,
   },
   fieldHint: {
     color: colors.textSecondary,
@@ -274,36 +244,9 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     width: '100%',
   },
-  input: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    color: colors.text,
-    fontSize: typography.size.body,
-    minHeight: 56,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
   intro: {
     gap: spacing.sm,
     maxWidth: 560,
-  },
-  label: {
-    color: colors.text,
-    flexShrink: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
-  },
-  labelRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'space-between',
-  },
-  optionalText: {
-    color: colors.textSecondary,
-    fontSize: typography.size.caption,
   },
   previewNotice: {
     backgroundColor: colors.accentSoft,
