@@ -34,6 +34,11 @@ export {
   MultipleInventoriesNotSupportedError,
 } from './get-current-inventory';
 export {
+  GetProductDetailsUseCase,
+  type GetProductDetailsInput,
+  type ProductDetails,
+} from './get-product-details';
+export {
   GetSalesSummaryUseCase,
   type GetSalesSummaryInput,
   type SalesSummary,

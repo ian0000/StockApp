@@ -10,6 +10,7 @@ import {
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
+import { createProductDetailsRoute } from '@/ui/products/product-details-presentation';
 import {
   createProductListRequest,
   createProductListRowPresentation,
@@ -143,10 +144,18 @@ export default function ProductsScreen() {
             );
 
             return (
-              <View
-                accessibilityRole="summary"
+              <Pressable
+                accessibilityHint="Abre la información actual del producto"
+                accessibilityLabel={`Abrir detalle de ${row.name}`}
+                accessibilityRole="button"
                 key={summary.product.id}
-                style={styles.productRow}
+                onPress={() =>
+                  router.push(createProductDetailsRoute(summary.product.id))
+                }
+                style={({ pressed }) => [
+                  styles.productRow,
+                  pressed && styles.productRowPressed,
+                ]}
               >
                 <View style={styles.productCopy}>
                   <Text style={styles.productName}>{row.name}</Text>
@@ -163,8 +172,13 @@ export default function ProductsScreen() {
                     {row.stockLabel}
                   </Text>
                 </View>
-                <Text style={styles.priceText}>{row.priceLabel}</Text>
-              </View>
+                <View style={styles.rowTrailing}>
+                  <Text style={styles.priceText}>{row.priceLabel}</Text>
+                  <Text accessibilityElementsHidden style={styles.disclosure}>
+                    ›
+                  </Text>
+                </View>
+              </Pressable>
             );
           })}
         </View>
@@ -264,6 +278,9 @@ const styles = StyleSheet.create({
     minHeight: 96,
     padding: spacing.lg,
   },
+  productRowPressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
   productVariant: {
     color: colors.textSecondary,
     fontSize: typography.size.caption,
@@ -283,6 +300,15 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
+  },
+  rowTrailing: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  disclosure: {
+    color: colors.textSecondary,
+    fontSize: typography.size.metric,
   },
   status: {
     alignItems: 'center',
