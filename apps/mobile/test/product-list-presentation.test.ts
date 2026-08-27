@@ -104,6 +104,12 @@ for (const [state, expected] of [
   });
 }
 
+test('Products distinguishes no search results from a truly empty inventory', () => {
+  const state: ProductsState = { status: 'ready', products: [summary()] };
+
+  assert.equal(getProductsContentKind(state, []), 'no-results');
+});
+
 test('product row presentation exposes neither cost nor navigation metadata', () => {
   const row = createProductListRowPresentation(summary(), 'USD');
 

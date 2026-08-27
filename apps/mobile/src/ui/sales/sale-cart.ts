@@ -2,6 +2,7 @@ import type { ProductSummary } from '@stock-app/application';
 import { Money } from '@stock-app/domain';
 
 import { normalizeMoneyInput } from '../products/product-form-values';
+import { filterProductSummaries } from '../products/product-search';
 
 const RECENT_PRODUCT_LIMIT = 5;
 
@@ -62,22 +63,11 @@ export function filterSaleProducts(
   products: readonly ProductSummary[],
   query: string,
 ): readonly ProductSummary[] {
-  const normalizedQuery = query.trim();
+  const matchingProducts = filterProductSummaries(products, query);
 
-  if (normalizedQuery.length === 0) {
-    return products.slice(0, RECENT_PRODUCT_LIMIT);
-  }
-
-  const textQuery = normalizedQuery.toLocaleLowerCase();
-
-  return products.filter(({ product }) => {
-    const nameMatches = product.name.toLocaleLowerCase().includes(textQuery);
-    const variantMatches =
-      product.variant?.toLocaleLowerCase().includes(textQuery) ?? false;
-    const barcodeMatches = product.barcode === normalizedQuery;
-
-    return nameMatches || variantMatches || barcodeMatches;
-  });
+  return query.trim().length === 0
+    ? matchingProducts.slice(0, RECENT_PRODUCT_LIMIT)
+    : matchingProducts;
 }
 
 export function addProductToCart(

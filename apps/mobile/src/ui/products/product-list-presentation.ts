@@ -7,7 +7,8 @@ export type ProductsState =
   | { readonly status: 'ready'; readonly products: readonly ProductSummary[] }
   | { readonly status: 'error' };
 
-export type ProductsContentKind = 'loading' | 'empty' | 'error' | 'ready';
+export type ProductsContentKind =
+  'loading' | 'empty' | 'no-results' | 'error' | 'ready';
 export type ProductStockStatus = 'positive' | 'zero' | 'negative';
 
 export interface ProductListRowPresentation {
@@ -26,9 +27,13 @@ export function createProductListRequest(
 
 export function getProductsContentKind(
   state: ProductsState,
+  visibleProducts: readonly ProductSummary[] = state.status === 'ready'
+    ? state.products
+    : [],
 ): ProductsContentKind {
   if (state.status !== 'ready') return state.status;
-  return state.products.length === 0 ? 'empty' : 'ready';
+  if (state.products.length === 0) return 'empty';
+  return visibleProducts.length === 0 ? 'no-results' : 'ready';
 }
 
 function getStockStatus(stock: number): ProductStockStatus {
