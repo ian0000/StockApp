@@ -1,6 +1,7 @@
 export {
   createInventoryRepository,
   createSqliteHistoryReader,
+  createSqliteSaleDetailsReader,
   createSqliteInventoryMovementRepository,
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,

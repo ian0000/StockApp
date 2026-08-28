@@ -6,6 +6,8 @@ import {
   createInventory,
   createInventoryState,
   createProduct,
+  createSale,
+  createSaleItem,
   Money,
   type Inventory,
   type InventoryMovement,
@@ -175,6 +177,25 @@ export function mapSaleToRow(sale: Sale): typeof sales.$inferInsert {
   };
 }
 
+function nullableMoneyFromScaledUnits(value: number | null): Money | null {
+  return value === null ? null : Money.fromScaledUnits(value);
+}
+
+export function mapSaleRowToDomain(row: typeof sales.$inferSelect): Sale {
+  return createSale({
+    id: row.id,
+    inventoryId: row.inventoryId,
+    effectiveAt: row.effectiveAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    status: row.status,
+    totalAmount: Money.fromScaledUnits(row.totalAmountUnits),
+    estimatedCost: nullableMoneyFromScaledUnits(row.estimatedCostUnits),
+    estimatedProfit: nullableMoneyFromScaledUnits(row.estimatedProfitUnits),
+    notes: row.notes,
+  });
+}
+
 export function mapSaleItemToRow(
   item: SaleItem,
 ): typeof saleItems.$inferInsert {
@@ -192,6 +213,25 @@ export function mapSaleItemToRow(
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   };
+}
+
+export function mapSaleItemRowToDomain(
+  row: typeof saleItems.$inferSelect,
+): SaleItem {
+  return createSaleItem({
+    id: row.id,
+    saleId: row.saleId,
+    productId: row.productId,
+    quantity: row.quantity,
+    unitSalePrice: Money.fromScaledUnits(row.unitSalePriceUnits),
+    subtotal: Money.fromScaledUnits(row.subtotalUnits),
+    unitCostSnapshot: nullableMoneyFromScaledUnits(row.unitCostSnapshotUnits),
+    estimatedCost: nullableMoneyFromScaledUnits(row.estimatedCostUnits),
+    estimatedProfit: nullableMoneyFromScaledUnits(row.estimatedProfitUnits),
+    costStatus: row.costStatus,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
 }
 
 export function mapStockAdjustmentToRow(

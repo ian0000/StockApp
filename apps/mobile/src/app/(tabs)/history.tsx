@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
@@ -13,6 +13,7 @@ import type { HistoryEntry } from '@stock-app/application';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { HistoryOperationRow } from '@/ui/history/HistoryOperationRow';
+import { createSaleDetailsRoute } from '@/ui/sales/sale-details-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
@@ -22,6 +23,7 @@ type HistoryState =
   | { readonly status: 'error' };
 
 export default function HistoryScreen() {
+  const router = useRouter();
   const { historyServices, inventory, persistence } = useAppRuntime();
   const requestIdRef = useRef(0);
   const [historyState, setHistoryState] = useState<HistoryState>({
@@ -118,6 +120,9 @@ export default function HistoryScreen() {
               currency={inventory.currency}
               entry={entry}
               key={`${entry.type}:${entry.id}`}
+              onOpenSale={(saleId) =>
+                router.push(createSaleDetailsRoute(saleId))
+              }
               variant="history"
             />
           ))}
