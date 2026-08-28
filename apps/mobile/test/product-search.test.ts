@@ -13,12 +13,14 @@ function summary({
   variant = null,
   barcode = null,
   isArchived = false,
+  isLowStock = false,
 }: {
   readonly id: string;
   readonly name: string;
   readonly variant?: string | null;
   readonly barcode?: string | null;
   readonly isArchived?: boolean;
+  readonly isLowStock?: boolean;
 }): ProductSummary {
   const product = createProduct({
     id,
@@ -34,6 +36,7 @@ function summary({
   return {
     product: Object.freeze({ ...product, isArchived }),
     state: createInventoryState({ stock: 0, unitCost: null }),
+    isLowStock,
   };
 }
 
@@ -160,6 +163,28 @@ test('the same retained query filters newly refreshed product data', () => {
     ),
     ['coca', 'coca-zero'],
   );
+});
+
+test('search preserves the derived low-stock indicator', () => {
+  const low = summary({
+    id: 'low',
+    name: 'Producto bajo',
+    isLowStock: true,
+  });
+
+  assert.equal(filterProductSummaries([low], 'bajo')[0]?.isLowStock, true);
+  assert.equal(filterProductSummaries([low], '')[0]?.isLowStock, true);
+});
+
+test('search never changes the low-stock rule or source objects', () => {
+  const normal = summary({
+    id: 'normal',
+    name: 'Producto normal',
+    isLowStock: false,
+  });
+
+  assert.equal(filterProductSummaries([normal], 'normal')[0], normal);
+  assert.equal(normal.isLowStock, false);
 });
 
 test('filtering does not mutate stock, prices, or source product objects', () => {

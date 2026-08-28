@@ -23,6 +23,8 @@ export interface ProductDetailsPresentation {
   readonly variant: string | null;
   readonly stockLabel: string;
   readonly stockStatus: ProductDetailsStockStatus;
+  readonly lowStockLabel: 'Stock bajo' | null;
+  readonly minimumStockLabel: string;
   readonly costLabel: string;
   readonly priceLabel: string;
   readonly estimatedUnitProfitLabel: string;
@@ -93,6 +95,11 @@ export function createProductDetailsPresentation(
     variant: details.variant,
     stockLabel: `${details.stock} unidades`,
     stockStatus: getStockStatus(details.stock),
+    lowStockLabel: details.isLowStock ? 'Stock bajo' : null,
+    minimumStockLabel:
+      details.minimumStock === null
+        ? 'Mínimo no configurado'
+        : `Mínimo configurado: ${details.minimumStock}`,
     costLabel:
       details.unitCost === null
         ? 'Costo desconocido'

@@ -49,6 +49,7 @@ function summary({
       stock,
       unitCost: stock > 0 ? Money.fromDecimal('0.25') : null,
     }),
+    isLowStock: false,
   };
 }
 

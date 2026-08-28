@@ -16,7 +16,13 @@ export interface ProductListRowPresentation {
   readonly variant: string | null;
   readonly stockLabel: string;
   readonly stockStatus: ProductStockStatus;
+  readonly lowStockLabel: 'Stock bajo' | null;
   readonly priceLabel: string;
+}
+
+export interface LowStockSummaryPresentation {
+  readonly count: number;
+  readonly label: string;
 }
 
 export function createProductListRequest(
@@ -42,7 +48,7 @@ function getStockStatus(stock: number): ProductStockStatus {
 }
 
 export function createProductListRowPresentation(
-  { product, state }: ProductSummary,
+  { product, state, isLowStock }: ProductSummary,
   currency: string,
 ): ProductListRowPresentation {
   return Object.freeze({
@@ -50,6 +56,21 @@ export function createProductListRowPresentation(
     variant: product.variant,
     stockLabel: `${state.stock} unidades`,
     stockStatus: getStockStatus(state.stock),
+    lowStockLabel: isLowStock ? 'Stock bajo' : null,
     priceLabel: formatMoneyForDisplay(product.regularSalePrice, currency),
+  });
+}
+
+export function createLowStockSummaryPresentation(
+  products: readonly ProductSummary[],
+): LowStockSummaryPresentation {
+  const count = products.filter(({ isLowStock }) => isLowStock).length;
+
+  return Object.freeze({
+    count,
+    label:
+      count === 1
+        ? '1 producto con stock bajo'
+        : `${count} productos con stock bajo`,
   });
 }

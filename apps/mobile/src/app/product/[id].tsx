@@ -169,6 +169,14 @@ export default function ProductDetailsScreen() {
                   El inventario está por debajo de cero.
                 </Text>
               ) : null}
+              {presentation.lowStockLabel !== null ? (
+                <Text style={styles.lowStockText}>
+                  {presentation.lowStockLabel}
+                </Text>
+              ) : null}
+              <Text style={styles.minimumStockText}>
+                {presentation.minimumStockLabel}
+              </Text>
             </View>
           </Section>
 
@@ -530,6 +538,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  lowStockText: {
+    color: colors.danger,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  minimumStockText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
   },
   previewText: {
     color: colors.textSecondary,

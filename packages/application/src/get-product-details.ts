@@ -2,6 +2,7 @@ import {
   calculateEstimatedProfit,
   calculateMargin,
   calculateMarkup,
+  isProductLowStock,
   type Money,
   type Percentage,
 } from '@stock-app/domain';
@@ -19,6 +20,7 @@ export interface ProductDetails {
   readonly variant: string | null;
   readonly barcode: string | null;
   readonly minimumStock: number | null;
+  readonly isLowStock: boolean;
   readonly stock: number;
   readonly unitCost: Money | null;
   readonly regularSalePrice: Money;
@@ -87,6 +89,7 @@ export class GetProductDetailsUseCase {
       variant: product.variant,
       barcode: product.barcode,
       minimumStock: product.minimumStock,
+      isLowStock: isProductLowStock(product, inventoryState),
       stock: inventoryState.stock,
       unitCost: inventoryState.unitCost,
       regularSalePrice: product.regularSalePrice,

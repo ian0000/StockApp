@@ -7,16 +7,21 @@ import { createInventoryState, createProduct, Money } from '@stock-app/domain';
 import {
   createProductListRequest,
   createProductListRowPresentation,
+  createLowStockSummaryPresentation,
   getProductsContentKind,
   type ProductsState,
 } from '../src/ui/products/product-list-presentation';
 
 function summary({
   stock = 12,
+  minimumStock = null,
+  isLowStock = false,
   variant = '500 ml',
   regularSalePrice = Money.fromDecimal('1.25'),
 }: {
   readonly stock?: number;
+  readonly minimumStock?: number | null;
+  readonly isLowStock?: boolean;
   readonly variant?: string | null;
   readonly regularSalePrice?: Money;
 } = {}): ProductSummary {
@@ -26,6 +31,7 @@ function summary({
       inventoryId: 'inventory-1',
       name: 'Coca-Cola',
       variant,
+      minimumStock,
       regularSalePrice,
       createdAt: 1,
       updatedAt: 1,
@@ -34,6 +40,7 @@ function summary({
       stock,
       unitCost: stock > 0 ? Money.fromDecimal('0.70') : null,
     }),
+    isLowStock,
   };
 }
 
@@ -49,8 +56,72 @@ test('presents a normal product with positive stock and exact display price', ()
     variant: '500 ml',
     stockLabel: '12 unidades',
     stockStatus: 'positive',
+    lowStockLabel: null,
     priceLabel: 'USD 1.25',
   });
+});
+
+test('a low-stock row includes visible text and keeps its real stock', () => {
+  const row = createProductListRowPresentation(
+    summary({ stock: 2, minimumStock: 5, isLowStock: true }),
+    'USD',
+  );
+
+  assert.equal(row.stockLabel, '2 unidades');
+  assert.equal(row.lowStockLabel, 'Stock bajo');
+});
+
+test('a normal row has no unnecessary stock label', () => {
+  assert.equal(
+    createProductListRowPresentation(
+      summary({ stock: 6, minimumStock: 5 }),
+      'USD',
+    ).lowStockLabel,
+    null,
+  );
+});
+
+test('negative stock can coexist with the low-stock indicator', () => {
+  const row = createProductListRowPresentation(
+    summary({ stock: -3, minimumStock: 5, isLowStock: true }),
+    'USD',
+  );
+
+  assert.equal(row.stockStatus, 'negative');
+  assert.equal(row.lowStockLabel, 'Stock bajo');
+});
+
+for (const [products, count, label] of [
+  [[], 0, '0 productos con stock bajo'],
+  [[summary({ isLowStock: true })], 1, '1 producto con stock bajo'],
+  [
+    [
+      summary({ isLowStock: true }),
+      summary({ isLowStock: false }),
+      summary({ isLowStock: true }),
+    ],
+    2,
+    '2 productos con stock bajo',
+  ],
+] as const) {
+  test(`summarizes ${count} low-stock products`, () => {
+    assert.deepEqual(createLowStockSummaryPresentation(products), {
+      count,
+      label,
+    });
+  });
+}
+
+test('the global low-stock summary is independent from filtered results', () => {
+  const fullCatalog = [
+    summary({ isLowStock: true }),
+    summary({ isLowStock: true }),
+    summary({ isLowStock: false }),
+  ];
+  const filteredResults = [fullCatalog[2]!];
+
+  assert.equal(createLowStockSummaryPresentation(fullCatalog).count, 2);
+  assert.equal(createLowStockSummaryPresentation(filteredResults).count, 0);
 });
 
 test('preserves a product variant when present', () => {

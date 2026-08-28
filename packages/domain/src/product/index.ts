@@ -6,3 +6,4 @@ export {
   type Product,
   type UpdateProductInput,
 } from './product';
+export { isProductLowStock } from './low-stock';

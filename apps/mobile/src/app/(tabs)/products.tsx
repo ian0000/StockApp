@@ -15,6 +15,7 @@ import { createProductDetailsRoute } from '@/ui/products/product-details-present
 import {
   createProductListRequest,
   createProductListRowPresentation,
+  createLowStockSummaryPresentation,
   getProductsContentKind,
   type ProductsState,
 } from '@/ui/products/product-list-presentation';
@@ -73,6 +74,10 @@ export default function ProductsScreen() {
     [searchText, state],
   );
   const contentKind = getProductsContentKind(state, visibleProducts);
+  const lowStockSummary =
+    state.status === 'ready'
+      ? createLowStockSummaryPresentation(state.products)
+      : null;
 
   return (
     <Screen>
@@ -146,35 +151,50 @@ export default function ProductsScreen() {
       ) : null}
 
       {state.status === 'ready' && state.products.length > 0 ? (
-        <View style={styles.searchField}>
-          <TextInput
-            accessibilityLabel="Buscar producto"
-            autoCapitalize="none"
-            autoCorrect={false}
-            onChangeText={setSearchText}
-            placeholder="Buscar producto"
-            placeholderTextColor={colors.textSecondary}
-            returnKeyType="search"
-            selectionColor={colors.accent}
-            style={styles.searchInput}
-            value={searchText}
-          />
-
-          {searchText.length > 0 ? (
-            <Pressable
-              accessibilityHint="Borra el texto escrito"
-              accessibilityLabel="Limpiar búsqueda"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => setSearchText('')}
-              style={({ pressed }) => [
-                styles.clearAction,
-                pressed && styles.clearActionPressed,
-              ]}
+        <View style={styles.catalogTools}>
+          {lowStockSummary !== null ? (
+            <View
+              accessibilityLabel={lowStockSummary.label}
+              accessibilityRole="summary"
+              style={styles.lowStockSummary}
             >
-              <Text style={styles.clearActionText}>Limpiar</Text>
-            </Pressable>
+              <Text style={styles.lowStockSummaryLabel}>Stock bajo</Text>
+              <Text style={styles.lowStockSummaryValue}>
+                {lowStockSummary.count}
+              </Text>
+            </View>
           ) : null}
+
+          <View style={styles.searchField}>
+            <TextInput
+              accessibilityLabel="Buscar producto"
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={setSearchText}
+              placeholder="Buscar producto"
+              placeholderTextColor={colors.textSecondary}
+              returnKeyType="search"
+              selectionColor={colors.accent}
+              style={styles.searchInput}
+              value={searchText}
+            />
+
+            {searchText.length > 0 ? (
+              <Pressable
+                accessibilityHint="Borra el texto escrito"
+                accessibilityLabel="Limpiar búsqueda"
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => setSearchText('')}
+                style={({ pressed }) => [
+                  styles.clearAction,
+                  pressed && styles.clearActionPressed,
+                ]}
+              >
+                <Text style={styles.clearActionText}>Limpiar</Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       ) : null}
 
@@ -223,6 +243,11 @@ export default function ProductsScreen() {
                   >
                     {row.stockLabel}
                   </Text>
+                  {row.lowStockLabel !== null ? (
+                    <Text style={styles.lowStockLabel}>
+                      {row.lowStockLabel}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.rowTrailing}>
                   <Text style={styles.priceText}>{row.priceLabel}</Text>
@@ -275,6 +300,9 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
   },
+  catalogTools: {
+    gap: spacing.md,
+  },
   clearAction: {
     borderRadius: radii.sm,
     minHeight: 44,
@@ -310,6 +338,34 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.md,
+  },
+  lowStockLabel: {
+    color: colors.danger,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
+  },
+  lowStockSummary: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  lowStockSummaryLabel: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.semibold,
+  },
+  lowStockSummaryValue: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
   },
   negativeStockText: {
     color: colors.danger,
