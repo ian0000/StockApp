@@ -13,6 +13,7 @@ import type {
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   UpdateProductUseCase,
+  VoidSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 
@@ -28,6 +29,7 @@ export interface SaleRuntimeServices {
   readonly getSaleDetails: GetSaleDetailsUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly registerSale: RegisterSaleUseCase;
+  readonly voidSale: VoidSaleUseCase;
 }
 
 export interface PurchaseRuntimeServices {

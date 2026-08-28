@@ -1,15 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { HistoryEntry, SaleDetails } from '@stock-app/application';
-import { Money } from '@stock-app/domain';
+import {
+  SaleNotFoundError,
+  type HistoryEntry,
+  type SaleDetails,
+  type VoidSaleResult,
+} from '@stock-app/application';
+import { createSale, Money, type SaleStatus } from '@stock-app/domain';
 
 import {
   createSaleDetailsPresentation,
   createSaleDetailsRequest,
   createSaleDetailsRoute,
+  createSaleVoidSubmissionGate,
   getHistorySaleRoute,
   getSaleDetailsContentKind,
+  getSaleVoidErrorPresentation,
+  getSaleVoidResultPresentation,
+  isSaleVoidActionVisible,
   normalizeSaleIdParam,
   type SaleDetailsState,
 } from '../src/ui/sales/sale-details-presentation';
@@ -55,6 +64,21 @@ function details(overrides: Partial<SaleDetails> = {}): SaleDetails {
     ],
     ...overrides,
   };
+}
+
+function sale(status: SaleStatus = 'CONFIRMED') {
+  return createSale({
+    id: 'sale-123',
+    inventoryId: 'inventory-123',
+    effectiveAt: 1_777_000_000_000,
+    createdAt: 1_777_000_000_001,
+    updatedAt: 1_777_000_000_001,
+    status,
+    totalAmount: Money.fromDecimal('3.25'),
+    estimatedCost: Money.fromDecimal('2.10'),
+    estimatedProfit: Money.fromDecimal('1.15'),
+    notes: null,
+  });
 }
 
 test('navigation carries only the selected Sale ID', () => {
@@ -181,6 +205,82 @@ test('presents VOIDED without erasing historical amounts', () => {
   assert.equal(presentation.statusLabel, 'Anulada');
   assert.equal(presentation.isVoided, true);
   assert.equal(presentation.totalAmountLabel, 'USD 3.25');
+});
+
+test('shows the void action only for a persisted CONFIRMED Sale', () => {
+  assert.equal(isSaleVoidActionVisible('CONFIRMED', 'sqlite'), true);
+  assert.equal(isSaleVoidActionVisible('VOIDED', 'sqlite'), false);
+  assert.equal(isSaleVoidActionVisible('CONFIRMED', 'web-preview'), false);
+});
+
+test('presents successful and idempotent void results without technical errors', () => {
+  const voided: VoidSaleResult = {
+    kind: 'VOIDED',
+    sale: sale('VOIDED'),
+    reversals: [],
+  };
+  const alreadyVoided: VoidSaleResult = {
+    kind: 'ALREADY_VOIDED',
+    sale: sale('VOIDED'),
+    reversals: [],
+  };
+
+  assert.deepEqual(getSaleVoidResultPresentation(voided), {
+    kind: 'success',
+    title: 'Venta anulada',
+    message:
+      'El stock fue restaurado y la venta permanece en tu historial como anulada.',
+    shouldRefresh: true,
+    canRetry: false,
+  });
+  assert.deepEqual(getSaleVoidResultPresentation(alreadyVoided), {
+    kind: 'information',
+    title: 'Venta ya anulada',
+    message: 'Esta venta ya estaba anulada.',
+    shouldRefresh: true,
+    canRetry: false,
+  });
+});
+
+test('presents a non-eligible result as a commercial message without mutating details', () => {
+  const result: VoidSaleResult = {
+    kind: 'NOT_ELIGIBLE',
+    sale: sale(),
+    reason: 'SUBSEQUENT_OR_AMBIGUOUS_MOVEMENT',
+  };
+
+  assert.deepEqual(getSaleVoidResultPresentation(result), {
+    kind: 'not-eligible',
+    title: 'No se puede anular esta venta',
+    message:
+      'Hay operaciones posteriores de uno o más productos y ya no es posible restaurar el inventario de forma segura.',
+    shouldRefresh: false,
+    canRetry: false,
+  });
+});
+
+test('distinguishes not-found from retryable technical failures', () => {
+  assert.deepEqual(getSaleVoidErrorPresentation(new SaleNotFoundError()), {
+    kind: 'not-found',
+    shouldRefresh: true,
+    canRetry: false,
+  });
+  assert.deepEqual(getSaleVoidErrorPresentation(new Error('database failed')), {
+    kind: 'technical-error',
+    title: 'No pudimos anular la venta',
+    message: 'Inténtalo nuevamente. Tus datos no fueron modificados.',
+    shouldRefresh: false,
+    canRetry: true,
+  });
+});
+
+test('submission gate prevents a second confirmation while voiding', () => {
+  const gate = createSaleVoidSubmissionGate();
+
+  assert.equal(gate.tryStart(), true);
+  assert.equal(gate.tryStart(), false);
+  gate.finish();
+  assert.equal(gate.tryStart(), true);
 });
 
 for (const [state, expected] of [
