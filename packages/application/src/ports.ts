@@ -7,6 +7,7 @@ import type {
   Sale,
   SaleItem,
   StockAdjustment,
+  TimestampMs,
 } from '@stock-app/domain';
 
 export interface InventoryRepository {
@@ -66,6 +67,34 @@ export interface StockAdjustmentRepository {
   save(adjustment: StockAdjustment): Promise<void>;
 }
 
+export interface ListProductMovementsAtOrAfterInput {
+  readonly inventoryId: string;
+  readonly productId: string;
+  readonly createdAt: TimestampMs;
+}
+
+export interface SaleVoidRepository {
+  findSale(inventoryId: string, saleId: string): Promise<Sale | null>;
+  listSaleItems(saleId: string): Promise<readonly SaleItem[]>;
+  listOriginalSaleMovements(
+    inventoryId: string,
+    saleId: string,
+  ): Promise<readonly InventoryMovement[]>;
+  listReversals(
+    inventoryId: string,
+    originalMovementIds: readonly string[],
+  ): Promise<readonly InventoryMovement[]>;
+  listProductMovementsAtOrAfter(
+    input: ListProductMovementsAtOrAfterInput,
+  ): Promise<readonly InventoryMovement[]>;
+  listInventoryStates(
+    inventoryId: string,
+  ): Promise<readonly InventoryStateRecord[]>;
+  saveReversal(movement: InventoryMovement): Promise<void>;
+  updateInventoryState(input: UpdateInventoryStateInput): Promise<void>;
+  updateSale(sale: Sale): Promise<void>;
+}
+
 export interface TransactionRepositories {
   readonly productRepository: ProductRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
@@ -74,6 +103,7 @@ export interface TransactionRepositories {
   readonly saleRepository: SaleRepository;
   readonly saleItemRepository: SaleItemRepository;
   readonly stockAdjustmentRepository: StockAdjustmentRepository;
+  readonly saleVoidRepository: SaleVoidRepository;
 }
 
 export interface TransactionManager {

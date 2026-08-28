@@ -12,3 +12,4 @@ export {
   createSqliteSalesSummaryReader,
   createSqliteStockAdjustmentRepository,
 } from './repositories';
+export { createSqliteVoidSaleTransaction } from './void-sale';

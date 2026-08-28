@@ -13,6 +13,7 @@ import {
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   UpdateProductUseCase,
+  VoidSaleUseCase,
   type Clock,
   type HistoryReader,
   type InventoryIdGenerator,
@@ -55,6 +56,7 @@ export interface AppServices {
   readonly registerPurchase: RegisterPurchaseUseCase;
   readonly registerSale: RegisterSaleUseCase;
   readonly updateProduct: UpdateProductUseCase;
+  readonly voidSale: VoidSaleUseCase;
 }
 
 export interface AppServiceDependencies {
@@ -133,6 +135,11 @@ export function assembleAppServices({
     updateProduct: new UpdateProductUseCase({
       clock,
       productRepository,
+    }),
+    voidSale: new VoidSaleUseCase({
+      inventoryMovementIdGenerator: idGenerator,
+      clock,
+      transactionManager,
     }),
   });
 }

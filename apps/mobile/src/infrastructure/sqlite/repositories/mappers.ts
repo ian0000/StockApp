@@ -4,6 +4,7 @@ import type {
 } from '@stock-app/application';
 import {
   createInventory,
+  createInventoryMovement,
   createInventoryState,
   createProduct,
   createPurchase,
@@ -186,6 +187,31 @@ export function mapInventoryMovementToRow(
     createdAt: movement.createdAt,
     updatedAt: movement.updatedAt,
   };
+}
+
+export function mapInventoryMovementRowToDomain(
+  row: typeof inventoryMovements.$inferSelect,
+): InventoryMovement {
+  if (row.metadata !== null) {
+    throw new TypeError('InventoryMovement metadata must be null in V1.');
+  }
+
+  return createInventoryMovement({
+    id: row.id,
+    inventoryId: row.inventoryId,
+    productId: row.productId,
+    type: row.type,
+    quantityDelta: row.quantityDelta,
+    unitCostSnapshot: nullableMoneyFromScaledUnits(row.unitCostSnapshotUnits),
+    stockBefore: row.stockBefore,
+    stockAfter: row.stockAfter,
+    sourceType: row.sourceType,
+    sourceId: row.sourceId,
+    metadata: row.metadata,
+    effectiveAt: row.effectiveAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
 }
 
 export function mapSaleToRow(sale: Sale): typeof sales.$inferInsert {

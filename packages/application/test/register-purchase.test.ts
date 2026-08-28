@@ -29,6 +29,7 @@ import {
   type TransactionRepositories,
   type UpdateInventoryStateInput,
 } from '../src/index';
+import { unusedSaleVoidRepository } from './support/unused-sale-void-repository';
 
 const TIMESTAMP = 1_776_444_000_000;
 
@@ -187,6 +188,7 @@ function createHarness(options: HarnessOptions = {}) {
         throw new Error('RegisterPurchase must not save StockAdjustments.');
       },
     },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const transactionManager: TransactionManager & { calls: number } = {
     calls: 0,

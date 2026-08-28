@@ -14,6 +14,7 @@ import {
   type TransactionManager,
   type TransactionRepositories,
 } from '../src/index';
+import { unusedSaleVoidRepository } from './support/unused-sale-void-repository';
 
 class FakeProductIdGenerator implements ProductIdGenerator {
   calls = 0;
@@ -77,6 +78,7 @@ function createUseCase(ids: readonly string[] = ['product-123']): {
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const transactionManager: TransactionManager = {
     runInTransaction: (operation) => operation(repositories),

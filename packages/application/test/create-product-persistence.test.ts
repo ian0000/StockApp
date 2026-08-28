@@ -21,6 +21,7 @@ import {
   type TransactionManager,
   type TransactionRepositories,
 } from '../src/index';
+import { unusedSaleVoidRepository } from './support/unused-sale-void-repository';
 
 class FakeProductIdGenerator implements ProductIdGenerator {
   calls = 0;
@@ -236,6 +237,7 @@ function createHarness(options: HarnessOptions = {}) {
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator,
@@ -449,6 +451,7 @@ test('execute resolves only after the transaction manager completes', async () =
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const transactionManager: TransactionManager = {
     async runInTransaction(operation) {
@@ -516,6 +519,7 @@ test('repository writes are awaited sequentially', async () => {
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: new FakeProductIdGenerator(['product-123']),
