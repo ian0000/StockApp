@@ -55,6 +55,7 @@ export {
 export {
   archiveProduct,
   createProduct,
+  isProductLowStock,
   updateProduct,
   type CreateProductInput,
   type Product,

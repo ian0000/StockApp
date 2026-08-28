@@ -1,4 +1,8 @@
-import type { InventoryState, Product } from '@stock-app/domain';
+import {
+  isProductLowStock,
+  type InventoryState,
+  type Product,
+} from '@stock-app/domain';
 
 import type { InventoryStateRepository, ProductRepository } from './ports';
 
@@ -9,6 +13,7 @@ export interface ListProductsInput {
 export interface ProductSummary {
   readonly product: Product;
   readonly state: InventoryState;
+  readonly isLowStock: boolean;
 }
 
 interface ListProductsDependencies {
@@ -59,7 +64,11 @@ export class ListProductsUseCase {
           );
         }
 
-        return Object.freeze({ product, state });
+        return Object.freeze({
+          product,
+          state,
+          isLowStock: isProductLowStock(product, state),
+        });
       });
   }
 }

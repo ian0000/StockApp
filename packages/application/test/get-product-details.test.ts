@@ -115,10 +115,41 @@ test('returns the current Product and InventoryState as a compact read model', a
   assert.equal(details?.variant, '500 ml');
   assert.equal(details?.barcode, '0012345');
   assert.equal(details?.minimumStock, 2);
+  assert.equal(details?.isLowStock, false);
   assert.equal(details?.stock, 12);
   assert.equal(details?.unitCost?.scaledUnits, 1_000_000);
   assert.equal(details?.regularSalePrice.scaledUnits, 1_500_000);
 });
+
+for (const [label, stock, minimumStock, expected] of [
+  ['above minimum', 3, 2, false],
+  ['equal to minimum', 2, 2, true],
+  ['below minimum', 1, 2, true],
+  ['zero stock with zero minimum', 0, 0, true],
+  ['negative stock', -3, 2, true],
+  ['absent minimum', -3, null, false],
+] as const) {
+  test(`derives detail low stock for ${label}`, async () => {
+    const currentProduct = product({ minimumStock });
+    const currentState = state(
+      currentProduct.id,
+      createInventoryState({
+        stock,
+        unitCost: stock > 0 ? Money.zero() : null,
+      }),
+    );
+    const { useCase } = createUseCase([currentProduct], [currentState]);
+
+    const details = await useCase.execute({
+      inventoryId: INVENTORY_ID,
+      productId: currentProduct.id,
+    });
+
+    assert.equal(details?.stock, stock);
+    assert.equal(details?.minimumStock, minimumStock);
+    assert.equal(details?.isLowStock, expected);
+  });
+}
 
 test('calculates current unit profitability using Domain values', async () => {
   const { useCase } = createUseCase();

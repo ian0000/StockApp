@@ -120,7 +120,7 @@ test('returns an empty list for an inventory without products', async () => {
 });
 
 test('returns one product with its inventory state', async () => {
-  const existingProduct = product('product-1');
+  const existingProduct = product('product-1', { minimumStock: 10 });
   const existingState = state(
     existingProduct.id,
     createInventoryState({
@@ -133,8 +133,91 @@ test('returns one product with its inventory state', async () => {
   const result = await useCase.execute({ inventoryId: INVENTORY_ID });
 
   assert.deepEqual(result, [
-    { product: existingProduct, state: existingState.state },
+    {
+      product: existingProduct,
+      state: existingState.state,
+      isLowStock: true,
+    },
   ]);
+  assert.equal('isLowStock' in result[0]!.product, false);
+  assert.equal('isLowStock' in result[0]!.state, false);
+});
+
+for (const [label, stock, minimumStock, expected] of [
+  ['above minimum', 6, 5, false],
+  ['equal to minimum', 5, 5, true],
+  ['below minimum', 4, 5, true],
+  ['zero stock', 0, 5, true],
+  ['negative stock', -3, 5, true],
+  ['known zero minimum', 0, 0, true],
+  ['absent minimum', -3, null, false],
+] as const) {
+  test(`derives low stock for ${label}`, async () => {
+    const existingProduct = product(`product-${label}`, { minimumStock });
+    const currentState = state(
+      existingProduct.id,
+      createInventoryState({
+        stock,
+        unitCost: stock > 0 ? Money.zero() : null,
+      }),
+    );
+    const { useCase } = createUseCase([existingProduct], [currentState]);
+
+    const [result] = await useCase.execute({ inventoryId: INVENTORY_ID });
+
+    assert.equal(result?.state.stock, stock);
+    assert.equal(result?.isLowStock, expected);
+  });
+}
+
+test('a fresh read recalculates low stock after the current stock changes', async () => {
+  const existingProduct = product('product-refresh-stock', { minimumStock: 5 });
+  const products = [existingProduct];
+  const states = [
+    state(
+      existingProduct.id,
+      createInventoryState({ stock: 6, unitCost: Money.zero() }),
+    ),
+  ];
+  const { useCase } = createUseCase(products, states);
+
+  assert.equal(
+    (await useCase.execute({ inventoryId: INVENTORY_ID }))[0]?.isLowStock,
+    false,
+  );
+
+  states[0] = state(
+    existingProduct.id,
+    createInventoryState({ stock: 5, unitCost: Money.zero() }),
+  );
+
+  assert.equal(
+    (await useCase.execute({ inventoryId: INVENTORY_ID }))[0]?.isLowStock,
+    true,
+  );
+});
+
+test('a fresh read recalculates low stock after minimumStock changes', async () => {
+  const products = [product('product-refresh-minimum', { minimumStock: 2 })];
+  const states = [
+    state(
+      products[0]!.id,
+      createInventoryState({ stock: 3, unitCost: Money.zero() }),
+    ),
+  ];
+  const { useCase } = createUseCase(products, states);
+
+  assert.equal(
+    (await useCase.execute({ inventoryId: INVENTORY_ID }))[0]?.isLowStock,
+    false,
+  );
+
+  products[0] = product('product-refresh-minimum', { minimumStock: 3 });
+
+  assert.equal(
+    (await useCase.execute({ inventoryId: INVENTORY_ID }))[0]?.isLowStock,
+    true,
+  );
 });
 
 test('matches multiple states with the correct products', async () => {
@@ -174,6 +257,10 @@ test('excludes archived products from the normal list', async () => {
   assert.deepEqual(
     result.map(({ product: listedProduct }) => listedProduct.id),
     [activeProduct.id],
+  );
+  assert.equal(
+    result.some((summary) => summary.isLowStock),
+    false,
   );
 });
 

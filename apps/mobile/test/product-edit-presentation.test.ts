@@ -18,6 +18,7 @@ function details(overrides: Partial<ProductDetails> = {}): ProductDetails {
     variant: '500 ml',
     barcode: '0012345',
     minimumStock: 2,
+    isLowStock: false,
     stock: -3,
     unitCost: Money.fromDecimal('0.700001'),
     regularSalePrice: Money.fromDecimal('1.250001'),

@@ -21,6 +21,7 @@ function details(overrides: Partial<ProductDetails> = {}): ProductDetails {
     variant: '500 ml',
     barcode: '0012345',
     minimumStock: 2,
+    isLowStock: false,
     stock: 12,
     unitCost: Money.fromDecimal('1.00'),
     regularSalePrice: Money.fromDecimal('1.50'),
@@ -58,12 +59,64 @@ test('presents loaded product details with existing money and percentage values'
     variant: '500 ml',
     stockLabel: '12 unidades',
     stockStatus: 'positive',
+    lowStockLabel: null,
+    minimumStockLabel: 'Mínimo configurado: 2',
     costLabel: 'USD 1.00',
     priceLabel: 'USD 1.50',
     estimatedUnitProfitLabel: 'USD 0.50',
     marginLabel: '33.33%',
     markupLabel: '50.00%',
   });
+});
+
+test('presents low stock with visible text and its configured minimum', () => {
+  const presentation = createProductDetailsPresentation(
+    details({ stock: 2, minimumStock: 2, isLowStock: true }),
+    'USD',
+  );
+
+  assert.equal(presentation.stockLabel, '2 unidades');
+  assert.equal(presentation.lowStockLabel, 'Stock bajo');
+  assert.equal(presentation.minimumStockLabel, 'Mínimo configurado: 2');
+});
+
+test('normal stock has no unnecessary low-stock label', () => {
+  const presentation = createProductDetailsPresentation(
+    details({ stock: 3, minimumStock: 2, isLowStock: false }),
+    'USD',
+  );
+
+  assert.equal(presentation.lowStockLabel, null);
+});
+
+test('negative stock remains visible and can also be low', () => {
+  const presentation = createProductDetailsPresentation(
+    details({ stock: -3, minimumStock: 2, isLowStock: true }),
+    'USD',
+  );
+
+  assert.equal(presentation.stockStatus, 'negative');
+  assert.equal(presentation.lowStockLabel, 'Stock bajo');
+});
+
+test('an absent minimum is presented without inventing a threshold', () => {
+  const presentation = createProductDetailsPresentation(
+    details({ minimumStock: null, isLowStock: false }),
+    'USD',
+  );
+
+  assert.equal(presentation.lowStockLabel, null);
+  assert.equal(presentation.minimumStockLabel, 'Mínimo no configurado');
+});
+
+test('a known zero minimum is preserved', () => {
+  const presentation = createProductDetailsPresentation(
+    details({ stock: 0, minimumStock: 0, isLowStock: true }),
+    'USD',
+  );
+
+  assert.equal(presentation.lowStockLabel, 'Stock bajo');
+  assert.equal(presentation.minimumStockLabel, 'Mínimo configurado: 0');
 });
 
 test('omits an absent variant instead of inventing a placeholder', () => {
