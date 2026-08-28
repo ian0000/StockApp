@@ -24,6 +24,7 @@ import {
   type TransactionRepositories,
   type UpdateInventoryStateInput,
 } from '../src/index';
+import { unusedSaleVoidRepository } from './support/unused-sale-void-repository';
 
 const TIMESTAMP = 1_776_444_000_000;
 
@@ -149,6 +150,7 @@ function createHarness(options: HarnessOptions = {}) {
     purchaseRepository: { async save() {} },
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const transactionManager: TransactionManager & { calls: number } = {
     calls: 0,

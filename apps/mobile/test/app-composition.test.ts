@@ -16,6 +16,7 @@ import {
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   UpdateProductUseCase,
+  VoidSaleUseCase,
   type HistoryReader,
   type InventoryRepository,
   type InventoryStateRepository,
@@ -163,6 +164,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'registerPurchase',
     'registerSale',
     'updateProduct',
+    'voidSale',
   ]);
   assert.ok(services.adjustStock instanceof AdjustStockUseCase);
   assert.ok(services.archiveProduct instanceof ArchiveProductUseCase);
@@ -178,6 +180,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
   assert.ok(services.updateProduct instanceof UpdateProductUseCase);
+  assert.ok(services.voidSale instanceof VoidSaleUseCase);
 });
 
 test('composition performs no persistence automatically', () => {

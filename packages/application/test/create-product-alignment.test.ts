@@ -10,6 +10,7 @@ import {
   type ProductIdGenerator,
   type TransactionRepositories,
 } from '../src/index';
+import { unusedSaleVoidRepository } from './support/unused-sale-void-repository';
 
 class SequenceIdGenerator
   implements ProductIdGenerator, InventoryMovementIdGenerator
@@ -66,6 +67,7 @@ function createHarness() {
     saleRepository: { async save() {} },
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
+    saleVoidRepository: unusedSaleVoidRepository,
   };
   const useCase = new CreateProductUseCase({
     productIdGenerator: productIds,

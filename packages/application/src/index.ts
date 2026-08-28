@@ -106,6 +106,15 @@ export {
   type SaleItemIdGenerator,
 } from './register-sale';
 export {
+  ConfirmedSaleHasReversalError,
+  SaleNotFoundError,
+  SaleVoidInconsistentDataError,
+  VoidSaleUseCase,
+  type VoidSaleInput,
+  type VoidSaleNotEligibleReason,
+  type VoidSaleResult,
+} from './void-sale';
+export {
   type InventoryStateRecord,
   type InventoryRepository,
   type InventoryMovementRepository,
@@ -113,6 +122,7 @@ export {
   type ProductRepository,
   type ProductManagementRepository,
   type PurchaseRepository,
+  type SaleVoidRepository,
   type SaleItemRepository,
   type SaleRepository,
   type StockAdjustmentRepository,
@@ -120,4 +130,5 @@ export {
   type TransactionManager,
   type TransactionRepositories,
   type UpdateInventoryStateInput,
+  type ListProductMovementsAtOrAfterInput,
 } from './ports';
