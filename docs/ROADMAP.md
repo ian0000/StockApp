@@ -467,6 +467,24 @@ No implementarlo “a ojo” dentro de una pantalla.
 
 Una vez estable el núcleo:
 
+## Gate de anulación y reversión
+
+Implementar en tareas pequeñas después de aprobar este preflight y antes de ofrecer acciones UI:
+
+1. `DOMAIN-VOID-SALE`: transición y creación determinista de reversiones de venta;
+2. `APP-VOID-SALE`: ports, caso de uso atómico, SQLite e idempotencia;
+3. `UI-VOID-SALE`: confirmación desde detalle y acceso rápido `Deshacer`;
+4. `DOMAIN-VOID-PURCHASE`: restauración exacta desde snapshots bajo la restricción de última
+   operación;
+5. `APP-VOID-PURCHASE`: ports, caso de uso atómico, SQLite e idempotencia;
+6. `UI-VOID-PURCHASE`: acción desde detalle; Undo inmediato solo si se aprueba la decisión UX
+   pendiente;
+7. regresión de History, detalles, métricas, stock bajo y productos archivados.
+
+No agrupar Sale y Purchase en un caso de uso genérico. No implementar anulación de
+`StockAdjustment` en V1. Antes del ticket UI debe resolverse la duración de `Deshacer`; antes de
+exponer Undo de compra debe decidirse si esa acción rápida forma parte de V1.
+
 ### Barcode
 
 - permiso de cámara;

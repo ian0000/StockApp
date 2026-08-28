@@ -1017,6 +1017,46 @@ Costo promedio
 $0.60 → $0.63
 ```
 
+## 34.1 Anular y Deshacer en V1
+
+`Deshacer` es un acceso inmediato al mismo comando que `Anular`; no crea una segunda semántica. La
+operación original permanece en History y en su detalle con estado `Anulada`, mientras los
+movimientos técnicos `REVERSAL` permanecen ocultos en la cronología comercial.
+
+Antes de confirmar una anulación desde un detalle, la interfaz debe advertir que se restaurarán los
+efectos de inventario. No solicita motivo en V1. Una operación ya anulada no vuelve a mostrar una
+acción activa de anulación.
+
+La acción solo está disponible cuando la operación sigue siendo la última operación inequívoca de
+cada producto afectado. Si existen movimientos posteriores, debe permanecer visible el detalle
+histórico y mostrarse un mensaje simple, por ejemplo:
+
+```text
+No puedes anular esta operación porque el producto tuvo movimientos posteriores.
+```
+
+No se muestran errores SQL ni reglas de costo internas. En una venta multiproducto no se ofrece
+anulación parcial: si una línea no es elegible, se bloquea la venta completa.
+
+Si la operación elegible falla por un error técnico, la pantalla conserva la operación sin cambios,
+muestra que no pudo anularse y permite reintentar. No comunica éxito hasta confirmar la transacción.
+
+Un producto archivado no oculta la operación ni bloquea por sí solo una anulación elegible. La acción
+no desarchiva el producto.
+
+La confirmación inmediata de venta puede mostrar `Deshacer` mientras esa confirmación continúe
+activa. La documentación aún no define una duración en segundos/minutos; establecer una ventana
+temporal concreta es una **DECISIÓN PENDIENTE** de UX. Salir de la confirmación elimina ese acceso
+rápido, pero una anulación posterior podrá solicitarse desde el detalle si la operación sigue siendo
+elegible.
+
+La UI actual no define `Deshacer` inmediato para compras. Decidir si se añade ese acceso rápido,
+además de la futura acción desde detalle, es una **DECISIÓN PENDIENTE** de UX. En caso de añadirse,
+deberá invocar exactamente `VoidPurchase`.
+
+Los ajustes no muestran `Deshacer` ni `Anular` en V1. Un conteo incorrecto se corrige registrando
+otro conteo físico.
+
 ---
 
 # 35. Configuración / Más

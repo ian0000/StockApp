@@ -1031,6 +1031,119 @@ Por tanto, no debemos asumir que simplemente eliminar una compra histórica siem
 Las reglas exactas de recalculación deberán estar cubiertas por tests antes de habilitar
 correcciones arbitrarias de compras antiguas.
 
+## 39.1 Anulación y reversión — política V1
+
+Anular una operación comercial significa compensar sus efectos sin borrar ni editar su historia:
+
+- la operación original cambia de `CONFIRMED` a `VOIDED`;
+- sus importes, líneas, costos y snapshots históricos permanecen intactos;
+- cada movimiento original recibe como máximo un movimiento técnico `REVERSAL` con delta opuesto;
+- el `REVERSAL` se aplica sobre el `InventoryState` vigente dentro de la misma transacción;
+- History conserva una sola fila comercial marcada como anulada y no muestra el `REVERSAL` como
+  otra operación;
+- no existe transición de `VOIDED` a `CONFIRMED` en V1.
+
+Para proteger los snapshots de operaciones posteriores, V1 solo permite anular cuando cada
+movimiento original afectado sigue siendo el último movimiento inequívoco de su producto. Antes de
+escribir se debe comprobar además que el estado vigente coincide exactamente con el estado posterior
+de la operación original. Cualquier movimiento posterior del mismo producto —venta, compra, ajuste,
+stock inicial o reversión— bloquea la anulación. Si otro movimiento tiene el mismo `createdAt` y no
+puede probarse el orden, la anulación también se bloquea de forma segura.
+
+Un movimiento posterior de otro producto no bloquea la operación. Para una venta multiproducto,
+todos sus productos deben cumplir la condición; de lo contrario no se anula ninguna línea.
+
+Esta restricción no se adopta solo por simplicidad técnica. Evita:
+
+- recalcular costos promedio históricos;
+- reescribir snapshots financieros posteriores;
+- interpretar retrospectivamente un conteo físico;
+- producir un costo actual contrafactual que el historial aprobado no puede justificar.
+
+### Estrategias evaluadas para Purchase
+
+- **A — restaurar el snapshot anterior:** es exacta cuando Purchase sigue siendo la última operación
+  inequívoca y el estado actual coincide con sus snapshots posteriores. Después de otro movimiento,
+  sobrescribiría stock y costo legítimos posteriores.
+- **B — compensar sobre el estado actual:** restar la cantidad al stock vigente conserva el delta,
+  pero no define un costo promedio económicamente justificable y podría contradecir snapshots ya
+  usados por ventas o compras posteriores.
+- **C — restringir la anulación:** combina `REVERSAL` con restauración exacta de snapshots solo si la
+  compra continúa siendo la última operación inequívoca. Es la estrategia adoptada para V1; evita
+  replay y recalculación retrospectiva.
+
+### Venta elegible
+
+Por cada movimiento `SALE` original se crea un `REVERSAL` con la cantidad opuesta. Como no existe
+ningún movimiento posterior del producto, el stock vuelve exactamente a `stockBefore` del movimiento
+original y el costo vigente no cambia. Si el costo era conocido, se conserva; si era desconocido,
+continúa siendo `null`. Esto aplica también cuando la venta había dejado stock negativo.
+
+La venta se anula completa y atómicamente. No existen devoluciones, reembolsos ni anulaciones
+parciales en V1.
+
+### Compra elegible
+
+Si el movimiento `PURCHASE` sigue siendo el último movimiento inequívoco del producto y el estado
+vigente coincide con `Purchase.stockAfter` y `Purchase.averageCostAfter`, la anulación restaura
+exactamente:
+
+```text
+stock = Purchase.stockBefore
+unitCost = Purchase.averageCostBefore
+```
+
+Esto cubre stock anterior positivo, cero o negativo. `averageCostBefore = null` se restaura como
+costo desconocido; un costo conocido igual a cero permanece cero.
+
+Si hubo una venta, compra, ajuste u otro movimiento posterior del mismo producto, la compra no puede
+anularse en V1. No se resta únicamente la cantidad, no se restaura ciegamente el snapshot anterior y
+no se ejecuta un replay contrafactual. La operación permanece `CONFIRMED` y la interfaz debe explicar
+que existen movimientos posteriores.
+
+### Idempotencia y consistencia
+
+Una solicitud repetida sobre una operación ya `VOIDED` devuelve éxito idempotente con el estado ya
+anulado y no crea movimientos ni modifica stock otra vez. Si una operación todavía figura
+`CONFIRMED` pero ya existe algún `REVERSAL` de sus movimientos, se trata como inconsistencia de datos:
+no se escriben cambios adicionales.
+
+Un producto archivado no bloquea por sí solo la anulación de una operación histórica elegible. La
+anulación no desarchiva el producto ni restaura nombre, variante, barcode, stock mínimo o precio
+habitual.
+
+### Undo
+
+`Undo` no es otra regla de dominio. Es un acceso rápido al mismo comando de anulación y está sujeto a
+las mismas validaciones, atomicidad e idempotencia. V1 no define Undo ni anulación para
+`StockAdjustment`: un conteo incorrecto se corrige con otro conteo físico.
+
+### Precio y métricas
+
+Anular una compra nunca restaura `Product.regularSalePrice`, aunque el usuario hubiera aceptado una
+sugerencia después de comprar. Ese cambio fue una decisión posterior y separada.
+
+Solo las ventas `CONFIRMED` participan en ventas, unidades, ganancia y futuras métricas comerciales.
+Las ventas `VOIDED` permanecen visibles en History, pero no contribuyen a agregados. Una futura
+métrica de compras aplicará la misma regla y excluirá compras `VOIDED`.
+
+### Matriz V1
+
+| Operación | Estado inicial | Operaciones posteriores del mismo producto | ¿Se puede anular? | Resultado stock | Resultado costo |
+| --- | --- | --- | --- | --- | --- |
+| Sale | stock positivo | ninguna | Sí | vuelve al `stockBefore` de `SALE` | conserva el costo vigente/original |
+| Sale | termina negativo | ninguna | Sí | vuelve al `stockBefore` de `SALE` | conserva conocido o `null` |
+| Sale | cualquiera | compra posterior | No | sin cambios | sin cambios |
+| Purchase | stock positivo | ninguna | Sí | `Purchase.stockBefore` | `Purchase.averageCostBefore` |
+| Purchase | stock cero | ninguna | Sí | `0` | snapshot anterior, incluido `null` |
+| Purchase | stock negativo | ninguna | Sí | stock negativo anterior | snapshot anterior, incluido `null` |
+| Purchase | cualquiera | venta posterior | No | sin cambios | sin cambios |
+| Purchase | cualquiera | compra posterior | No | sin cambios | sin cambios |
+| Adjustment | cualquiera | ninguna | No en V1 | un nuevo conteo corrige el stock | según la nueva corrección |
+
+Para cualquier operación comercial, un movimiento posterior distinto de los ejemplos de la tabla
+también bloquea la anulación si afecta uno de sus productos.
+
 ---
 
 # 40. Movimientos con fecha anterior
