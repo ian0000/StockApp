@@ -1202,6 +1202,59 @@ vinculada al movimiento/venta original.
 En V1, deshacer una venta anula la venta completa. Las devoluciones, reembolsos y reversiones
 parciales quedan fuera del alcance de V1.
 
+## 38.1 Estado y movimiento compensatorio
+
+La única transición de estado de una operación comercial en V1 es:
+
+```text
+CONFIRMED → VOIDED
+```
+
+`effectiveAt` y `createdAt` de la operación original no cambian. `updatedAt` registra el instante en
+que se persistió el cambio de estado. No existen `voidedAt` ni motivo de anulación separados en V1;
+el `createdAt` del movimiento compensatorio permite auditar cuándo ocurrió la reversión técnica.
+
+Cada movimiento compensatorio utiliza:
+
+```text
+type = REVERSAL
+quantityDelta = -original.quantityDelta
+sourceType = INVENTORY_MOVEMENT
+sourceId = original InventoryMovement.id
+unitCostSnapshot = original.unitCostSnapshot
+stockBefore = estado vigente antes de anular
+stockAfter = stockBefore + quantityDelta
+metadata = null
+effectiveAt = createdAt = updatedAt = instante de anulación
+```
+
+Existe un `REVERSAL` por cada movimiento original. Una venta multiproducto genera uno por línea, pero
+continúa siendo una única operación comercial porque los movimientos originales comparten
+`sourceType = SALE` y `sourceId = Sale.id`. Una compra genera un solo `REVERSAL` porque Purchase es de
+un producto.
+
+Application debe garantizar como invariante que un movimiento original tenga como máximo un
+`REVERSAL`. La relación polimórfica no tiene foreign key ni restricción UNIQUE SQL. La transacción
+local exclusiva, la consulta por `sourceType/sourceId` y el estado `VOIDED` proporcionan la barrera
+de idempotencia V1.
+
+Los snapshots de Purchase son suficientes para restaurar exactamente el estado anterior solo cuando
+su movimiento sigue siendo el último movimiento inequívoco del producto y el estado vigente coincide
+con sus snapshots posteriores. No autorizan restaurar una compra antigua después de otras
+operaciones.
+
+Si existe otro movimiento con el mismo `createdAt`, el modelo actual no conserva un ordinal de
+inserción autoritativo. V1 trata ese orden como ambiguo y bloquea la anulación en vez de inferirlo por
+el ID.
+
+Los productos archivados conservan `InventoryState` e historia. Una operación elegible puede
+anularse sin desarchivar ni modificar la metadata actual del Product.
+
+## 38.2 Alcance de StockAdjustment
+
+`StockAdjustment` no tiene `status` en V1 y permanece inmutable. No se anula y no genera
+`REVERSAL`; una corrección posterior se representa mediante otro conteo físico y otro ajuste.
+
 ---
 
 # 39. IDs y sincronización futura

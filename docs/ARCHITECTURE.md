@@ -520,6 +520,114 @@ ROLLBACK
 
 Nunca confirmar parcialmente una venta.
 
+## 19.1 Anulaciones atómicas e idempotentes
+
+La anulación pertenece a Application y utiliza reglas puras de Domain, ports explícitos e
+Infrastructure/SQLite. UI nunca actualiza estados ni inserta movimientos directamente.
+
+Antes de cualquier escritura, el caso de uso valida dentro de la misma transacción:
+
+- operación e inventario solicitados;
+- estado `CONFIRMED` o retorno idempotente si ya es `VOIDED`;
+- movimientos originales exactos y sin `REVERSAL` previo;
+- último movimiento inequívoco de cada producto;
+- coincidencia exacta entre `InventoryState` actual y snapshots posteriores;
+- rango seguro de cantidades y timestamps;
+- conjunto completo de líneas en una venta multiproducto.
+
+Orden conceptual para `VoidSale`:
+
+```text
+BEGIN EXCLUSIVE
+  load Sale + SaleItems
+  if VOIDED: return idempotent result
+  load original SALE movements + existing reversals
+  validate complete movement/item set
+  validate latest movement and current state for every product
+  prepare every REVERSAL and restored InventoryState
+  insert every REVERSAL
+  update every InventoryState
+  update Sale.status = VOIDED and Sale.updatedAt = now
+COMMIT
+```
+
+Orden conceptual para `VoidPurchase`:
+
+```text
+BEGIN EXCLUSIVE
+  load Purchase
+  if VOIDED: return idempotent result
+  load original PURCHASE movement + existing reversal
+  validate latest movement and current state
+  restore Purchase.stockBefore + Purchase.averageCostBefore
+  insert REVERSAL
+  update InventoryState
+  update Purchase.status = VOIDED and Purchase.updatedAt = now
+COMMIT
+```
+
+Un fallo revierte todo. Nunca puede existir una operación `VOIDED` sin sus reversiones, stock
+parcialmente restaurado o una venta con solo algunas líneas compensadas. Una operación
+`CONFIRMED` que ya tenga reversiones se considera inconsistente y falla sin nuevas escrituras.
+
+`Undo` llama al mismo caso de uso; no duplica reglas ni transacciones.
+
+Los ports futuros mínimos son:
+
+- lectura y actualización de estado para Sale/Purchase;
+- lectura de SaleItems;
+- lectura de movimientos por fuente y por producto;
+- detección de `REVERSAL` por movimiento original;
+- inserción de movimientos;
+- lectura y actualización de `InventoryState`;
+- `TransactionManager` existente como límite atómico.
+
+Sale y Purchase deben conservar casos de uso separados: su restauración de costo es distinta y una
+abstracción genérica ocultaría invariantes importantes.
+
+### Evaluación de schema
+
+Clasificación V1: **B. Schema suficiente con limitaciones documentadas**.
+
+Las ocho tablas existentes representan estados, snapshots, movimientos compensatorios y relaciones
+necesarias. No se requiere migración para el alcance aprobado. La unicidad de un `REVERSAL` por
+movimiento y la relación polimórfica se protegen en Application dentro de la transacción, no mediante
+foreign key/UNIQUE SQL. Tampoco existe ordinal autoritativo para movimientos con el mismo
+`createdAt`; V1 bloquea esos casos ambiguos.
+
+No se añaden `voidedAt` ni motivo de anulación porque V1 no los presenta ni los exige. El tiempo
+técnico se obtiene del `REVERSAL.createdAt` y `updatedAt` registra el cambio de estado. Si producto
+requiere mostrar posteriormente el instante o motivo comercial de anulación sin consultar
+movimientos, deberá aprobarse una migración específica.
+
+### Matriz mínima de pruebas futuras
+
+`VoidSale` deberá cubrir:
+
+- una línea y múltiples líneas;
+- stock positivo y venta que terminó en negativo;
+- costo conocido, conocido cero y desconocido;
+- producto archivado;
+- movimiento posterior en un producto y empate ambiguo de timestamps;
+- operación ya `VOIDED`, retry y doble llamada;
+- correspondencia exacta entre SaleItem, movimiento original y `REVERSAL`;
+- fallo en cada escritura y rollback sin líneas parciales.
+
+`VoidPurchase` deberá cubrir:
+
+- stock anterior positivo, cero y negativo;
+- costo anterior conocido, conocido cero y `null` cuando sea válido;
+- restauración exacta de ambos snapshots;
+- venta, compra o ajuste posterior;
+- producto archivado;
+- operación ya `VOIDED`, retry y doble llamada;
+- inconsistencia entre estado actual y snapshots;
+- `REVERSAL` exacto y rollback ante cada fallo.
+
+Las pruebas de integración deberán comprobar además que History y los detalles conservan la
+operación `VOIDED`, que los movimientos técnicos no aparecen como filas comerciales, que las
+métricas excluyen ventas anuladas y que Product list/detail/stock bajo reflejan el estado restaurado.
+
 ---
 
 # 20. Estado de UI
