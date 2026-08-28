@@ -143,6 +143,7 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
           updateProduct: state.services.updateProduct,
         },
         purchaseServices: {
+          getPurchaseDetails: state.services.getPurchaseDetails,
           registerPurchase: state.services.registerPurchase,
         },
         saleServices: {

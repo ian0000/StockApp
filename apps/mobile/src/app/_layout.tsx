@@ -26,6 +26,10 @@ export default function RootLayout() {
           options={{ title: 'Detalle de venta' }}
         />
         <Stack.Screen name="purchase" options={{ title: 'Nueva compra' }} />
+        <Stack.Screen
+          name="purchase/[id]"
+          options={{ title: 'Detalle de compra' }}
+        />
         <Stack.Screen name="adjustment" options={{ title: 'Ajustar stock' }} />
         <Stack.Screen
           name="product/new"

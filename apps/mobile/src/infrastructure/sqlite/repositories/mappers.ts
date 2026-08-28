@@ -6,6 +6,7 @@ import {
   createInventory,
   createInventoryState,
   createProduct,
+  createPurchase,
   createSale,
   createSaleItem,
   Money,
@@ -110,6 +111,31 @@ export function mapPurchaseToRow(
     stockBefore: purchase.stockBefore,
     stockAfter: purchase.stockAfter,
   };
+}
+
+export function mapPurchaseRowToDomain(
+  row: typeof purchases.$inferSelect,
+): Purchase {
+  return createPurchase({
+    id: row.id,
+    inventoryId: row.inventoryId,
+    productId: row.productId,
+    quantity: row.quantity,
+    unitCost: Money.fromScaledUnits(row.unitCostUnits),
+    totalAmount: Money.fromScaledUnits(row.totalAmountUnits),
+    effectiveAt: row.effectiveAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    status: row.status,
+    notes: row.notes,
+    averageCostBefore:
+      row.averageCostBeforeUnits === null
+        ? null
+        : Money.fromScaledUnits(row.averageCostBeforeUnits),
+    averageCostAfter: Money.fromScaledUnits(row.averageCostAfterUnits),
+    stockBefore: row.stockBefore,
+    stockAfter: row.stockAfter,
+  });
 }
 
 export function mapInventoryStateToRow({

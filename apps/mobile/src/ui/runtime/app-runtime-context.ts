@@ -5,6 +5,7 @@ import type {
   ArchiveProductUseCase,
   CreateProductUseCase,
   GetProductDetailsUseCase,
+  GetPurchaseDetailsUseCase,
   GetSaleDetailsUseCase,
   GetSalesSummaryUseCase,
   ListHistoryUseCase,
@@ -30,6 +31,7 @@ export interface SaleRuntimeServices {
 }
 
 export interface PurchaseRuntimeServices {
+  readonly getPurchaseDetails: GetPurchaseDetailsUseCase;
   readonly registerPurchase: RegisterPurchaseUseCase;
 }
 
