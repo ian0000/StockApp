@@ -45,6 +45,16 @@ export {
   type ProductDetails,
 } from './get-product-details';
 export {
+  GetSaleDetailsUseCase,
+  type GetSaleDetailsInput,
+  type SaleDetails,
+  type SaleDetailsItem,
+  type SaleDetailsReader,
+  type SaleDetailsReaderInput,
+  type SaleDetailsSource,
+  type SaleDetailsSourceItem,
+} from './get-sale-details';
+export {
   GetSalesSummaryUseCase,
   type GetSalesSummaryInput,
   type SalesSummary,

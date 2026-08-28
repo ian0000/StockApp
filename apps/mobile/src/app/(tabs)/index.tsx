@@ -22,6 +22,7 @@ import {
   type RecentOperationsState,
 } from '@/ui/history/history-presentation';
 import { getLocalDayRange } from '@/ui/home/local-day-range';
+import { createSaleDetailsRoute } from '@/ui/sales/sale-details-presentation';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
@@ -279,6 +280,9 @@ export default function HomeScreen() {
                 currency={inventory.currency}
                 entry={entry}
                 key={`${entry.type}:${entry.id}`}
+                onOpenSale={(saleId) =>
+                  router.push(createSaleDetailsRoute(saleId))
+                }
                 variant="recent"
               />
             ))}

@@ -2,6 +2,7 @@ import {
   compareHistoryEntriesNewestFirst,
   type HistoryEntry,
   type HistoryReader,
+  type SaleDetailsReader,
   InventoryRepository,
   InventoryMovementRepository,
   InventoryStateRepository,
@@ -38,6 +39,8 @@ import {
   mapProductToRow,
   mapPurchaseToRow,
   mapSaleItemToRow,
+  mapSaleItemRowToDomain,
+  mapSaleRowToDomain,
   mapSaleToRow,
   mapStockAdjustmentToRow,
 } from './mappers';
@@ -560,6 +563,69 @@ export function createSqliteHistoryReader(
           .sort(compareHistoryEntriesNewestFirst)
           .slice(0, limit),
       );
+    },
+  };
+}
+
+export function createSqliteSaleDetailsReader(
+  executor: SqliteReadExecutor,
+): SaleDetailsReader {
+  return {
+    async findById({ inventoryId, saleId }) {
+      const saleRows = await executor
+        .select({
+          id: sales.id,
+          inventoryId: sales.inventoryId,
+          effectiveAt: sales.effectiveAt,
+          createdAt: sales.createdAt,
+          updatedAt: sales.updatedAt,
+          status: sales.status,
+          totalAmountUnits: sales.totalAmountUnits,
+          estimatedCostUnits: sales.estimatedCostUnits,
+          estimatedProfitUnits: sales.estimatedProfitUnits,
+          notes: sales.notes,
+        })
+        .from(sales)
+        .where(and(eq(sales.inventoryId, inventoryId), eq(sales.id, saleId)))
+        .limit(1);
+      const saleRow = saleRows[0];
+
+      if (saleRow === undefined) return null;
+
+      const itemRows = await executor
+        .select({
+          id: saleItems.id,
+          saleId: saleItems.saleId,
+          productId: saleItems.productId,
+          quantity: saleItems.quantity,
+          unitSalePriceUnits: saleItems.unitSalePriceUnits,
+          subtotalUnits: saleItems.subtotalUnits,
+          unitCostSnapshotUnits: saleItems.unitCostSnapshotUnits,
+          estimatedCostUnits: saleItems.estimatedCostUnits,
+          estimatedProfitUnits: saleItems.estimatedProfitUnits,
+          costStatus: saleItems.costStatus,
+          createdAt: saleItems.createdAt,
+          updatedAt: saleItems.updatedAt,
+          productName: products.name,
+          productVariant: products.variant,
+        })
+        .from(saleItems)
+        .leftJoin(products, eq(products.id, saleItems.productId))
+        .where(eq(saleItems.saleId, saleId))
+        .orderBy(asc(saleItems.createdAt), asc(saleItems.id));
+
+      return Object.freeze({
+        sale: mapSaleRowToDomain(saleRow),
+        items: Object.freeze(
+          itemRows.map(({ productName, productVariant, ...itemRow }) =>
+            Object.freeze({
+              item: mapSaleItemRowToDomain(itemRow),
+              productName,
+              productVariant,
+            }),
+          ),
+        ),
+      });
     },
   };
 }

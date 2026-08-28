@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { HistoryEntry } from '@stock-app/application';
 
@@ -12,21 +12,19 @@ import {
 interface HistoryOperationRowProps {
   readonly currency: string;
   readonly entry: HistoryEntry;
+  readonly onOpenSale?: (saleId: string) => void;
   readonly variant: HistoryRowVariant;
 }
 
 export function HistoryOperationRow({
   currency,
   entry,
+  onOpenSale,
   variant,
 }: HistoryOperationRowProps) {
   const row = createHistoryRowPresentation(entry, currency, variant);
-
-  return (
-    <View
-      accessibilityRole="summary"
-      style={[styles.row, variant === 'recent' && styles.recentRow]}
-    >
+  const content = (
+    <>
       <View style={styles.rowCopy}>
         <View style={styles.typeLine}>
           <Text style={styles.typeLabel}>{row.typeLabel}</Text>
@@ -41,10 +39,40 @@ export function HistoryOperationRow({
           <Text style={styles.secondaryText}>{row.secondary}</Text>
         ) : null}
         <Text style={styles.detail}>{row.detail}</Text>
+        {entry.type === 'SALE' && onOpenSale !== undefined ? (
+          <Text style={styles.openHint}>Ver detalle</Text>
+        ) : null}
       </View>
       <Text style={styles.timestamp}>
         {formatHistoryTimestamp(row.timestamp)}
       </Text>
+    </>
+  );
+
+  if (entry.type === 'SALE' && onOpenSale !== undefined) {
+    return (
+      <Pressable
+        accessibilityHint="Abre el detalle de esta venta"
+        accessibilityLabel={`Venta ${row.primary}, ${row.detail}`}
+        accessibilityRole="button"
+        onPress={() => onOpenSale(entry.id)}
+        style={({ pressed }) => [
+          styles.row,
+          variant === 'recent' && styles.recentRow,
+          pressed && styles.rowPressed,
+        ]}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View
+      accessibilityRole="summary"
+      style={[styles.row, variant === 'recent' && styles.recentRow]}
+    >
+      {content}
     </View>
   );
 }
@@ -59,6 +87,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: typography.size.body,
     fontWeight: typography.weight.bold,
+  },
+  openHint: {
+    color: colors.accent,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.semibold,
   },
   recentRow: {
     minHeight: 96,
@@ -77,6 +110,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   rowCopy: { flex: 1, gap: spacing.xs },
+  rowPressed: { backgroundColor: colors.accentSoft },
   secondaryText: {
     color: colors.textSecondary,
     fontSize: typography.size.caption,

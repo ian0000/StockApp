@@ -8,6 +8,7 @@ import {
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
+  GetSaleDetailsUseCase,
   GetSalesSummaryUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
@@ -20,6 +21,7 @@ import {
   type ProductRepository,
   type ProductManagementRepository,
   type SalesSummaryReader,
+  type SaleDetailsReader,
   type TransactionManager,
 } from '@stock-app/application';
 import { Money } from '@stock-app/domain';
@@ -38,6 +40,7 @@ function createDependencies(): {
   readonly getHistoryReadCount: () => number;
   readonly getProductListCount: () => number;
   readonly getSalesSummaryReadCount: () => number;
+  readonly getSaleDetailsReadCount: () => number;
   readonly getTransactionCount: () => number;
 } {
   let inventorySaveCount = 0;
@@ -46,6 +49,7 @@ function createDependencies(): {
   let historyReadCount = 0;
   let productListCount = 0;
   let salesSummaryReadCount = 0;
+  let saleDetailsReadCount = 0;
   let transactionCount = 0;
   const inventoryRepository: InventoryRepository = {
     async list() {
@@ -97,6 +101,12 @@ function createDependencies(): {
       return [];
     },
   };
+  const saleDetailsReader: SaleDetailsReader = {
+    async findById() {
+      saleDetailsReadCount += 1;
+      return null;
+    },
+  };
 
   return {
     dependencies: {
@@ -106,6 +116,7 @@ function createDependencies(): {
       inventoryRepository,
       inventoryStateRepository,
       productRepository,
+      saleDetailsReader,
       salesSummaryReader,
       transactionManager,
     },
@@ -115,6 +126,7 @@ function createDependencies(): {
     getHistoryReadCount: () => historyReadCount,
     getProductListCount: () => productListCount,
     getSalesSummaryReadCount: () => salesSummaryReadCount,
+    getSaleDetailsReadCount: () => saleDetailsReadCount,
     getTransactionCount: () => transactionCount,
   };
 }
@@ -131,6 +143,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'createProduct',
     'getCurrentInventory',
     'getProductDetails',
+    'getSaleDetails',
     'getSalesSummary',
     'listHistory',
     'listProducts',
@@ -144,6 +157,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
+  assert.ok(services.getSaleDetails instanceof GetSaleDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
@@ -160,6 +174,7 @@ test('composition performs no persistence automatically', () => {
     getInventoryStateListCount,
     getInventorySaveCount,
     getProductListCount,
+    getSaleDetailsReadCount,
     getSalesSummaryReadCount,
     getTransactionCount,
   } = createDependencies();
@@ -171,6 +186,7 @@ test('composition performs no persistence automatically', () => {
   assert.equal(getHistoryReadCount(), 0);
   assert.equal(getInventoryStateListCount(), 0);
   assert.equal(getProductListCount(), 0);
+  assert.equal(getSaleDetailsReadCount(), 0);
   assert.equal(getSalesSummaryReadCount(), 0);
   assert.equal(getTransactionCount(), 0);
 });
@@ -225,6 +241,20 @@ test('sales summary query uses the composed reader', async () => {
   assert.equal(getSalesSummaryReadCount(), 1);
 });
 
+test('sale detail query uses the composed reader', async () => {
+  const { dependencies, getSaleDetailsReadCount } = createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  assert.equal(
+    await services.getSaleDetails.execute({
+      inventoryId: 'inventory-123',
+      saleId: 'sale-123',
+    }),
+    null,
+  );
+  assert.equal(getSaleDetailsReadCount(), 1);
+});
+
 test('history query uses the composed reader', async () => {
   const { dependencies, getHistoryReadCount } = createDependencies();
   const services = assembleAppServices(dependencies);
@@ -250,6 +280,7 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
+  assert.ok(services.getSaleDetails instanceof GetSaleDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
