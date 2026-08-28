@@ -50,6 +50,13 @@ export {
   type ProductSummary,
 } from './list-products';
 export {
+  ArchiveProductUseCase,
+  ProductManagementUnavailableError,
+  UpdateProductUseCase,
+  type ArchiveProductInput,
+  type UpdateProductInput,
+} from './manage-product';
+export {
   compareHistoryEntriesNewestFirst,
   DEFAULT_HISTORY_LIMIT,
   ListHistoryUseCase,
@@ -80,6 +87,7 @@ export {
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type ProductManagementRepository,
   type PurchaseRepository,
   type SaleItemRepository,
   type SaleRepository,

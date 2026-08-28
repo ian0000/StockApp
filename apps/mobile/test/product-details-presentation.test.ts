@@ -19,6 +19,8 @@ function details(overrides: Partial<ProductDetails> = {}): ProductDetails {
     id: 'product-123',
     name: 'Coca-Cola',
     variant: '500 ml',
+    barcode: '0012345',
+    minimumStock: 2,
     stock: 12,
     unitCost: Money.fromDecimal('1.00'),
     regularSalePrice: Money.fromDecimal('1.50'),

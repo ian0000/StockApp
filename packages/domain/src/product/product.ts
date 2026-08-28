@@ -26,6 +26,15 @@ export interface CreateProductInput {
   readonly updatedAt: TimestampMs;
 }
 
+export interface UpdateProductInput {
+  readonly name: string;
+  readonly variant?: string | null;
+  readonly barcode?: string | null;
+  readonly regularSalePrice: Money;
+  readonly minimumStock?: number | null;
+  readonly updatedAt: TimestampMs;
+}
+
 function normalizeRequiredString(value: string, label: string): string {
   if (typeof value !== 'string') {
     throw new TypeError(`${label} must be a string.`);
@@ -75,6 +84,27 @@ function normalizeMinimumStock(
   return minimumStock;
 }
 
+function requireNonNegativeSalePrice(regularSalePrice: Money): Money {
+  if (regularSalePrice.compare(Money.zero()) < 0) {
+    throw new RangeError('Regular sale price must not be negative.');
+  }
+
+  return regularSalePrice;
+}
+
+function normalizeProductUpdateTimestamp(
+  product: Product,
+  updatedAt: TimestampMs,
+): TimestampMs {
+  const normalized = createTimestampMs(updatedAt, 'Updated at');
+
+  if (normalized < product.updatedAt) {
+    throw new RangeError('Updated at must not be before previous updated at.');
+  }
+
+  return normalized;
+}
+
 export function createProduct({
   id,
   inventoryId,
@@ -86,10 +116,6 @@ export function createProduct({
   createdAt,
   updatedAt,
 }: CreateProductInput): Product {
-  if (regularSalePrice.compare(Money.zero()) < 0) {
-    throw new RangeError('Regular sale price must not be negative.');
-  }
-
   const normalizedCreatedAt = createTimestampMs(createdAt, 'Created at');
   const normalizedUpdatedAt = createTimestampMs(updatedAt, 'Updated at');
 
@@ -103,10 +129,52 @@ export function createProduct({
     name: normalizeRequiredString(name, 'Product name'),
     variant: normalizeOptionalString(variant, 'Product variant'),
     barcode: normalizeOptionalString(barcode, 'Product barcode'),
-    regularSalePrice,
+    regularSalePrice: requireNonNegativeSalePrice(regularSalePrice),
     minimumStock: normalizeMinimumStock(minimumStock),
     isArchived: false,
     createdAt: normalizedCreatedAt,
     updatedAt: normalizedUpdatedAt,
+  });
+}
+
+export function updateProduct(
+  product: Product,
+  {
+    name,
+    variant,
+    barcode,
+    regularSalePrice,
+    minimumStock,
+    updatedAt,
+  }: UpdateProductInput,
+): Product {
+  if (product.isArchived) {
+    throw new Error('An archived Product cannot be updated.');
+  }
+
+  return Object.freeze({
+    id: product.id,
+    inventoryId: product.inventoryId,
+    name: normalizeRequiredString(name, 'Product name'),
+    variant: normalizeOptionalString(variant, 'Product variant'),
+    barcode: normalizeOptionalString(barcode, 'Product barcode'),
+    regularSalePrice: requireNonNegativeSalePrice(regularSalePrice),
+    minimumStock: normalizeMinimumStock(minimumStock),
+    isArchived: false,
+    createdAt: product.createdAt,
+    updatedAt: normalizeProductUpdateTimestamp(product, updatedAt),
+  });
+}
+
+export function archiveProduct(
+  product: Product,
+  updatedAt: TimestampMs,
+): Product {
+  if (product.isArchived) return product;
+
+  return Object.freeze({
+    ...product,
+    isArchived: true,
+    updatedAt: normalizeProductUpdateTimestamp(product, updatedAt),
   });
 }

@@ -1,5 +1,6 @@
 import {
   AdjustStockUseCase,
+  ArchiveProductUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
@@ -9,6 +10,7 @@ import {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  UpdateProductUseCase,
   type Clock,
   type HistoryReader,
   type InventoryIdGenerator,
@@ -16,6 +18,7 @@ import {
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductIdGenerator,
+  type ProductManagementRepository,
   type ProductRepository,
   type PurchaseIdGenerator,
   type SalesSummaryReader,
@@ -35,6 +38,7 @@ type AppIdGenerator = InventoryIdGenerator &
 
 export interface AppServices {
   readonly adjustStock: AdjustStockUseCase;
+  readonly archiveProduct: ArchiveProductUseCase;
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
@@ -44,6 +48,7 @@ export interface AppServices {
   readonly listProducts: ListProductsUseCase;
   readonly registerPurchase: RegisterPurchaseUseCase;
   readonly registerSale: RegisterSaleUseCase;
+  readonly updateProduct: UpdateProductUseCase;
 }
 
 export interface AppServiceDependencies {
@@ -52,7 +57,7 @@ export interface AppServiceDependencies {
   readonly historyReader: HistoryReader;
   readonly inventoryRepository: InventoryRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
-  readonly productRepository: ProductRepository;
+  readonly productRepository: ProductRepository & ProductManagementRepository;
   readonly salesSummaryReader: SalesSummaryReader;
   readonly transactionManager: TransactionManager;
 }
@@ -73,6 +78,10 @@ export function assembleAppServices({
       inventoryMovementIdGenerator: idGenerator,
       clock,
       transactionManager,
+    }),
+    archiveProduct: new ArchiveProductUseCase({
+      clock,
+      productRepository,
     }),
     createInventory: new CreateInventoryUseCase({
       inventoryIdGenerator: idGenerator,
@@ -108,6 +117,10 @@ export function assembleAppServices({
       inventoryMovementIdGenerator: idGenerator,
       clock,
       transactionManager,
+    }),
+    updateProduct: new UpdateProductUseCase({
+      clock,
+      productRepository,
     }),
   });
 }

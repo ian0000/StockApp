@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createProduct, Money } from '../src/index';
+import {
+  archiveProduct,
+  createProduct,
+  Money,
+  updateProduct,
+} from '../src/index';
 
 function validProductInput() {
   return {
@@ -253,4 +258,166 @@ test('normalizes omitted optional fields to null', () => {
   assert.equal(product.variant, null);
   assert.equal(product.barcode, null);
   assert.equal(product.minimumStock, null);
+});
+
+test('updates only editable Product metadata and preserves identity', () => {
+  const original = createProduct(validProductInput());
+  const regularSalePrice = Money.fromDecimal('2.750001');
+
+  const updated = updateProduct(original, {
+    name: '  Coca-Cola Zero  ',
+    variant: '  600 ml  ',
+    barcode: '0000098765',
+    regularSalePrice,
+    minimumStock: 9,
+    updatedAt: original.updatedAt + 1,
+  });
+
+  assert.deepEqual(updated, {
+    id: original.id,
+    inventoryId: original.inventoryId,
+    name: 'Coca-Cola Zero',
+    variant: '600 ml',
+    barcode: '0000098765',
+    regularSalePrice,
+    minimumStock: 9,
+    isArchived: false,
+    createdAt: original.createdAt,
+    updatedAt: original.updatedAt + 1,
+  });
+});
+
+test('Product update applies the same required name validation as creation', () => {
+  assert.throws(
+    () =>
+      updateProduct(createProduct(validProductInput()), {
+        name: '   ',
+        regularSalePrice: Money.fromDecimal('1'),
+        updatedAt: 1_776_444_000_001,
+      }),
+    /product name.*empty/i,
+  );
+});
+
+test('Product update can remove optional variant, barcode and minimum stock', () => {
+  const updated = updateProduct(createProduct(validProductInput()), {
+    name: 'Coca-Cola',
+    variant: '   ',
+    barcode: null,
+    regularSalePrice: Money.fromDecimal('1'),
+    minimumStock: undefined,
+    updatedAt: 1_776_444_000_001,
+  });
+
+  assert.equal(updated.variant, null);
+  assert.equal(updated.barcode, null);
+  assert.equal(updated.minimumStock, null);
+});
+
+test('Product update accepts known zero price and exact six-decimal Money', () => {
+  const original = createProduct(validProductInput());
+  const zeroUpdated = updateProduct(original, {
+    name: original.name,
+    regularSalePrice: Money.zero(),
+    updatedAt: original.updatedAt + 1,
+  });
+  const exactUpdated = updateProduct(zeroUpdated, {
+    name: zeroUpdated.name,
+    regularSalePrice: Money.fromDecimal('0.123456'),
+    updatedAt: zeroUpdated.updatedAt + 1,
+  });
+
+  assert.equal(zeroUpdated.regularSalePrice.scaledUnits, 0);
+  assert.equal(exactUpdated.regularSalePrice.scaledUnits, 123_456);
+});
+
+test('Product update rejects invalid price and minimum stock like creation', () => {
+  const original = createProduct(validProductInput());
+
+  assert.throws(
+    () =>
+      updateProduct(original, {
+        name: original.name,
+        regularSalePrice: Money.fromDecimal('-0.000001'),
+        updatedAt: original.updatedAt + 1,
+      }),
+    /regular sale price.*negative/i,
+  );
+  assert.throws(
+    () =>
+      updateProduct(original, {
+        name: original.name,
+        regularSalePrice: Money.zero(),
+        minimumStock: -1,
+        updatedAt: original.updatedAt + 1,
+      }),
+    /minimum stock.*negative/i,
+  );
+});
+
+test('Product update rejects an archived Product', () => {
+  const archived = archiveProduct(
+    createProduct(validProductInput()),
+    1_776_444_000_001,
+  );
+
+  assert.throws(
+    () =>
+      updateProduct(archived, {
+        name: archived.name,
+        regularSalePrice: archived.regularSalePrice,
+        updatedAt: archived.updatedAt + 1,
+      }),
+    /archived product.*update/i,
+  );
+});
+
+test('Product metadata changes cannot move updatedAt backwards', () => {
+  const original = createProduct(validProductInput());
+
+  assert.throws(
+    () =>
+      updateProduct(original, {
+        name: original.name,
+        regularSalePrice: original.regularSalePrice,
+        updatedAt: original.updatedAt - 1,
+      }),
+    /updated at.*before.*previous/i,
+  );
+});
+
+test('archives an active Product without changing its metadata or identity', () => {
+  const original = createProduct(validProductInput());
+  const archived = archiveProduct(original, original.updatedAt + 1);
+
+  assert.deepEqual(archived, {
+    ...original,
+    isArchived: true,
+    updatedAt: original.updatedAt + 1,
+  });
+  assert.equal(Object.isFrozen(archived), true);
+});
+
+test('archiving is idempotent and does not rewrite its timestamp', () => {
+  const original = createProduct(validProductInput());
+  const archived = archiveProduct(original, original.updatedAt + 1);
+
+  assert.equal(archiveProduct(archived, archived.updatedAt + 100), archived);
+});
+
+test('Product update and archive do not mutate the original Product or Money', () => {
+  const original = createProduct(validProductInput());
+  const originalPrice = original.regularSalePrice;
+
+  updateProduct(original, {
+    name: 'Changed',
+    regularSalePrice: Money.fromDecimal('2'),
+    updatedAt: original.updatedAt + 1,
+  });
+  archiveProduct(original, original.updatedAt + 1);
+
+  assert.equal(original.name, 'Coca-Cola 500 ml');
+  assert.equal(original.isArchived, false);
+  assert.equal(original.regularSalePrice, originalPrice);
+  assert.equal(originalPrice.scaledUnits, 1_500_000);
 });

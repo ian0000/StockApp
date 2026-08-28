@@ -5,8 +5,11 @@ import { Money } from '@stock-app/domain';
 
 import {
   formatMoneyForDisplay,
+  formatMoneyForInput,
   normalizeMoneyInput,
+  parseEditableProductFormValues,
   parseProductFormValues,
+  type EditableProductFormValues,
   type ProductFormValues,
 } from '../src/ui/products/product-form-values';
 
@@ -214,4 +217,96 @@ test('display formatting rounds an exact half away from zero', () => {
     formatMoneyForDisplay(Money.fromDecimal('-1.005'), 'USD'),
     'USD -1.01',
   );
+});
+
+function validEditableValues(
+  overrides: Partial<EditableProductFormValues> = {},
+): EditableProductFormValues {
+  return {
+    name: 'Coca-Cola',
+    variant: '500 ml',
+    barcode: '0012345',
+    regularSalePrice: '1,250001',
+    minimumStock: '2',
+    ...overrides,
+  };
+}
+
+test('parses editable Product metadata without stock, cost, or floating point', () => {
+  const result = parseEditableProductFormValues(validEditableValues());
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.deepEqual(Object.keys(result.input).sort(), [
+      'barcode',
+      'minimumStock',
+      'name',
+      'regularSalePrice',
+      'variant',
+    ]);
+    assert.equal(result.input.regularSalePrice.scaledUnits, 1_250_001);
+    assert.equal(result.input.minimumStock, 2);
+  }
+});
+
+test('editable Product parsing uses creation-equivalent name validation', () => {
+  assert.deepEqual(
+    parseEditableProductFormValues(validEditableValues({ name: '   ' })),
+    { ok: false, message: 'Ingresa un nombre.' },
+  );
+});
+
+test('editable Product parsing can remove optional metadata', () => {
+  const result = parseEditableProductFormValues(
+    validEditableValues({ variant: ' ', barcode: '', minimumStock: '' }),
+  );
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.input.variant, null);
+    assert.equal(result.input.barcode, null);
+    assert.equal(result.input.minimumStock, null);
+  }
+});
+
+test('editable barcode preserves leading zeroes', () => {
+  const result = parseEditableProductFormValues(
+    validEditableValues({ barcode: '00000042' }),
+  );
+
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.input.barcode, '00000042');
+});
+
+test('editable price accepts known zero and exact six-decimal values', () => {
+  const zero = parseEditableProductFormValues(
+    validEditableValues({ regularSalePrice: '0' }),
+  );
+  const exact = parseEditableProductFormValues(
+    validEditableValues({ regularSalePrice: '0.123456' }),
+  );
+
+  assert.equal(zero.ok, true);
+  assert.equal(exact.ok, true);
+  if (zero.ok) assert.equal(zero.input.regularSalePrice.scaledUnits, 0);
+  if (exact.ok) assert.equal(exact.input.regularSalePrice.scaledUnits, 123_456);
+});
+
+test('editable Product parsing rejects invalid price and minimum stock', () => {
+  assert.deepEqual(
+    parseEditableProductFormValues(
+      validEditableValues({ regularSalePrice: '1.2.3' }),
+    ),
+    { ok: false, message: 'Usa un precio habitual válido.' },
+  );
+  assert.deepEqual(
+    parseEditableProductFormValues(validEditableValues({ minimumStock: '-1' })),
+    { ok: false, message: 'Usa un stock mínimo entero y no negativo.' },
+  );
+});
+
+test('formats exact Money for editing without reducing stored precision', () => {
+  assert.equal(formatMoneyForInput(Money.fromDecimal('1.250001')), '1.250001');
+  assert.equal(formatMoneyForInput(Money.fromDecimal('1.250000')), '1.25');
+  assert.equal(formatMoneyForInput(Money.zero()), '0');
 });

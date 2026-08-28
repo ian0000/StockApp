@@ -17,6 +17,8 @@ export interface ProductDetails {
   readonly id: string;
   readonly name: string;
   readonly variant: string | null;
+  readonly barcode: string | null;
+  readonly minimumStock: number | null;
   readonly stock: number;
   readonly unitCost: Money | null;
   readonly regularSalePrice: Money;
@@ -83,6 +85,8 @@ export class GetProductDetailsUseCase {
       id: product.id,
       name: product.name,
       variant: product.variant,
+      barcode: product.barcode,
+      minimumStock: product.minimumStock,
       stock: inventoryState.stock,
       unitCost: inventoryState.unitCost,
       regularSalePrice: product.regularSalePrice,

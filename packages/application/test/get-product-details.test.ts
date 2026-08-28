@@ -26,7 +26,9 @@ function product(overrides: Partial<Product> = {}): Product {
       inventoryId: INVENTORY_ID,
       name: 'Coca-Cola',
       variant: '500 ml',
+      barcode: '0012345',
       regularSalePrice: Money.fromDecimal('1.50'),
+      minimumStock: 2,
       createdAt: 100,
       updatedAt: 100,
     }),
@@ -111,6 +113,8 @@ test('returns the current Product and InventoryState as a compact read model', a
   assert.equal(details?.id, 'product-123');
   assert.equal(details?.name, 'Coca-Cola');
   assert.equal(details?.variant, '500 ml');
+  assert.equal(details?.barcode, '0012345');
+  assert.equal(details?.minimumStock, 2);
   assert.equal(details?.stock, 12);
   assert.equal(details?.unitCost?.scaledUnits, 1_000_000);
   assert.equal(details?.regularSalePrice.scaledUnits, 1_500_000);

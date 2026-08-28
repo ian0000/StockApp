@@ -136,9 +136,11 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
         },
         persistence: 'sqlite',
         productServices: {
+          archiveProduct: state.services.archiveProduct,
           createProduct: state.services.createProduct,
           getProductDetails: state.services.getProductDetails,
           listProducts: state.services.listProducts,
+          updateProduct: state.services.updateProduct,
         },
         purchaseServices: {
           registerPurchase: state.services.registerPurchase,

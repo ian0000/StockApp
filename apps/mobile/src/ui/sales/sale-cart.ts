@@ -1,7 +1,10 @@
 import type { ProductSummary } from '@stock-app/application';
 import { Money } from '@stock-app/domain';
 
-import { normalizeMoneyInput } from '../products/product-form-values';
+import {
+  formatMoneyForInput,
+  normalizeMoneyInput,
+} from '../products/product-form-values';
 import { filterProductSummaries } from '../products/product-search';
 
 const RECENT_PRODUCT_LIMIT = 5;
@@ -28,20 +31,6 @@ function requireSafeQuantity(quantity: number): number {
   }
 
   return quantity;
-}
-
-function formatMoneyForInput(money: Money): string {
-  const isNegative = money.scaledUnits < 0;
-  const magnitude = Math.abs(money.scaledUnits);
-  const whole = Math.floor(magnitude / 1_000_000);
-  const fraction = String(magnitude % 1_000_000)
-    .padStart(6, '0')
-    .replace(/0+$/, '');
-  const sign = isNegative ? '-' : '';
-
-  return fraction.length === 0
-    ? `${sign}${whole}`
-    : `${sign}${whole}.${fraction}`;
 }
 
 function createCartItem({ product, state }: ProductSummary): SaleCartItem {

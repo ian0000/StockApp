@@ -31,6 +31,10 @@ export default function RootLayout() {
           name="product/[id]"
           options={{ title: 'Detalle de producto' }}
         />
+        <Stack.Screen
+          name="product/edit/[id]"
+          options={{ title: 'Editar producto' }}
+        />
       </Stack>
     </AppRuntimeProvider>
   );

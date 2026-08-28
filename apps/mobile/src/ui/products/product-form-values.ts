@@ -1,4 +1,7 @@
-import type { CreateProductInput } from '@stock-app/application';
+import type {
+  CreateProductInput,
+  UpdateProductInput,
+} from '@stock-app/application';
 import { Money } from '@stock-app/domain';
 
 export interface ProductFormValues {
@@ -11,10 +14,24 @@ export interface ProductFormValues {
   readonly minimumStock: string;
 }
 
+export type EditableProductFormValues = Pick<
+  ProductFormValues,
+  'name' | 'variant' | 'barcode' | 'regularSalePrice' | 'minimumStock'
+>;
+
 type ParsedProductFormInput = Omit<CreateProductInput, 'inventoryId'>;
 
 export type ParseProductFormResult =
   | { readonly ok: true; readonly input: ParsedProductFormInput }
+  | { readonly ok: false; readonly message: string };
+
+type ParsedEditableProductFormInput = Omit<
+  UpdateProductInput,
+  'inventoryId' | 'productId'
+>;
+
+export type ParseEditableProductFormResult =
+  | { readonly ok: true; readonly input: ParsedEditableProductFormInput }
   | { readonly ok: false; readonly message: string };
 
 function parseNonNegativeSafeInteger(value: string): number | null {
@@ -126,6 +143,57 @@ export function parseProductFormValues(
       initialUnitCost,
     },
   };
+}
+
+export function parseEditableProductFormValues(
+  values: EditableProductFormValues,
+): ParseEditableProductFormResult {
+  if (values.name.trim().length === 0) {
+    return { ok: false, message: 'Ingresa un nombre.' };
+  }
+
+  const regularSalePrice = parseNonNegativeMoney(values.regularSalePrice);
+
+  if (regularSalePrice === null) {
+    return { ok: false, message: 'Usa un precio habitual válido.' };
+  }
+
+  const minimumStock =
+    values.minimumStock.trim().length === 0
+      ? null
+      : parseNonNegativeSafeInteger(values.minimumStock);
+
+  if (minimumStock === null && values.minimumStock.trim().length > 0) {
+    return {
+      ok: false,
+      message: 'Usa un stock mínimo entero y no negativo.',
+    };
+  }
+
+  return {
+    ok: true,
+    input: {
+      name: values.name,
+      variant: optionalText(values.variant),
+      barcode: optionalText(values.barcode),
+      regularSalePrice,
+      minimumStock,
+    },
+  };
+}
+
+export function formatMoneyForInput(money: Money): string {
+  const isNegative = money.scaledUnits < 0;
+  const magnitude = Math.abs(money.scaledUnits);
+  const whole = Math.floor(magnitude / 1_000_000);
+  const fraction = String(magnitude % 1_000_000)
+    .padStart(6, '0')
+    .replace(/0+$/, '');
+  const sign = isNegative ? '-' : '';
+
+  return fraction.length === 0
+    ? `${sign}${whole}`
+    : `${sign}${whole}.${fraction}`;
 }
 
 export function formatMoneyForDisplay(money: Money, currency: string): string {
