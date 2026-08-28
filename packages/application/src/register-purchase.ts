@@ -4,11 +4,17 @@ import {
   createPurchase,
   createPurchaseMovement,
   Money,
+  type InventoryState,
+  type Product,
   type Purchase,
 } from '@stock-app/domain';
 
 import type { Clock, InventoryMovementIdGenerator } from './create-product';
 import type { TransactionManager } from './ports';
+import {
+  createPurchasePriceAnalysis,
+  type PurchasePriceAnalysis,
+} from './purchase-price-analysis';
 
 export interface PurchaseIdGenerator {
   generate(): string;
@@ -20,6 +26,14 @@ export interface RegisterPurchaseInput {
   readonly quantity: number;
   readonly unitCost: Money;
   readonly notes?: string | null;
+}
+
+export interface RegisterPurchaseResult {
+  readonly purchase: Purchase;
+  readonly product: Product;
+  readonly beforeInventoryState: InventoryState;
+  readonly afterInventoryState: InventoryState;
+  readonly priceAnalysis: PurchasePriceAnalysis;
 }
 
 interface RegisterPurchaseDependencies {
@@ -94,10 +108,11 @@ function validateAndNormalizeInput({
 export class RegisterPurchaseUseCase {
   constructor(private readonly dependencies: RegisterPurchaseDependencies) {}
 
-  async execute(input: RegisterPurchaseInput): Promise<Purchase> {
+  async execute(input: RegisterPurchaseInput): Promise<RegisterPurchaseResult> {
     const normalized = validateAndNormalizeInput(input);
+    const { transactionManager } = this.dependencies;
 
-    return this.dependencies.transactionManager.runInTransaction(
+    const persisted = await transactionManager.runInTransaction(
       async (repositories) => {
         const products = await repositories.productRepository.listByInventory(
           normalized.inventoryId,
@@ -194,8 +209,22 @@ export class RegisterPurchaseUseCase {
           state: resultingState,
         });
 
-        return purchase;
+        return Object.freeze({
+          purchase,
+          product,
+          beforeInventoryState: currentState,
+          afterInventoryState: resultingState,
+        });
       },
     );
+
+    return Object.freeze({
+      ...persisted,
+      priceAnalysis: createPurchasePriceAnalysis({
+        beforeInventoryState: persisted.beforeInventoryState,
+        afterInventoryState: persisted.afterInventoryState,
+        regularSalePrice: persisted.product.regularSalePrice,
+      }),
+    });
   }
 }

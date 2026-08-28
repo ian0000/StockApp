@@ -9,8 +9,10 @@ import {
   View,
 } from 'react-native';
 
-import type { ProductSummary } from '@stock-app/application';
-import type { Purchase } from '@stock-app/domain';
+import type {
+  ProductSummary,
+  RegisterPurchaseResult,
+} from '@stock-app/application';
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
@@ -18,6 +20,7 @@ import { Section } from '@/ui/components/Section';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { PurchaseConfirmation } from '@/ui/purchases/PurchaseConfirmation';
 import { parsePurchaseFormValues } from '@/ui/purchases/purchase-form';
+import { applySuggestedPrice } from '@/ui/purchases/purchase-price-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { filterSaleProducts } from '@/ui/sales/sale-cart';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
@@ -29,7 +32,13 @@ type ProductsState =
 
 type PurchasePhase =
   | { readonly status: 'editing' }
-  | { readonly status: 'confirmed'; readonly purchase: Purchase };
+  | {
+      readonly status: 'confirmed';
+      readonly result: RegisterPurchaseResult;
+      readonly priceDecision: PriceDecisionStatus;
+    };
+
+type PriceDecisionStatus = 'pending' | 'saving' | 'applied' | 'kept' | 'error';
 
 export default function NewPurchaseScreen() {
   const router = useRouter();
@@ -37,6 +46,7 @@ export default function NewPurchaseScreen() {
     useAppRuntime();
   const requestIdRef = useRef(0);
   const submittingRef = useRef(false);
+  const updatingPriceRef = useRef(false);
   const [state, setState] = useState<ProductsState>({ status: 'loading' });
   const [phase, setPhase] = useState<PurchasePhase>({ status: 'editing' });
   const [searchText, setSearchText] = useState('');
@@ -149,7 +159,7 @@ export default function NewPurchaseScreen() {
     setSubmitError(null);
 
     try {
-      const purchase = await purchaseServices.registerPurchase.execute({
+      const result = await purchaseServices.registerPurchase.execute({
         inventoryId: inventory.id,
         productId: selectedProduct.product.id,
         quantity: parsedForm.quantity,
@@ -160,7 +170,7 @@ export default function NewPurchaseScreen() {
       setSearchText('');
       setQuantityText('');
       setUnitCostText('');
-      setPhase({ status: 'confirmed', purchase });
+      setPhase({ status: 'confirmed', result, priceDecision: 'pending' });
       void loadProducts();
     } catch {
       setSubmitError(
@@ -169,6 +179,48 @@ export default function NewPurchaseScreen() {
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
+    }
+  };
+
+  const keepCurrentPrice = () => {
+    if (phase.status !== 'confirmed' || updatingPriceRef.current) return;
+
+    setPhase({ ...phase, priceDecision: 'kept' });
+  };
+
+  const applySuggestedPriceChoice = async () => {
+    if (
+      phase.status !== 'confirmed' ||
+      productServices === null ||
+      updatingPriceRef.current
+    ) {
+      return;
+    }
+
+    const confirmedResult = phase.result;
+    updatingPriceRef.current = true;
+    setPhase({
+      status: 'confirmed',
+      result: confirmedResult,
+      priceDecision: 'saving',
+    });
+
+    try {
+      await applySuggestedPrice(confirmedResult, productServices.updateProduct);
+      setPhase({
+        status: 'confirmed',
+        result: confirmedResult,
+        priceDecision: 'applied',
+      });
+      void loadProducts();
+    } catch {
+      setPhase({
+        status: 'confirmed',
+        result: confirmedResult,
+        priceDecision: 'error',
+      });
+    } finally {
+      updatingPriceRef.current = false;
     }
   };
 
@@ -188,8 +240,11 @@ export default function NewPurchaseScreen() {
         <PurchaseConfirmation
           currency={inventory.currency}
           onGoProducts={() => router.replace('/products')}
+          onKeepPrice={keepCurrentPrice}
           onNewPurchase={startNewPurchase}
-          purchase={phase.purchase}
+          onUseSuggestedPrice={() => void applySuggestedPriceChoice()}
+          priceDecision={phase.priceDecision}
+          result={phase.result}
         />
       </Screen>
     );
