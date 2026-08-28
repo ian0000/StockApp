@@ -64,7 +64,7 @@ export async function runRegisterPurchaseSmokeTest(): Promise<RegisterPurchaseSm
       unitCost: Money.fromDecimal('12'),
       notes: 'Scenario A',
     });
-    await assertPersistedPurchase(runtime, positivePurchase.id, {
+    await assertPersistedPurchase(runtime, positivePurchase.purchase.id, {
       productId: positiveProduct.product.id,
       quantity: 10,
       unitCostUnits: 12_000_000,
@@ -81,16 +81,20 @@ export async function runRegisterPurchaseSmokeTest(): Promise<RegisterPurchaseSm
       quantity: 4,
       unitCost: Money.fromDecimal('2'),
     });
-    await assertPersistedPurchase(runtime, remainsNegativePurchase.id, {
-      productId: remainsNegativeProduct,
-      quantity: 4,
-      unitCostUnits: 2_000_000,
-      totalAmountUnits: 8_000_000,
-      averageCostBeforeUnits: null,
-      averageCostAfterUnits: 2_000_000,
-      stockBefore: -10,
-      stockAfter: -6,
-    });
+    await assertPersistedPurchase(
+      runtime,
+      remainsNegativePurchase.purchase.id,
+      {
+        productId: remainsNegativeProduct,
+        quantity: 4,
+        unitCostUnits: 2_000_000,
+        totalAmountUnits: 8_000_000,
+        averageCostBeforeUnits: null,
+        averageCostAfterUnits: 2_000_000,
+        stockBefore: -10,
+        stockAfter: -6,
+      },
+    );
 
     const crossesPositivePurchase = await services.registerPurchase.execute({
       inventoryId: inventory.id,
@@ -98,16 +102,20 @@ export async function runRegisterPurchaseSmokeTest(): Promise<RegisterPurchaseSm
       quantity: 15,
       unitCost: Money.fromDecimal('3'),
     });
-    await assertPersistedPurchase(runtime, crossesPositivePurchase.id, {
-      productId: crossesPositiveProduct,
-      quantity: 15,
-      unitCostUnits: 3_000_000,
-      totalAmountUnits: 45_000_000,
-      averageCostBeforeUnits: null,
-      averageCostAfterUnits: 3_000_000,
-      stockBefore: -10,
-      stockAfter: 5,
-    });
+    await assertPersistedPurchase(
+      runtime,
+      crossesPositivePurchase.purchase.id,
+      {
+        productId: crossesPositiveProduct,
+        quantity: 15,
+        unitCostUnits: 3_000_000,
+        totalAmountUnits: 45_000_000,
+        averageCostBeforeUnits: null,
+        averageCostAfterUnits: 3_000_000,
+        stockBefore: -10,
+        stockAfter: 5,
+      },
+    );
 
     await database.sqlite.execAsync(`
       CREATE TRIGGER purchase_003_fail_late

@@ -227,7 +227,7 @@ function createHarness(options: HarnessOptions = {}) {
 
 test('registers a purchase with exact derived fields and normalized notes', async () => {
   const harness = createHarness();
-  const purchase = await harness.useCase.execute(validInput());
+  const { purchase } = await harness.useCase.execute(validInput());
 
   assert.equal(purchase.id, 'purchase-1');
   assert.equal(purchase.inventoryId, 'inventory-1');
@@ -242,7 +242,7 @@ test('registers a purchase with exact derived fields and normalized notes', asyn
 
 test('generates one Purchase ID, one Movement ID and calls Clock once', async () => {
   const harness = createHarness();
-  const purchase = await harness.useCase.execute(validInput());
+  const { purchase } = await harness.useCase.execute(validInput());
   const movement = harness.savedMovements[0];
 
   assert.equal(harness.purchaseIds.calls, 1);
@@ -263,7 +263,8 @@ test('generates one Purchase ID, one Movement ID and calls Clock once', async ()
 
 test('uses weighted average and exact snapshots for positive stock', async () => {
   const harness = createHarness();
-  const purchase = await harness.useCase.execute(validInput());
+  const result = await harness.useCase.execute(validInput());
+  const { purchase } = result;
 
   assert.equal(purchase.stockBefore, 20);
   assert.equal(purchase.stockAfter, 30);
@@ -274,6 +275,15 @@ test('uses weighted average and exact snapshots for positive stock', async () =>
     harness.updatedStates[0]?.state.unitCost?.scaledUnits,
     10_666_667,
   );
+  assert.equal(result.beforeInventoryState.stock, 20);
+  assert.equal(result.beforeInventoryState.unitCost?.scaledUnits, 10_000_000);
+  assert.equal(result.afterInventoryState.stock, 30);
+  assert.equal(result.afterInventoryState.unitCost?.scaledUnits, 10_666_667);
+  assert.equal(result.priceAnalysis.regularSalePrice.scaledUnits, 2_000_000);
+  assert.equal(result.priceAnalysis.costChanged, true);
+  assert.equal(result.priceAnalysis.previousMargin?.scaledUnits, -400_000_000);
+  assert.equal(result.priceAnalysis.currentMargin?.scaledUnits, -433_333_350);
+  assert.equal(result.priceAnalysis.suggestedSalePrice?.scaledUnits, 2_133_333);
 });
 
 for (const [label, previousCost] of [
@@ -282,13 +292,23 @@ for (const [label, previousCost] of [
 ] as const) {
   test(`stock zero ignores ${label} previous cost`, async () => {
     const harness = createHarness({ states: [state(0, previousCost)] });
-    const purchase = await harness.useCase.execute(
+    const { purchase, priceAnalysis } = await harness.useCase.execute(
       validInput({ quantity: 5, unitCost: Money.fromDecimal('2') }),
     );
 
     assert.strictEqual(purchase.averageCostBefore, previousCost);
     assert.equal(purchase.averageCostAfter.scaledUnits, 2_000_000);
     assert.equal(purchase.stockAfter, 5);
+    assert.equal(priceAnalysis.currentUnitCost.scaledUnits, 2_000_000);
+    assert.equal(priceAnalysis.currentMargin?.scaledUnits, 0);
+
+    if (previousCost === null) {
+      assert.equal(priceAnalysis.previousMargin, null);
+      assert.equal(priceAnalysis.suggestedSalePrice, null);
+    } else {
+      assert.equal(priceAnalysis.previousMargin?.scaledUnits, -350_000_000);
+      assert.equal(priceAnalysis.suggestedSalePrice?.scaledUnits, 444_444);
+    }
   });
 }
 
@@ -299,19 +319,33 @@ for (const [stockBefore, quantity, stockAfter] of [
 ] as const) {
   test(`negative stock ${stockBefore} plus ${quantity} becomes ${stockAfter} without weighting deficit`, async () => {
     const harness = createHarness({ states: [state(stockBefore, null)] });
-    const purchase = await harness.useCase.execute(
+    const { purchase, afterInventoryState } = await harness.useCase.execute(
       validInput({ quantity, unitCost: Money.fromDecimal('2') }),
     );
 
     assert.equal(purchase.stockAfter, stockAfter);
     assert.equal(purchase.averageCostBefore, null);
     assert.equal(purchase.averageCostAfter.scaledUnits, 2_000_000);
+    assert.equal(afterInventoryState.unitCost?.scaledUnits, 2_000_000);
   });
 }
 
+test('negative stock suggestion uses incoming cost without weighting the deficit', async () => {
+  const harness = createHarness({
+    states: [state(-10, Money.fromDecimal('10'))],
+  });
+  const result = await harness.useCase.execute(
+    validInput({ quantity: 4, unitCost: Money.fromDecimal('12') }),
+  );
+
+  assert.equal(result.afterInventoryState.stock, -6);
+  assert.equal(result.priceAnalysis.currentUnitCost.scaledUnits, 12_000_000);
+  assert.equal(result.priceAnalysis.suggestedSalePrice?.scaledUnits, 2_400_000);
+});
+
 test('preserves known zero purchase cost and resulting average', async () => {
   const harness = createHarness({ states: [state(0, null)] });
-  const purchase = await harness.useCase.execute(
+  const { purchase } = await harness.useCase.execute(
     validInput({ quantity: 2, unitCost: Money.zero() }),
   );
 
@@ -322,7 +356,7 @@ test('preserves known zero purchase cost and resulting average', async () => {
 
 test('creates exactly one linked PURCHASE movement with purchase cost snapshot', async () => {
   const harness = createHarness();
-  const purchase = await harness.useCase.execute(validInput());
+  const { purchase } = await harness.useCase.execute(validInput());
 
   assert.equal(harness.savedMovements.length, 1);
   assert.deepEqual(harness.savedMovements[0], {

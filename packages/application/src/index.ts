@@ -15,7 +15,13 @@ export {
   RegisterPurchaseUseCase,
   type PurchaseIdGenerator,
   type RegisterPurchaseInput,
+  type RegisterPurchaseResult,
 } from './register-purchase';
+export {
+  createPurchasePriceAnalysis,
+  type PurchasePriceAnalysis,
+  type PurchasePriceAnalysisInput,
+} from './purchase-price-analysis';
 export {
   CreateInventoryUseCase,
   type CreateInventoryInput,
