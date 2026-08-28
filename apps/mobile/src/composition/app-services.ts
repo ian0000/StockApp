@@ -5,6 +5,7 @@ import {
   CreateProductUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
+  GetPurchaseDetailsUseCase,
   GetSaleDetailsUseCase,
   GetSalesSummaryUseCase,
   ListHistoryUseCase,
@@ -22,6 +23,7 @@ import {
   type ProductManagementRepository,
   type ProductRepository,
   type PurchaseIdGenerator,
+  type PurchaseDetailsReader,
   type SalesSummaryReader,
   type SaleDetailsReader,
   type SaleIdGenerator,
@@ -45,6 +47,7 @@ export interface AppServices {
   readonly createProduct: CreateProductUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
+  readonly getPurchaseDetails: GetPurchaseDetailsUseCase;
   readonly getSaleDetails: GetSaleDetailsUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly listHistory: ListHistoryUseCase;
@@ -61,6 +64,7 @@ export interface AppServiceDependencies {
   readonly inventoryRepository: InventoryRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
   readonly productRepository: ProductRepository & ProductManagementRepository;
+  readonly purchaseDetailsReader: PurchaseDetailsReader;
   readonly salesSummaryReader: SalesSummaryReader;
   readonly saleDetailsReader: SaleDetailsReader;
   readonly transactionManager: TransactionManager;
@@ -73,6 +77,7 @@ export function assembleAppServices({
   inventoryRepository,
   inventoryStateRepository,
   productRepository,
+  purchaseDetailsReader,
   salesSummaryReader,
   saleDetailsReader,
   transactionManager,
@@ -104,6 +109,7 @@ export function assembleAppServices({
       inventoryStateRepository,
       productRepository,
     }),
+    getPurchaseDetails: new GetPurchaseDetailsUseCase(purchaseDetailsReader),
     getSaleDetails: new GetSaleDetailsUseCase(saleDetailsReader),
     getSalesSummary: new GetSalesSummaryUseCase(salesSummaryReader),
     listHistory: new ListHistoryUseCase(historyReader),

@@ -2,6 +2,7 @@ import {
   compareHistoryEntriesNewestFirst,
   type HistoryEntry,
   type HistoryReader,
+  type PurchaseDetailsReader,
   type SaleDetailsReader,
   InventoryRepository,
   InventoryMovementRepository,
@@ -37,6 +38,7 @@ import {
   mapInventoryStateToRow,
   mapProductRowToDomain,
   mapProductToRow,
+  mapPurchaseRowToDomain,
   mapPurchaseToRow,
   mapSaleItemToRow,
   mapSaleItemRowToDomain,
@@ -625,6 +627,61 @@ export function createSqliteSaleDetailsReader(
             }),
           ),
         ),
+      });
+    },
+  };
+}
+
+export function createSqlitePurchaseDetailsReader(
+  executor: SqliteReadExecutor,
+): PurchaseDetailsReader {
+  return {
+    async findById({ inventoryId, purchaseId }) {
+      const rows = await executor
+        .select({
+          id: purchases.id,
+          inventoryId: purchases.inventoryId,
+          productId: purchases.productId,
+          quantity: purchases.quantity,
+          unitCostUnits: purchases.unitCostUnits,
+          totalAmountUnits: purchases.totalAmountUnits,
+          effectiveAt: purchases.effectiveAt,
+          createdAt: purchases.createdAt,
+          updatedAt: purchases.updatedAt,
+          status: purchases.status,
+          notes: purchases.notes,
+          averageCostBeforeUnits: purchases.averageCostBeforeUnits,
+          averageCostAfterUnits: purchases.averageCostAfterUnits,
+          stockBefore: purchases.stockBefore,
+          stockAfter: purchases.stockAfter,
+          productName: products.name,
+          productVariant: products.variant,
+        })
+        .from(purchases)
+        .leftJoin(
+          products,
+          and(
+            eq(products.inventoryId, purchases.inventoryId),
+            eq(products.id, purchases.productId),
+          ),
+        )
+        .where(
+          and(
+            eq(purchases.inventoryId, inventoryId),
+            eq(purchases.id, purchaseId),
+          ),
+        )
+        .limit(1);
+      const row = rows[0];
+
+      if (row === undefined) return null;
+
+      const { productName, productVariant, ...purchaseRow } = row;
+
+      return Object.freeze({
+        purchase: mapPurchaseRowToDomain(purchaseRow),
+        productName,
+        productVariant,
       });
     },
   };

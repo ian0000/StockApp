@@ -12,6 +12,7 @@ import {
 interface HistoryOperationRowProps {
   readonly currency: string;
   readonly entry: HistoryEntry;
+  readonly onOpenPurchase?: (purchaseId: string) => void;
   readonly onOpenSale?: (saleId: string) => void;
   readonly variant: HistoryRowVariant;
 }
@@ -19,10 +20,18 @@ interface HistoryOperationRowProps {
 export function HistoryOperationRow({
   currency,
   entry,
+  onOpenPurchase,
   onOpenSale,
   variant,
 }: HistoryOperationRowProps) {
   const row = createHistoryRowPresentation(entry, currency, variant);
+  const onOpen =
+    entry.type === 'SALE'
+      ? onOpenSale
+      : entry.type === 'PURCHASE'
+        ? onOpenPurchase
+        : undefined;
+  const operationLabel = entry.type === 'PURCHASE' ? 'Compra' : 'Venta';
   const content = (
     <>
       <View style={styles.rowCopy}>
@@ -39,7 +48,7 @@ export function HistoryOperationRow({
           <Text style={styles.secondaryText}>{row.secondary}</Text>
         ) : null}
         <Text style={styles.detail}>{row.detail}</Text>
-        {entry.type === 'SALE' && onOpenSale !== undefined ? (
+        {onOpen !== undefined ? (
           <Text style={styles.openHint}>Ver detalle</Text>
         ) : null}
       </View>
@@ -49,13 +58,13 @@ export function HistoryOperationRow({
     </>
   );
 
-  if (entry.type === 'SALE' && onOpenSale !== undefined) {
+  if (onOpen !== undefined) {
     return (
       <Pressable
-        accessibilityHint="Abre el detalle de esta venta"
-        accessibilityLabel={`Venta ${row.primary}, ${row.detail}`}
+        accessibilityHint={`Abre el detalle de esta ${operationLabel.toLowerCase()}`}
+        accessibilityLabel={`${operationLabel} ${row.primary}, ${row.detail}`}
         accessibilityRole="button"
-        onPress={() => onOpenSale(entry.id)}
+        onPress={() => onOpen(entry.id)}
         style={({ pressed }) => [
           styles.row,
           variant === 'recent' && styles.recentRow,

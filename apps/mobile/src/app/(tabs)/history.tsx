@@ -13,6 +13,7 @@ import type { HistoryEntry } from '@stock-app/application';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { HistoryOperationRow } from '@/ui/history/HistoryOperationRow';
+import { createPurchaseDetailsRoute } from '@/ui/purchases/purchase-details-presentation';
 import { createSaleDetailsRoute } from '@/ui/sales/sale-details-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
@@ -120,6 +121,9 @@ export default function HistoryScreen() {
               currency={inventory.currency}
               entry={entry}
               key={`${entry.type}:${entry.id}`}
+              onOpenPurchase={(purchaseId) =>
+                router.push(createPurchaseDetailsRoute(purchaseId))
+              }
               onOpenSale={(saleId) =>
                 router.push(createSaleDetailsRoute(saleId))
               }
