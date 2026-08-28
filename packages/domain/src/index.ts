@@ -37,8 +37,15 @@ export { Money } from './money/index';
 export { Percentage } from './percentage/index';
 export {
   createPurchase,
+  preparePurchaseReversal,
+  type AlreadyVoidedPurchasePlan,
   type CreatePurchaseInput,
+  type PreparedPurchaseReversal,
+  type PreparedPurchaseVoidPlan,
+  type PreparePurchaseReversalInput,
   type Purchase,
+  type PurchaseInventoryStateUpdate,
+  type PurchaseReversalPlan,
   type PurchaseStatus,
 } from './purchase/index';
 export { createTimestampMs, type TimestampMs } from './timestamp/index';
