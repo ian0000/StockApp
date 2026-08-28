@@ -45,11 +45,19 @@ export { createTimestampMs, type TimestampMs } from './timestamp/index';
 export {
   createSale,
   createSaleItem,
+  prepareSaleReversal,
+  type AlreadyVoidedSalePlan,
   type CostStatus,
+  type CurrentSaleInventoryState,
   type CreateSaleInput,
   type CreateSaleItemInput,
+  type PreparedSaleReversal,
+  type PreparedSaleVoidPlan,
+  type PrepareSaleReversalInput,
   type Sale,
+  type SaleInventoryStateUpdate,
   type SaleItem,
+  type SaleReversalPlan,
   type SaleStatus,
 } from './sale/index';
 export {
