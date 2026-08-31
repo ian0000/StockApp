@@ -13,6 +13,7 @@ import type {
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
   UpdateProductUseCase,
+  VoidPurchaseUseCase,
   VoidSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
@@ -35,6 +36,7 @@ export interface SaleRuntimeServices {
 export interface PurchaseRuntimeServices {
   readonly getPurchaseDetails: GetPurchaseDetailsUseCase;
   readonly registerPurchase: RegisterPurchaseUseCase;
+  readonly voidPurchase: VoidPurchaseUseCase;
 }
 
 export interface AdjustmentRuntimeServices {
