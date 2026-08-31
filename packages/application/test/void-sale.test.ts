@@ -24,6 +24,7 @@ import {
   type TransactionManager,
   type TransactionRepositories,
 } from '../src/index';
+import { unusedPurchaseVoidRepository } from './support/unused-sale-void-repository';
 
 const SALE_AT = 1_776_444_000_000;
 const VOIDED_AT = SALE_AT + 1_000;
@@ -219,6 +220,7 @@ function createHarness(options: HarnessOptions = {}) {
     saleItemRepository: { async save() {} },
     stockAdjustmentRepository: { async save() {} },
     saleVoidRepository: transaction,
+    purchaseVoidRepository: unusedPurchaseVoidRepository,
   };
   const transactionManager: TransactionManager & { calls: number } = {
     calls: 0,
