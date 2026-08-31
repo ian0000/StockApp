@@ -473,17 +473,42 @@ Implementar en tareas pequeñas después de aprobar este preflight y antes de of
 
 1. `DOMAIN-VOID-SALE`: transición y creación determinista de reversiones de venta;
 2. `APP-VOID-SALE`: ports, caso de uso atómico, SQLite e idempotencia;
-3. `UI-VOID-SALE`: confirmación desde detalle y acceso rápido `Deshacer`;
+3. `UI-VOID-SALE`: confirmación y acción permanente desde detalle; el acceso rápido `Deshacer`
+   permanece como decisión UX separada;
 4. `DOMAIN-VOID-PURCHASE`: restauración exacta desde snapshots bajo la restricción de última
    operación;
 5. `APP-VOID-PURCHASE`: ports, caso de uso atómico, SQLite e idempotencia;
-6. `UI-VOID-PURCHASE`: acción desde detalle; Undo inmediato solo si se aprueba la decisión UX
-   pendiente;
+6. `UI-VOID-PURCHASE`: confirmación y acción permanente desde detalle; Undo inmediato permanece
+   pendiente de aprobación UX;
 7. regresión de History, detalles, métricas, stock bajo y productos archivados.
 
 No agrupar Sale y Purchase en un caso de uso genérico. No implementar anulación de
-`StockAdjustment` en V1. Antes del ticket UI debe resolverse la duración de `Deshacer`; antes de
-exponer Undo de compra debe decidirse si esa acción rápida forma parte de V1.
+`StockAdjustment` en V1. Antes de exponer cualquier `Deshacer` inmediato debe resolverse su duración;
+antes de exponer Undo de compra debe decidirse además si esa acción rápida forma parte de V1.
+
+### Estado de implementación verificado
+
+La revisión consolidada posterior a las anulaciones clasifica el estado real así:
+
+| Bloque | Estado | Alcance verificado o pendiente |
+| --- | --- | --- |
+| Fundaciones técnicas | DONE | Workspace, TypeScript strict, quality gates, Expo, SQLite, Drizzle y ocho tablas versionadas. |
+| Productos | DONE | Crear, listar, buscar, consultar detalle, editar, archivar y derivar stock bajo. |
+| Compras | DONE | Registro atómico de un producto, costo promedio, snapshots, detalle y sugerencia de precio. |
+| Ventas | DONE | Registro multiproducto atómico, stock negativo, snapshots de costo, ganancia y detalle. |
+| Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
+| History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |
+| Anulación de Sale y Purchase | DONE | Domain, Application, SQLite y acción permanente desde detalles; regresión automatizada completa. |
+| Validación física consolidada de anulaciones | PENDING | Debe comprobarse en iPhone, incluidos reinicio, déficit, multiproducto y precio sugerido conservado. |
+| Barcode | PENDING | Permiso de cámara, escaneo local, repetición, no encontrado e integración con alta, venta y compra. |
+| Dashboard básico | PENDING | Ventas, ganancia y unidades ya son reales; faltan más vendido y stock bajo real dentro de Inicio. |
+| Backup y restauración local | PENDING | Continúa siendo gate obligatorio antes de Alpha y requiere validación con una copia real. |
+| Undo inmediato | PENDING | Duración no definida; compra requiere además decidir si ofrecerá este acceso rápido. |
+| Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
+| Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |
+
+`DONE` significa implementado y validado automáticamente. No implica validación física cuando la fila
+correspondiente permanece `PENDING`.
 
 ### Barcode
 

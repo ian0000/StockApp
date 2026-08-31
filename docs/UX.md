@@ -967,7 +967,7 @@ detalle propio en V1.
 La carga inicial muestra las 50 operaciones más recientes. V1 no requiere paginación visible ni
 scroll infinito inicialmente.
 
-`RECIENTES` en Inicio utiliza el mismo modelo conceptual unificado, limitado a las tres operaciones
+`RECIENTES` en Inicio utiliza el mismo modelo conceptual unificado, limitado a las cinco operaciones
 más recientes de tipo venta, compra o ajuste. Excluye stock inicial y reversiones técnicas.
 
 ---
