@@ -13,8 +13,13 @@ import { Section } from '@/ui/components/Section';
 import {
   createPurchaseDetailsPresentation,
   createPurchaseDetailsRequest,
+  createPurchaseVoidSubmissionGate,
   getPurchaseDetailsContentKind,
+  getPurchaseVoidErrorPresentation,
+  getPurchaseVoidResultPresentation,
+  isPurchaseVoidActionVisible,
   normalizePurchaseIdParam,
+  type PurchaseVoidFeedbackPresentation,
   type PurchaseDetailsState,
 } from '@/ui/purchases/purchase-details-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
@@ -26,9 +31,14 @@ export default function PurchaseDetailsScreen() {
   const purchaseId = normalizePurchaseIdParam(params.id);
   const { inventory, persistence, purchaseServices } = useAppRuntime();
   const requestIdRef = useRef(0);
+  const voidSubmissionGateRef = useRef(createPurchaseVoidSubmissionGate());
   const [state, setState] = useState<PurchaseDetailsState>({
     status: 'loading',
   });
+  const [voidConfirmationVisible, setVoidConfirmationVisible] = useState(false);
+  const [voidFeedback, setVoidFeedback] =
+    useState<PurchaseVoidFeedbackPresentation | null>(null);
+  const [isVoiding, setIsVoiding] = useState(false);
 
   const loadDetails = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -58,6 +68,8 @@ export default function PurchaseDetailsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      setVoidConfirmationVisible(false);
+      setVoidFeedback(null);
       void loadDetails();
 
       return () => {
@@ -66,11 +78,62 @@ export default function PurchaseDetailsScreen() {
     }, [loadDetails]),
   );
 
+  async function handleVoidPurchase() {
+    if (
+      purchaseServices === null ||
+      purchaseId === null ||
+      !voidSubmissionGateRef.current.tryStart()
+    ) {
+      return;
+    }
+
+    setVoidFeedback(null);
+    setIsVoiding(true);
+
+    try {
+      const result = await purchaseServices.voidPurchase.execute({
+        inventoryId: inventory.id,
+        purchaseId,
+      });
+      const feedback = getPurchaseVoidResultPresentation(result);
+
+      setVoidConfirmationVisible(false);
+      setVoidFeedback(feedback);
+
+      if (feedback.shouldRefresh) {
+        await loadDetails();
+      }
+    } catch (error) {
+      const feedback = getPurchaseVoidErrorPresentation(error);
+
+      setVoidConfirmationVisible(false);
+
+      if (feedback.kind === 'not-found') {
+        setVoidFeedback(null);
+        await loadDetails();
+      } else {
+        setVoidFeedback(feedback);
+      }
+    } finally {
+      voidSubmissionGateRef.current.finish();
+      setIsVoiding(false);
+    }
+  }
+
   const contentKind = getPurchaseDetailsContentKind(state);
   const presentation =
     state.status === 'ready' && state.details !== null
       ? createPurchaseDetailsPresentation(state.details, inventory.currency)
       : null;
+  const purchaseStatus =
+    state.status === 'ready' && state.details !== null
+      ? state.details.status
+      : null;
+  const showVoidAction =
+    presentation !== null &&
+    purchaseStatus !== null &&
+    purchaseServices !== null &&
+    isPurchaseVoidActionVisible(purchaseStatus, persistence);
 
   return (
     <Screen edges={['bottom']}>
@@ -178,6 +241,136 @@ export default function PurchaseDetailsScreen() {
               </View>
             </Section>
           ) : null}
+
+          {showVoidAction || voidFeedback !== null ? (
+            <Section title="Anulación" titleVariant="eyebrow">
+              {showVoidAction ? (
+                <Pressable
+                  accessibilityLabel={
+                    isVoiding ? 'Anulando compra' : 'Anular compra'
+                  }
+                  accessibilityRole="button"
+                  accessibilityState={{ busy: isVoiding, disabled: isVoiding }}
+                  disabled={isVoiding}
+                  onPress={() => {
+                    setVoidFeedback(null);
+                    setVoidConfirmationVisible(true);
+                  }}
+                  style={({ pressed }) => [
+                    styles.voidAction,
+                    pressed && styles.voidActionPressed,
+                    isVoiding && styles.disabledAction,
+                  ]}
+                >
+                  <Text style={styles.voidActionText}>
+                    {isVoiding ? 'Anulando…' : 'Anular compra'}
+                  </Text>
+                </Pressable>
+              ) : null}
+
+              {voidConfirmationVisible && showVoidAction ? (
+                <View
+                  accessibilityLiveRegion="polite"
+                  style={styles.voidConfirmation}
+                >
+                  <Text style={styles.voidConfirmationTitle}>
+                    ¿Anular esta compra?
+                  </Text>
+                  <Text style={styles.voidConfirmationText}>
+                    Si la operación todavía puede anularse, el stock y el costo
+                    del producto volverán al estado que tenían antes de esta
+                    compra. La compra no se borrará y seguirá apareciendo en tu
+                    historial como anulada.
+                  </Text>
+                  <View style={styles.confirmationActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={isVoiding}
+                      onPress={() => setVoidConfirmationVisible(false)}
+                      style={({ pressed }) => [
+                        styles.cancelAction,
+                        pressed && styles.cancelActionPressed,
+                      ]}
+                    >
+                      <Text style={styles.cancelActionText}>Cancelar</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel={
+                        isVoiding
+                          ? 'Anulando compra'
+                          : 'Confirmar anular compra'
+                      }
+                      accessibilityRole="button"
+                      accessibilityState={{
+                        busy: isVoiding,
+                        disabled: isVoiding,
+                      }}
+                      disabled={isVoiding}
+                      onPress={() => void handleVoidPurchase()}
+                      style={({ pressed }) => [
+                        styles.confirmVoidAction,
+                        pressed && styles.confirmVoidActionPressed,
+                        isVoiding && styles.disabledAction,
+                      ]}
+                    >
+                      {isVoiding ? (
+                        <ActivityIndicator color={colors.onAccent} />
+                      ) : (
+                        <Text style={styles.confirmVoidActionText}>
+                          Anular compra
+                        </Text>
+                      )}
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+
+              {voidFeedback !== null ? (
+                <View
+                  accessibilityLiveRegion={
+                    voidFeedback.kind === 'technical-error'
+                      ? 'assertive'
+                      : 'polite'
+                  }
+                  style={styles.voidFeedback}
+                >
+                  <Text style={styles.voidFeedbackTitle}>
+                    {voidFeedback.title}
+                  </Text>
+                  <Text style={styles.voidFeedbackText}>
+                    {voidFeedback.message}
+                  </Text>
+                  <View style={styles.feedbackActions}>
+                    {voidFeedback.canRetry ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={isVoiding}
+                        onPress={() => void handleVoidPurchase()}
+                        style={({ pressed }) => [
+                          styles.retryAction,
+                          pressed && styles.retryActionPressed,
+                          isVoiding && styles.disabledAction,
+                        ]}
+                      >
+                        <Text style={styles.retryActionText}>Reintentar</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={isVoiding}
+                      onPress={() => setVoidFeedback(null)}
+                      style={({ pressed }) => [
+                        styles.cancelAction,
+                        pressed && styles.cancelActionPressed,
+                      ]}
+                    >
+                      <Text style={styles.cancelActionText}>Cerrar</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+            </Section>
+          ) : null}
         </View>
       ) : null}
     </Screen>
@@ -269,6 +462,22 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     fontWeight: typography.weight.semibold,
   },
+  cancelAction: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  cancelActionPressed: { backgroundColor: colors.surfaceMuted },
+  cancelActionText: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
+  },
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -278,6 +487,26 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   content: { gap: spacing.xl },
+  confirmationActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  confirmVoidAction: {
+    alignItems: 'center',
+    backgroundColor: colors.danger,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  confirmVoidActionPressed: { opacity: 0.82 },
+  confirmVoidActionText: {
+    color: colors.onAccent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
   date: { color: colors.textSecondary, fontSize: typography.size.body },
   detailLabel: {
     color: colors.textSecondary,
@@ -303,6 +532,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     height: StyleSheet.hairlineWidth,
   },
+  disabledAction: { opacity: 0.58 },
   emphasizedText: {
     color: colors.text,
     fontSize: typography.size.body,
@@ -311,6 +541,11 @@ const styles = StyleSheet.create({
   emphasizedValue: {
     fontSize: typography.size.metric,
     fontWeight: typography.weight.bold,
+  },
+  feedbackActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   header: { gap: spacing.sm },
   notes: { color: colors.text, fontSize: typography.size.body, lineHeight: 24 },
@@ -391,4 +626,59 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   voidedBadge: { backgroundColor: colors.surfaceMuted, color: colors.danger },
+  voidAction: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderColor: colors.danger,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  voidActionPressed: { backgroundColor: colors.surfaceMuted },
+  voidActionText: {
+    color: colors.danger,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
+  voidConfirmation: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    gap: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+  },
+  voidConfirmationText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.body,
+    lineHeight: 24,
+  },
+  voidConfirmationTitle: {
+    color: colors.text,
+    fontSize: typography.size.section,
+    fontWeight: typography.weight.bold,
+  },
+  voidFeedback: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+  },
+  voidFeedbackText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.body,
+    lineHeight: 24,
+  },
+  voidFeedbackTitle: {
+    color: colors.text,
+    fontSize: typography.size.section,
+    fontWeight: typography.weight.bold,
+  },
 });

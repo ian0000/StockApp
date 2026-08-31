@@ -7,6 +7,10 @@ import {
 } from '@stock-app/application';
 
 import { formatMoneyForDisplay } from '../products/product-form-values';
+import {
+  createVoidSubmissionGate,
+  type VoidSubmissionGate,
+} from '../operations/void-submission-gate';
 
 export type SaleDetailsState =
   | { readonly status: 'loading' }
@@ -62,10 +66,7 @@ export type SaleVoidErrorPresentation =
       readonly canRetry: false;
     };
 
-export interface SaleVoidSubmissionGate {
-  readonly tryStart: () => boolean;
-  readonly finish: () => void;
-}
+export type SaleVoidSubmissionGate = VoidSubmissionGate;
 
 const SALE_DATE_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -167,18 +168,7 @@ export function getSaleVoidErrorPresentation(
 }
 
 export function createSaleVoidSubmissionGate(): SaleVoidSubmissionGate {
-  let isRunning = false;
-
-  return Object.freeze({
-    tryStart() {
-      if (isRunning) return false;
-      isRunning = true;
-      return true;
-    },
-    finish() {
-      isRunning = false;
-    },
-  });
+  return createVoidSubmissionGate();
 }
 
 function unitsLabel(quantity: number): string {
