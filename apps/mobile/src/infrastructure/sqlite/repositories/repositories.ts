@@ -47,6 +47,7 @@ import {
   mapStockAdjustmentToRow,
 } from './mappers';
 import { createSqliteVoidSaleTransaction } from './void-sale';
+import { createSqliteVoidPurchaseTransaction } from './void-purchase';
 
 type SqliteRepositoryExecutor = Pick<AppDatabase['db'], 'insert' | 'select'>;
 type SqliteReadExecutor = Pick<AppDatabase['db'], 'select'>;
@@ -701,5 +702,6 @@ export function createSqliteTransactionRepositories(
     saleItemRepository: createSqliteSaleItemRepository(executor),
     stockAdjustmentRepository: createSqliteStockAdjustmentRepository(executor),
     saleVoidRepository: createSqliteVoidSaleTransaction(executor),
+    purchaseVoidRepository: createSqliteVoidPurchaseTransaction(executor),
   });
 }

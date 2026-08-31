@@ -13,3 +13,4 @@ export {
   createSqliteStockAdjustmentRepository,
 } from './repositories';
 export { createSqliteVoidSaleTransaction } from './void-sale';
+export { createSqliteVoidPurchaseTransaction } from './void-purchase';

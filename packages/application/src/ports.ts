@@ -73,13 +73,7 @@ export interface ListProductMovementsAtOrAfterInput {
   readonly createdAt: TimestampMs;
 }
 
-export interface SaleVoidRepository {
-  findSale(inventoryId: string, saleId: string): Promise<Sale | null>;
-  listSaleItems(saleId: string): Promise<readonly SaleItem[]>;
-  listOriginalSaleMovements(
-    inventoryId: string,
-    saleId: string,
-  ): Promise<readonly InventoryMovement[]>;
+export interface InventoryOperationVoidRepository {
   listReversals(
     inventoryId: string,
     originalMovementIds: readonly string[],
@@ -92,7 +86,28 @@ export interface SaleVoidRepository {
   ): Promise<readonly InventoryStateRecord[]>;
   saveReversal(movement: InventoryMovement): Promise<void>;
   updateInventoryState(input: UpdateInventoryStateInput): Promise<void>;
+}
+
+export interface SaleVoidRepository extends InventoryOperationVoidRepository {
+  findSale(inventoryId: string, saleId: string): Promise<Sale | null>;
+  listSaleItems(saleId: string): Promise<readonly SaleItem[]>;
+  listOriginalSaleMovements(
+    inventoryId: string,
+    saleId: string,
+  ): Promise<readonly InventoryMovement[]>;
   updateSale(sale: Sale): Promise<void>;
+}
+
+export interface PurchaseVoidRepository extends InventoryOperationVoidRepository {
+  findPurchase(
+    inventoryId: string,
+    purchaseId: string,
+  ): Promise<Purchase | null>;
+  listOriginalPurchaseMovements(
+    inventoryId: string,
+    purchaseId: string,
+  ): Promise<readonly InventoryMovement[]>;
+  updatePurchase(purchase: Purchase): Promise<void>;
 }
 
 export interface TransactionRepositories {
@@ -104,6 +119,7 @@ export interface TransactionRepositories {
   readonly saleItemRepository: SaleItemRepository;
   readonly stockAdjustmentRepository: StockAdjustmentRepository;
   readonly saleVoidRepository: SaleVoidRepository;
+  readonly purchaseVoidRepository: PurchaseVoidRepository;
 }
 
 export interface TransactionManager {

@@ -115,13 +115,24 @@ export {
   type VoidSaleResult,
 } from './void-sale';
 export {
+  ConfirmedPurchaseHasReversalError,
+  PurchaseNotFoundError,
+  PurchaseVoidInconsistentDataError,
+  VoidPurchaseUseCase,
+  type VoidPurchaseInput,
+  type VoidPurchaseNotEligibleReason,
+  type VoidPurchaseResult,
+} from './void-purchase';
+export {
   type InventoryStateRecord,
+  type InventoryOperationVoidRepository,
   type InventoryRepository,
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductRepository,
   type ProductManagementRepository,
   type PurchaseRepository,
+  type PurchaseVoidRepository,
   type SaleVoidRepository,
   type SaleItemRepository,
   type SaleRepository,
