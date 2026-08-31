@@ -18,6 +18,7 @@
     "@stock-app/domain": "workspace:*",
     "drizzle-orm": "0.45.2",
     "expo": "~54.0.37",
+    "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.14",
     "expo-crypto": "~15.0.9",
     "expo-linking": "~8.0.12",

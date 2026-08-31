@@ -138,6 +138,7 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
         productServices: {
           archiveProduct: state.services.archiveProduct,
           createProduct: state.services.createProduct,
+          findProductByBarcode: state.services.findProductByBarcode,
           getProductDetails: state.services.getProductDetails,
           listProducts: state.services.listProducts,
           updateProduct: state.services.updateProduct,

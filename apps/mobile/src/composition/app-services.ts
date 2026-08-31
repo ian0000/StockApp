@@ -3,6 +3,7 @@ import {
   ArchiveProductUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
+  FindProductByBarcodeUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
   GetPurchaseDetailsUseCase,
@@ -22,6 +23,7 @@ import {
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductIdGenerator,
+  type ProductBarcodeReader,
   type ProductManagementRepository,
   type ProductRepository,
   type PurchaseIdGenerator,
@@ -47,6 +49,7 @@ export interface AppServices {
   readonly archiveProduct: ArchiveProductUseCase;
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
+  readonly findProductByBarcode: FindProductByBarcodeUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
   readonly getPurchaseDetails: GetPurchaseDetailsUseCase;
@@ -67,7 +70,9 @@ export interface AppServiceDependencies {
   readonly historyReader: HistoryReader;
   readonly inventoryRepository: InventoryRepository;
   readonly inventoryStateRepository: InventoryStateRepository;
-  readonly productRepository: ProductRepository & ProductManagementRepository;
+  readonly productRepository: ProductRepository &
+    ProductManagementRepository &
+    ProductBarcodeReader;
   readonly purchaseDetailsReader: PurchaseDetailsReader;
   readonly salesSummaryReader: SalesSummaryReader;
   readonly saleDetailsReader: SaleDetailsReader;
@@ -108,6 +113,7 @@ export function assembleAppServices({
       clock,
       transactionManager,
     }),
+    findProductByBarcode: new FindProductByBarcodeUseCase(productRepository),
     getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
     getProductDetails: new GetProductDetailsUseCase({
       inventoryStateRepository,

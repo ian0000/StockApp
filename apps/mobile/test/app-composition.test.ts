@@ -6,6 +6,7 @@ import {
   ArchiveProductUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
+  FindProductByBarcodeUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
   GetPurchaseDetailsUseCase,
@@ -22,6 +23,7 @@ import {
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type ProductBarcodeReader,
   type ProductManagementRepository,
   type PurchaseDetailsReader,
   type SalesSummaryReader,
@@ -43,6 +45,7 @@ function createDependencies(): {
   readonly getInventoryStateListCount: () => number;
   readonly getHistoryReadCount: () => number;
   readonly getProductListCount: () => number;
+  readonly getProductBarcodeReadCount: () => number;
   readonly getPurchaseDetailsReadCount: () => number;
   readonly getSalesSummaryReadCount: () => number;
   readonly getSaleDetailsReadCount: () => number;
@@ -53,6 +56,7 @@ function createDependencies(): {
   let inventoryStateListCount = 0;
   let historyReadCount = 0;
   let productListCount = 0;
+  let productBarcodeReadCount = 0;
   let purchaseDetailsReadCount = 0;
   let salesSummaryReadCount = 0;
   let saleDetailsReadCount = 0;
@@ -72,7 +76,13 @@ function createDependencies(): {
       throw new Error('A use case was executed during composition.');
     },
   };
-  const productRepository: ProductRepository & ProductManagementRepository = {
+  const productRepository: ProductRepository &
+    ProductManagementRepository &
+    ProductBarcodeReader = {
+    async findActiveByBarcode() {
+      productBarcodeReadCount += 1;
+      return null;
+    },
     async findById() {
       return null;
     },
@@ -138,6 +148,7 @@ function createDependencies(): {
     getInventoryStateListCount: () => inventoryStateListCount,
     getHistoryReadCount: () => historyReadCount,
     getProductListCount: () => productListCount,
+    getProductBarcodeReadCount: () => productBarcodeReadCount,
     getPurchaseDetailsReadCount: () => purchaseDetailsReadCount,
     getSalesSummaryReadCount: () => salesSummaryReadCount,
     getSaleDetailsReadCount: () => saleDetailsReadCount,
@@ -155,6 +166,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'archiveProduct',
     'createInventory',
     'createProduct',
+    'findProductByBarcode',
     'getCurrentInventory',
     'getProductDetails',
     'getPurchaseDetails',
@@ -172,6 +184,9 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.archiveProduct instanceof ArchiveProductUseCase);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
+  assert.ok(
+    services.findProductByBarcode instanceof FindProductByBarcodeUseCase,
+  );
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
   assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
   assert.ok(services.getPurchaseDetails instanceof GetPurchaseDetailsUseCase);
@@ -224,6 +239,20 @@ test('product list query uses the composed read repositories', async () => {
   );
   assert.equal(getInventoryStateListCount(), 1);
   assert.equal(getProductListCount(), 1);
+});
+
+test('barcode lookup uses the composed exact Product reader', async () => {
+  const { dependencies, getProductBarcodeReadCount } = createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  assert.equal(
+    await services.findProductByBarcode.execute({
+      inventoryId: 'inventory-123',
+      barcode: '0012345',
+    }),
+    null,
+  );
+  assert.equal(getProductBarcodeReadCount(), 1);
 });
 
 test('product detail query uses the same composed read repositories', async () => {
@@ -315,6 +344,9 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.equal(initializationCount, 1);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.getCurrentInventory instanceof GetCurrentInventoryUseCase);
+  assert.ok(
+    services.findProductByBarcode instanceof FindProductByBarcodeUseCase,
+  );
   assert.ok(services.getProductDetails instanceof GetProductDetailsUseCase);
   assert.ok(services.getPurchaseDetails instanceof GetPurchaseDetailsUseCase);
   assert.ok(services.getSaleDetails instanceof GetSaleDetailsUseCase);

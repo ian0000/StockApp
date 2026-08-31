@@ -7,6 +7,7 @@ import {
   InventoryRepository,
   InventoryMovementRepository,
   InventoryStateRepository,
+  ProductBarcodeReader,
   ProductManagementRepository,
   ProductRepository,
   PurchaseRepository,
@@ -77,8 +78,30 @@ export function createInventoryRepository(
 
 export function createSqliteProductRepository(
   executor: SqliteProductRepositoryExecutor,
-): ProductRepository & ProductManagementRepository {
+): ProductRepository & ProductManagementRepository & ProductBarcodeReader {
   return {
+    async findActiveByBarcode(inventoryId, barcode) {
+      const rows = await executor
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.inventoryId, inventoryId),
+            eq(products.barcode, barcode),
+            eq(products.isArchived, false),
+          ),
+        )
+        .limit(2);
+
+      if (rows.length > 1) {
+        throw new Error(
+          `Barcode ${barcode} matched more than one active Product.`,
+        );
+      }
+
+      const row = rows[0];
+      return row === undefined ? null : mapProductRowToDomain(row);
+    },
     async findById(inventoryId, productId) {
       const rows = await executor
         .select()

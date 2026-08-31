@@ -4,6 +4,7 @@ import type {
   AdjustStockUseCase,
   ArchiveProductUseCase,
   CreateProductUseCase,
+  FindProductByBarcodeUseCase,
   GetProductDetailsUseCase,
   GetPurchaseDetailsUseCase,
   GetSaleDetailsUseCase,
@@ -21,6 +22,7 @@ import type { Inventory } from '@stock-app/domain';
 export interface ProductRuntimeServices {
   readonly archiveProduct: ArchiveProductUseCase;
   readonly createProduct: CreateProductUseCase;
+  readonly findProductByBarcode: FindProductByBarcodeUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
   readonly listProducts: ListProductsUseCase;
   readonly updateProduct: UpdateProductUseCase;

@@ -11,6 +11,7 @@ import {
 
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
+import { BARCODE_SCANNER_ROUTE } from '@/ui/barcode/barcode-scanner-presentation';
 import { createProductDetailsRoute } from '@/ui/products/product-details-presentation';
 import {
   createProductListRequest,
@@ -86,6 +87,17 @@ export default function ProductsScreen() {
           Productos
         </Text>
         <View style={styles.headerActions}>
+          <Pressable
+            accessibilityLabel="Escanear código de producto"
+            accessibilityRole="button"
+            onPress={() => router.push(BARCODE_SCANNER_ROUTE)}
+            style={({ pressed }) => [
+              styles.scanAction,
+              pressed && styles.scanActionPressed,
+            ]}
+          >
+            <Text style={styles.scanActionText}>Escanear código</Text>
+          </Pressable>
           <Pressable
             accessibilityLabel="Ajustar stock"
             accessibilityRole="button"
@@ -427,6 +439,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  scanAction: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  scanActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  scanActionText: {
+    color: colors.accent,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
   },
   searchField: {
     alignItems: 'center',

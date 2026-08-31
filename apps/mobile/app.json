@@ -5,7 +5,17 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "inventory-app",
-    "plugins": ["expo-router", "expo-sqlite"],
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "StockApp usa la cámara para escanear códigos de barras de productos.",
+          "recordAudioAndroid": false
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
