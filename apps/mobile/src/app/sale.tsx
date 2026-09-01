@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +14,7 @@ import type { ProductSummary } from '@stock-app/application';
 import type { Sale } from '@stock-app/domain';
 
 import { EmptyState } from '@/ui/components/EmptyState';
+import { createSaleBarcodeScannerRoute } from '@/ui/barcode/barcode-scanner-presentation';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
@@ -23,6 +25,7 @@ import { SaleCartItemRow, SaleProductRow } from '@/ui/sales/SaleRows';
 import {
   addProductToCart,
   calculateCartTotal,
+  createRegisterSaleLines,
   decrementCartItem,
   filterSaleProducts,
   getCartSummary,
@@ -33,6 +36,12 @@ import {
   type SaleCartItem,
   updateCartItemPrice,
 } from '@/ui/sales/sale-cart';
+import {
+  createSaleScanResultGate,
+  getSaleScannerActionPresentation,
+  normalizeSaleScanResult,
+  resolveSaleScanProduct,
+} from '@/ui/sales/sale-barcode-scanner';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
 type ProductsState =
@@ -46,9 +55,15 @@ type SalePhase =
 
 export default function NewSaleScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    scannedProductId?: string | string[];
+    scanRequestId?: string | string[];
+  }>();
   const { inventory, persistence, productServices, saleServices } =
     useAppRuntime();
   const requestIdRef = useRef(0);
+  const scanRequestSequenceRef = useRef(0);
+  const scanResultGateRef = useRef(createSaleScanResultGate());
   const submittingRef = useRef(false);
   const [searchText, setSearchText] = useState('');
   const [cart, setCart] = useState<readonly SaleCartItem[]>([]);
@@ -57,6 +72,12 @@ export default function NewSaleScreen() {
   const [warningVisible, setWarningVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const scanResult = useMemo(
+    () =>
+      normalizeSaleScanResult(params.scannedProductId, params.scanRequestId),
+    [params.scanRequestId, params.scannedProductId],
+  );
+  const scannerAction = getSaleScannerActionPresentation(Platform.OS);
 
   const loadProducts = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -94,6 +115,29 @@ export default function NewSaleScreen() {
     }, [loadProducts]),
   );
 
+  useEffect(() => {
+    if (
+      phase.status !== 'editing' ||
+      state.status !== 'ready' ||
+      scanResult === null ||
+      !scanResultGateRef.current.tryConsume(scanResult.requestId)
+    ) {
+      return;
+    }
+
+    const product = resolveSaleScanProduct(state.products, scanResult);
+
+    if (product !== null) {
+      setCart((currentCart) => addProductToCart(currentCart, product));
+      setSearchText('');
+    }
+
+    router.setParams({
+      scannedProductId: undefined,
+      scanRequestId: undefined,
+    });
+  }, [phase.status, router, scanResult, state]);
+
   const visibleProducts = useMemo(
     () =>
       state.status === 'ready'
@@ -124,6 +168,17 @@ export default function NewSaleScreen() {
     setSearchText('');
   };
 
+  const openBarcodeScanner = () => {
+    if (!scannerAction.enabled || isSubmitting) return;
+
+    scanRequestSequenceRef.current += 1;
+    router.push(
+      createSaleBarcodeScannerRoute(
+        `sale-scan-${scanRequestSequenceRef.current}`,
+      ),
+    );
+  };
+
   const registerCurrentCart = async () => {
     if (
       submittingRef.current ||
@@ -141,11 +196,7 @@ export default function NewSaleScreen() {
     try {
       const result = await saleServices.registerSale.execute({
         inventoryId: inventory.id,
-        items: cart.map(({ productId, quantity, unitSalePrice }) => ({
-          productId,
-          quantity,
-          unitSalePrice,
-        })),
+        items: createRegisterSaleLines(cart),
       });
 
       setCart([]);
@@ -292,15 +343,32 @@ export default function NewSaleScreen() {
               </View>
 
               <Pressable
-                accessibilityHint="El escáner se habilitará en una etapa posterior"
-                accessibilityLabel="Escanear código, no disponible todavía"
+                accessibilityHint={
+                  scannerAction.enabled
+                    ? 'Abre la cámara para buscar un producto por código'
+                    : 'El escáner está disponible en iOS y Android'
+                }
+                accessibilityLabel={scannerAction.label}
                 accessibilityRole="button"
-                accessibilityState={{ disabled: true }}
-                disabled
-                style={styles.scannerAction}
+                accessibilityState={{ disabled: !scannerAction.enabled }}
+                disabled={!scannerAction.enabled}
+                onPress={openBarcodeScanner}
+                style={({ pressed }) => [
+                  styles.scannerAction,
+                  !scannerAction.enabled && styles.scannerActionDisabled,
+                  pressed &&
+                    scannerAction.enabled &&
+                    styles.scannerActionPressed,
+                ]}
               >
-                <Text style={styles.scannerActionText}>Escanear</Text>
-                <Text style={styles.scannerStatus}>Próximamente</Text>
+                <Text style={styles.scannerActionText}>
+                  {scannerAction.label}
+                </Text>
+                {scannerAction.status === null ? null : (
+                  <Text style={styles.scannerStatus}>
+                    {scannerAction.status}
+                  </Text>
+                )}
               </Pressable>
             </View>
 
@@ -595,9 +663,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 56,
     minWidth: 96,
-    opacity: 0.68,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
+  },
+  scannerActionDisabled: {
+    opacity: 0.68,
+  },
+  scannerActionPressed: {
+    backgroundColor: colors.accentSoft,
   },
   scannerActionText: {
     color: colors.textSecondary,
