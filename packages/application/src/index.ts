@@ -36,6 +36,11 @@ export {
   type ProductIdGenerator,
 } from './create-product';
 export {
+  FindProductByBarcodeUseCase,
+  type FindProductByBarcodeInput,
+  type ProductBarcodeMatch,
+} from './find-product-by-barcode';
+export {
   GetCurrentInventoryUseCase,
   MultipleInventoriesNotSupportedError,
 } from './get-current-inventory';
@@ -130,6 +135,7 @@ export {
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductRepository,
+  type ProductBarcodeReader,
   type ProductManagementRepository,
   type PurchaseRepository,
   type PurchaseVoidRepository,

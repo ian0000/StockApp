@@ -32,6 +32,10 @@ export default function RootLayout() {
         />
         <Stack.Screen name="adjustment" options={{ title: 'Ajustar stock' }} />
         <Stack.Screen
+          name="barcode/scan"
+          options={{ title: 'Escanear código' }}
+        />
+        <Stack.Screen
           name="product/new"
           options={{ title: 'Nuevo producto' }}
         />

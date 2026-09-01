@@ -117,6 +117,47 @@ test('ProductRepository returns null when the scoped Product does not exist', as
   );
 });
 
+test('ProductRepository finds an active Product by exact scoped barcode', async () => {
+  const recording = new RecordingProductExecutor([
+    productRow({ barcode: '0012345' }),
+  ]);
+  const repository = createSqliteProductRepository(recording.executor);
+
+  const result = await repository.findActiveByBarcode(
+    'inventory-123',
+    '0012345',
+  );
+
+  assert.equal(result?.id, 'product-123');
+  assert.equal(result?.barcode, '0012345');
+  assert.equal(recording.whereExpressions.length, 1);
+});
+
+test('ProductRepository returns null when no active exact scoped barcode row exists', async () => {
+  const repository = createSqliteProductRepository(
+    new RecordingProductExecutor([]).executor,
+  );
+
+  assert.equal(
+    await repository.findActiveByBarcode('inventory-123', '0012345'),
+    null,
+  );
+});
+
+test('ProductRepository fails explicitly if a barcode lookup is ambiguous', async () => {
+  const repository = createSqliteProductRepository(
+    new RecordingProductExecutor([
+      productRow({ id: 'product-1' }),
+      productRow({ id: 'product-2' }),
+    ]).executor,
+  );
+
+  await assert.rejects(
+    () => repository.findActiveByBarcode('inventory-123', '0012345'),
+    /more than one active Product/,
+  );
+});
+
 test('ProductRepository updates only mutable Product columns', async () => {
   const recording = new RecordingProductExecutor();
   const repository = createSqliteProductRepository(recording.executor);

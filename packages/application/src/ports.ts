@@ -20,6 +20,13 @@ export interface ProductRepository {
   save(product: Product): Promise<void>;
 }
 
+export interface ProductBarcodeReader {
+  findActiveByBarcode(
+    inventoryId: string,
+    barcode: string,
+  ): Promise<Product | null>;
+}
+
 export interface ProductManagementRepository {
   findById(inventoryId: string, productId: string): Promise<Product | null>;
   update(product: Product): Promise<void>;
