@@ -20,6 +20,7 @@ import {
   createBarcodeScanGate,
   createBarcodeNotFoundPresentation,
   createBarcodeScannerFailurePresentation,
+  createProductNewRouteFromBarcode,
   COMMERCIAL_BARCODE_TYPES,
   getCameraPermissionContentKind,
   isBarcodeScannerPlatformSupported,
@@ -214,8 +215,20 @@ function NativeBarcodeScanner() {
               {state.barcode}
             </Text>
           </View>
-          <PrimaryAction label="Escanear de nuevo" onPress={rearmScanner} />
-          <SecondaryAction label="Volver" onPress={() => router.back()} />
+          <PrimaryAction
+            label={presentation.actions.createProduct}
+            onPress={() =>
+              router.replace(createProductNewRouteFromBarcode(state.barcode))
+            }
+          />
+          <SecondaryAction
+            label={presentation.actions.rescan}
+            onPress={rearmScanner}
+          />
+          <SecondaryAction
+            label={presentation.actions.back}
+            onPress={() => router.back()}
+          />
         </StatusContent>
       </Screen>
     );

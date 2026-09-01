@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
@@ -11,26 +11,20 @@ import {
 import { Screen } from '@/ui/components/Screen';
 import { ProductFormField } from '@/ui/products/ProductFormField';
 import {
+  createInitialProductFormValues,
   parseProductFormValues,
   type ProductFormValues,
 } from '@/ui/products/product-form-values';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
-const INITIAL_VALUES: ProductFormValues = {
-  name: '',
-  variant: '',
-  barcode: '',
-  regularSalePrice: '',
-  initialStock: '0',
-  initialUnitCost: '',
-  minimumStock: '',
-};
-
 export default function NewProductScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ barcode?: string | string[] }>();
   const { inventory, persistence, productServices } = useAppRuntime();
-  const [values, setValues] = useState<ProductFormValues>(INITIAL_VALUES);
+  const [values, setValues] = useState<ProductFormValues>(() =>
+    createInitialProductFormValues(params.barcode),
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const initialStockNumber = /^\d+$/.test(values.initialStock.trim())
