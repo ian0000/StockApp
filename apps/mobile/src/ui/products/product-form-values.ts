@@ -14,6 +14,22 @@ export interface ProductFormValues {
   readonly minimumStock: string;
 }
 
+export function createInitialProductFormValues(
+  barcodeParam: string | readonly string[] | undefined,
+): ProductFormValues {
+  const barcode = typeof barcodeParam === 'string' ? barcodeParam.trim() : '';
+
+  return {
+    name: '',
+    variant: '',
+    barcode,
+    regularSalePrice: '',
+    initialStock: '0',
+    initialUnitCost: '',
+    minimumStock: '',
+  };
+}
+
 export type EditableProductFormValues = Pick<
   ProductFormValues,
   'name' | 'variant' | 'barcode' | 'regularSalePrice' | 'minimumStock'

@@ -4,6 +4,7 @@ import test from 'node:test';
 import { Money } from '@stock-app/domain';
 
 import {
+  createInitialProductFormValues,
   formatMoneyForDisplay,
   formatMoneyForInput,
   normalizeMoneyInput,
@@ -12,6 +13,62 @@ import {
   type EditableProductFormValues,
   type ProductFormValues,
 } from '../src/ui/products/product-form-values';
+
+test('Product New without a barcode param keeps every existing default', () => {
+  assert.deepEqual(createInitialProductFormValues(undefined), {
+    name: '',
+    variant: '',
+    barcode: '',
+    regularSalePrice: '',
+    initialStock: '0',
+    initialUnitCost: '',
+    minimumStock: '',
+  });
+});
+
+test('Product New prefills only a safe barcode string and preserves leading zeroes', () => {
+  assert.deepEqual(createInitialProductFormValues('  0012345678905  '), {
+    name: '',
+    variant: '',
+    barcode: '0012345678905',
+    regularSalePrice: '',
+    initialStock: '0',
+    initialUnitCost: '',
+    minimumStock: '',
+  });
+});
+
+test('Product New ignores absent, array, empty, and whitespace barcode params', () => {
+  for (const param of [undefined, ['0012345'], '', '   ']) {
+    assert.equal(createInitialProductFormValues(param).barcode, '');
+  }
+});
+
+test('prefilled barcode remains editable and submit uses the final visible value', () => {
+  const values = {
+    ...createInitialProductFormValues('0012345'),
+    name: 'Coca-Cola',
+    barcode: '0000099',
+    regularSalePrice: '1.00',
+  };
+  const result = parseProductFormValues(values);
+
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.input.barcode, '0000099');
+});
+
+test('prefilled barcode can be erased and keeps the existing null semantics', () => {
+  const values = {
+    ...createInitialProductFormValues('0012345'),
+    name: 'Agua',
+    barcode: '',
+    regularSalePrice: '0.75',
+  };
+  const result = parseProductFormValues(values);
+
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.input.barcode, null);
+});
 
 function validValues(
   overrides: Partial<ProductFormValues> = {},

@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   createBarcodeScanGate,
   createBarcodeNotFoundPresentation,
+  createProductNewRouteFromBarcode,
   createBarcodeScannerFailurePresentation,
   BARCODE_SCANNER_ROUTE,
   COMMERCIAL_BARCODE_TYPES,
@@ -119,6 +120,25 @@ test('not-found presentation preserves the scanned barcode for retry review', ()
     supportingText:
       'No existe un producto activo con este código en tu inventario.',
     barcode: '0012345',
+    actions: {
+      createProduct: 'Crear producto',
+      rescan: 'Escanear de nuevo',
+      back: 'Volver',
+    },
+  });
+});
+
+test('not-found navigation sends only the exact textual barcode to Product New', () => {
+  assert.deepEqual(createProductNewRouteFromBarcode('0012345678905'), {
+    pathname: '/product/new',
+    params: { barcode: '0012345678905' },
+  });
+});
+
+test('Product New navigation trims scanner boundaries without changing leading zeroes', () => {
+  assert.deepEqual(createProductNewRouteFromBarcode('  0012345678905  '), {
+    pathname: '/product/new',
+    params: { barcode: '0012345678905' },
   });
 });
 

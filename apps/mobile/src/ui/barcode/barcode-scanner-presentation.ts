@@ -19,6 +19,14 @@ export interface BarcodeResultPresentation {
   readonly barcode: string | null;
 }
 
+export interface BarcodeNotFoundPresentation extends BarcodeResultPresentation {
+  readonly actions: {
+    readonly createProduct: 'Crear producto';
+    readonly rescan: 'Escanear de nuevo';
+    readonly back: 'Volver';
+  };
+}
+
 export const BARCODE_SCANNER_ROUTE = '/barcode/scan' as const;
 
 export const COMMERCIAL_BARCODE_TYPES = Object.freeze([
@@ -35,12 +43,24 @@ export function isBarcodeScannerPlatformSupported(platform: string): boolean {
 
 export function createBarcodeNotFoundPresentation(
   barcode: string,
-): BarcodeResultPresentation {
+): BarcodeNotFoundPresentation {
   return Object.freeze({
     message: 'Producto no encontrado',
     supportingText:
       'No existe un producto activo con este código en tu inventario.',
     barcode,
+    actions: Object.freeze({
+      createProduct: 'Crear producto',
+      rescan: 'Escanear de nuevo',
+      back: 'Volver',
+    }),
+  });
+}
+
+export function createProductNewRouteFromBarcode(barcode: string) {
+  return Object.freeze({
+    pathname: '/product/new' as const,
+    params: Object.freeze({ barcode: normalizeScannedBarcode(barcode) ?? '' }),
   });
 }
 
