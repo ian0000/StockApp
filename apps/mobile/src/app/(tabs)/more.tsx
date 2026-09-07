@@ -1,12 +1,22 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
+import {
+  BACKUP_ROUTE,
+  backupAvailability,
+} from '@/ui/backup/backup-presentation';
+import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 
-const FUTURE_SECTIONS = ['Datos y respaldo', 'Configuración', 'Acerca de'];
+const FUTURE_SECTIONS = ['Configuración', 'Acerca de'];
 
 export default function MoreScreen() {
+  const router = useRouter();
+  const { backupServices } = useAppRuntime();
+  const backup = backupAvailability(backupServices !== null);
+
   return (
     <Screen>
       <View style={styles.header}>
@@ -14,6 +24,29 @@ export default function MoreScreen() {
           Más
         </Text>
       </View>
+
+      <Section title="Datos">
+        <View style={styles.list}>
+          <Pressable
+            accessibilityHint={
+              backup.enabled
+                ? 'Abre la pantalla para crear una copia de tus datos.'
+                : 'Disponible únicamente en la aplicación móvil.'
+            }
+            accessibilityRole="button"
+            disabled={!backup.enabled}
+            onPress={() => router.push(BACKUP_ROUTE)}
+            style={({ pressed }) => [
+              styles.row,
+              pressed && backup.enabled && styles.rowPressed,
+              !backup.enabled && styles.rowDisabled,
+            ]}
+          >
+            <Text style={styles.rowLabel}>Crear respaldo</Text>
+            <Text style={styles.rowStatus}>{backup.status ?? 'Abrir'}</Text>
+          </Pressable>
+        </View>
+      </Section>
 
       <Section title="Opciones">
         <View style={styles.list}>
@@ -56,6 +89,12 @@ const styles = StyleSheet.create({
   rowBorder: {
     borderTopColor: colors.border,
     borderTopWidth: 1,
+  },
+  rowDisabled: {
+    opacity: 0.6,
+  },
+  rowPressed: {
+    backgroundColor: colors.surfaceMuted,
   },
   rowLabel: {
     color: colors.text,

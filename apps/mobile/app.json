@@ -14,7 +14,8 @@
           "cameraPermission": "StockApp usa la cámara para escanear códigos de barras de productos.",
           "recordAudioAndroid": false
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

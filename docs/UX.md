@@ -1096,6 +1096,15 @@ Crear copia de seguridad
 Restaurar copia de seguridad
 ```
 
+La primera entrega expone `Más → Crear respaldo` y una pantalla breve que explica que la copia
+incluye productos, stock y operaciones. Mientras se construye muestra `Creando respaldo…` y evita
+envíos dobles. Cuando el artifact está listo abre la hoja nativa y comunica `Respaldo preparado` y
+`Elige dónde guardar una copia`; no afirma que fue guardado porque el usuario puede cerrar la hoja.
+
+La pantalla advierte que el archivo contiene información del negocio, no está cifrado y debe
+guardarse en un lugar seguro. En Web la acción se muestra deshabilitada como `Solo móvil`; no se
+genera un respaldo ficticio. La acción de restaurar permanece fuera de esta entrega.
+
 La restauración deberá explicar qué copia se seleccionó y pedir confirmación antes de reemplazar el
 estado local. Backup y restauración de seguridad no se presentarán como exportaciones comerciales.
 
