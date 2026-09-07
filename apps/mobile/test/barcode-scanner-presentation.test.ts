@@ -5,12 +5,15 @@ import {
   createBarcodeScanGate,
   createBarcodeNotFoundPresentation,
   createProductNewRouteFromBarcode,
+  createSaleBarcodeResultRoute,
+  createSaleBarcodeScannerRoute,
   createBarcodeScannerFailurePresentation,
   BARCODE_SCANNER_ROUTE,
   COMMERCIAL_BARCODE_TYPES,
   getCameraPermissionContentKind,
   isBarcodeScannerPlatformSupported,
   normalizeScannedBarcode,
+  parseBarcodeScannerOrigin,
 } from '../src/ui/barcode/barcode-scanner-presentation';
 
 test('scanner text preserves leading zeroes and trims boundary whitespace', () => {
@@ -126,6 +129,59 @@ test('not-found presentation preserves the scanned barcode for retry review', ()
       back: 'Volver',
     },
   });
+});
+
+test('Sale scanner route carries only its bounded origin and request ID', () => {
+  assert.deepEqual(createSaleBarcodeScannerRoute('scan-1'), {
+    pathname: '/barcode/scan',
+    params: { origin: 'sale', requestId: 'scan-1' },
+  });
+});
+
+test('Sale scanner origin requires safe scalar origin and request params', () => {
+  assert.deepEqual(parseBarcodeScannerOrigin('sale', ' scan-1 '), {
+    kind: 'sale',
+    requestId: 'scan-1',
+  });
+
+  for (const [origin, requestId] of [
+    [undefined, undefined],
+    ['products', 'scan-1'],
+    [['sale'], 'scan-1'],
+    ['sale', ['scan-1']],
+    ['sale', '   '],
+  ] as const) {
+    assert.deepEqual(parseBarcodeScannerOrigin(origin, requestId), {
+      kind: 'products',
+    });
+  }
+});
+
+test('Sale scan result returns only productId and requestId', () => {
+  assert.deepEqual(createSaleBarcodeResultRoute('product-1', 'scan-1'), {
+    pathname: '/sale',
+    params: { scannedProductId: 'product-1', scanRequestId: 'scan-1' },
+  });
+});
+
+test('Sale not-found presentation keeps rescan and returns without Product creation', () => {
+  assert.deepEqual(
+    createBarcodeNotFoundPresentation('0012345', {
+      kind: 'sale',
+      requestId: 'scan-1',
+    }),
+    {
+      message: 'Producto no encontrado',
+      supportingText:
+        'No existe un producto activo con este código en tu inventario.',
+      barcode: '0012345',
+      actions: {
+        createProduct: null,
+        rescan: 'Escanear de nuevo',
+        back: 'Volver a venta',
+      },
+    },
+  );
 });
 
 test('not-found navigation sends only the exact textual barcode to Product New', () => {

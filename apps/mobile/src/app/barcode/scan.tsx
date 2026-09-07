@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   CameraView,
   useCameraPermissions,
@@ -21,9 +21,13 @@ import {
   createBarcodeNotFoundPresentation,
   createBarcodeScannerFailurePresentation,
   createProductNewRouteFromBarcode,
+  createSaleBarcodeResultRoute,
   COMMERCIAL_BARCODE_TYPES,
   getCameraPermissionContentKind,
+  getBarcodeScannerBackLabel,
   isBarcodeScannerPlatformSupported,
+  parseBarcodeScannerOrigin,
+  type BarcodeScannerOrigin,
 } from '@/ui/barcode/barcode-scanner-presentation';
 import { createProductDetailsRoute } from '@/ui/products/product-details-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
@@ -38,6 +42,12 @@ type ScannerState =
 
 export default function BarcodeScannerScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    origin?: string | string[];
+    requestId?: string | string[];
+  }>();
+  const origin = parseBarcodeScannerOrigin(params.origin, params.requestId);
+  const backLabel = getBarcodeScannerBackLabel(origin);
 
   if (!isBarcodeScannerPlatformSupported(Platform.OS)) {
     return (
@@ -46,16 +56,20 @@ export default function BarcodeScannerScreen() {
           message="Escaneo no disponible en Web"
           supportingText="El escaneo de códigos está disponible en la app móvil para iOS y Android."
         >
-          <SecondaryAction label="Volver" onPress={() => router.back()} />
+          <SecondaryAction label={backLabel} onPress={() => router.back()} />
         </StatusContent>
       </Screen>
     );
   }
 
-  return <NativeBarcodeScanner />;
+  return <NativeBarcodeScanner origin={origin} />;
 }
 
-function NativeBarcodeScanner() {
+function NativeBarcodeScanner({
+  origin,
+}: {
+  readonly origin: BarcodeScannerOrigin;
+}) {
   const router = useRouter();
   const { inventory, productServices } = useAppRuntime();
   const [permission, requestPermission, getPermission] = useCameraPermissions();
@@ -65,6 +79,7 @@ function NativeBarcodeScanner() {
   const [permissionError, setPermissionError] = useState(false);
   const [state, setState] = useState<ScannerState>({ status: 'ready' });
   const permissionKind = getCameraPermissionContentKind(permission);
+  const backLabel = getBarcodeScannerBackLabel(origin);
 
   useEffect(
     () => () => {
@@ -95,7 +110,13 @@ function NativeBarcodeScanner() {
         return;
       }
 
-      router.replace(createProductDetailsRoute(match.productId));
+      if (origin.kind === 'sale') {
+        router.dismissTo(
+          createSaleBarcodeResultRoute(match.productId, origin.requestId),
+        );
+      } else {
+        router.replace(createProductDetailsRoute(match.productId));
+      }
     } catch {
       if (lookupRequestRef.current === requestId) {
         setState({ status: 'lookup-error', barcode });
@@ -194,14 +215,17 @@ function NativeBarcodeScanner() {
               onPress={() => void handlePermissionRequest()}
             />
           )}
-          <SecondaryAction label="Volver" onPress={() => router.back()} />
+          <SecondaryAction label={backLabel} onPress={() => router.back()} />
         </StatusContent>
       </Screen>
     );
   }
 
   if (state.status === 'not-found') {
-    const presentation = createBarcodeNotFoundPresentation(state.barcode);
+    const presentation = createBarcodeNotFoundPresentation(
+      state.barcode,
+      origin,
+    );
 
     return (
       <Screen edges={['bottom']}>
@@ -215,16 +239,27 @@ function NativeBarcodeScanner() {
               {state.barcode}
             </Text>
           </View>
-          <PrimaryAction
-            label={presentation.actions.createProduct}
-            onPress={() =>
-              router.replace(createProductNewRouteFromBarcode(state.barcode))
-            }
-          />
-          <SecondaryAction
-            label={presentation.actions.rescan}
-            onPress={rearmScanner}
-          />
+          {presentation.actions.createProduct === null ? (
+            <PrimaryAction
+              label={presentation.actions.rescan}
+              onPress={rearmScanner}
+            />
+          ) : (
+            <>
+              <PrimaryAction
+                label={presentation.actions.createProduct}
+                onPress={() =>
+                  router.replace(
+                    createProductNewRouteFromBarcode(state.barcode),
+                  )
+                }
+              />
+              <SecondaryAction
+                label={presentation.actions.rescan}
+                onPress={rearmScanner}
+              />
+            </>
+          )}
           <SecondaryAction
             label={presentation.actions.back}
             onPress={() => router.back()}
@@ -248,7 +283,7 @@ function NativeBarcodeScanner() {
             onPress={() => void resolveBarcode(state.barcode)}
           />
           <SecondaryAction label="Escanear de nuevo" onPress={rearmScanner} />
-          <SecondaryAction label="Volver" onPress={() => router.back()} />
+          <SecondaryAction label={backLabel} onPress={() => router.back()} />
         </StatusContent>
       </Screen>
     );
@@ -271,7 +306,7 @@ function NativeBarcodeScanner() {
               setState({ status: 'ready' });
             }}
           />
-          <SecondaryAction label="Volver" onPress={() => router.back()} />
+          <SecondaryAction label={backLabel} onPress={() => router.back()} />
         </StatusContent>
       </Screen>
     );
@@ -311,7 +346,10 @@ function NativeBarcodeScanner() {
         ) : null}
       </View>
 
-      <SecondaryAction label="Cancelar" onPress={() => router.back()} />
+      <SecondaryAction
+        label={origin.kind === 'sale' ? 'Volver a venta' : 'Cancelar'}
+        onPress={() => router.back()}
+      />
     </Screen>
   );
 }

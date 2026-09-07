@@ -1,4 +1,7 @@
-import type { ProductSummary } from '@stock-app/application';
+import type {
+  ProductSummary,
+  RegisterSaleLineInput,
+} from '@stock-app/application';
 import { Money } from '@stock-app/domain';
 
 import {
@@ -175,6 +178,14 @@ export function getInsufficientCartItems(
 
 export function isCartReadyToRegister(cart: readonly SaleCartItem[]): boolean {
   return cart.length > 0 && cart.every(({ priceError }) => priceError === null);
+}
+
+export function createRegisterSaleLines(
+  cart: readonly SaleCartItem[],
+): readonly RegisterSaleLineInput[] {
+  return cart.map(({ productId, quantity, unitSalePrice }) =>
+    Object.freeze({ productId, quantity, unitSalePrice }),
+  );
 }
 
 export function getCartSummary(cart: readonly SaleCartItem[]): SaleCartSummary {
