@@ -13,6 +13,7 @@ import {
   type AppDatabase,
 } from '../infrastructure/sqlite';
 import { UuidV7Generator } from '../infrastructure/identity';
+import { createSqliteBackupSnapshotReader } from '../infrastructure/sqlite/backup-snapshot-reader.native';
 import { SystemClock } from '../infrastructure/time';
 import { assembleAppServices, type AppServices } from './app-services';
 
@@ -40,6 +41,7 @@ export async function createAppRuntime(
     );
     const productRepository = createSqliteProductRepository(database.db);
     const services = assembleAppServices({
+      backupSnapshotReader: createSqliteBackupSnapshotReader(database),
       clock,
       idGenerator,
       historyReader: createSqliteHistoryReader(database.db),

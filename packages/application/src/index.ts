@@ -36,6 +36,26 @@ export {
   type ProductIdGenerator,
 } from './create-product';
 export {
+  CreateBackupUseCase,
+  STOCKAPP_BACKUP_FORMAT,
+  STOCKAPP_BACKUP_FORMAT_VERSION,
+  STOCKAPP_BACKUP_MIME_TYPE,
+  type BackupArtifact,
+  type BackupArtifactMetadata,
+  type BackupDataV1,
+  type BackupInventoryMovementV1,
+  type BackupInventoryStateV1,
+  type BackupInventoryV1,
+  type BackupProductV1,
+  type BackupPurchaseV1,
+  type BackupSaleItemV1,
+  type BackupSaleV1,
+  type BackupSnapshotReader,
+  type BackupStockAdjustmentV1,
+  type CreateBackupInput,
+  type StockAppBackupV1,
+} from './create-backup';
+export {
   FindProductByBarcodeUseCase,
   type FindProductByBarcodeInput,
   type ProductBarcodeMatch,

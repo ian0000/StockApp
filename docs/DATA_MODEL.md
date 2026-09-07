@@ -1494,6 +1494,30 @@ No asumiremos que estos datos son triviales solo porque no son datos bancarios.
 
 ---
 
+## Backup lógico V1
+
+El respaldo local completo representa un snapshot del Inventory activo mediante el envelope:
+
+```text
+format = stockapp-backup
+formatVersion = 1
+createdAt = epoch milliseconds
+inventoryId = Inventory.id
+data = las ocho colecciones persistidas
+```
+
+`data` incluye `inventories`, `products`, `inventoryStates`, `inventoryMovements`, `sales`,
+`saleItems`, `purchases` y `stockAdjustments`. Incluye Products archivados, operaciones
+`CONFIRMED` y `VOIDED`, y movimientos `REVERSAL`. No incluye métricas, búsquedas ni estado de UI
+derivado.
+
+Los nombres de campos reflejan el modelo persistido. Money se conserva en sus enteros de unidades
+escaladas, los timestamps conservan sus enteros epoch millisecond y los IDs/barcodes siguen siendo
+texto exacto. `null` y cero conocido son representaciones distintas. `InventoryMovement.metadata`
+se conserva como el texto nullable persistido para no descartar información compatible con V1.
+
+---
+
 # 52. Preparación para sync
 
 El modelo deberá soportar que dos dispositivos puedan eventualmente crear registros offline.

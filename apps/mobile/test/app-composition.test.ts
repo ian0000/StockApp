@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   AdjustStockUseCase,
   ArchiveProductUseCase,
+  CreateBackupUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   FindProductByBarcodeUseCase,
@@ -21,6 +22,7 @@ import {
   VoidSaleUseCase,
   VoidPurchaseUseCase,
   type HistoryReader,
+  type BackupSnapshotReader,
   type InventoryRepository,
   type InventoryStateRepository,
   type ProductRepository,
@@ -65,6 +67,11 @@ function createDependencies(): {
   let topSellingProductReadCount = 0;
   let saleDetailsReadCount = 0;
   let transactionCount = 0;
+  const backupSnapshotReader: BackupSnapshotReader = {
+    async readSnapshot() {
+      throw new Error('A use case was executed during composition.');
+    },
+  };
   const inventoryRepository: InventoryRepository = {
     async list() {
       inventoryListCount += 1;
@@ -142,6 +149,7 @@ function createDependencies(): {
 
   return {
     dependencies: {
+      backupSnapshotReader,
       clock: { now: () => 1_776_444_000_000 },
       idGenerator: { generate: () => 'test-id' },
       historyReader,
@@ -176,6 +184,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.deepEqual(Object.keys(services).sort(), [
     'adjustStock',
     'archiveProduct',
+    'createBackup',
     'createInventory',
     'createProduct',
     'findProductByBarcode',
@@ -195,6 +204,7 @@ test('composition exposes the application use cases and nothing else', () => {
   ]);
   assert.ok(services.adjustStock instanceof AdjustStockUseCase);
   assert.ok(services.archiveProduct instanceof ArchiveProductUseCase);
+  assert.ok(services.createBackup instanceof CreateBackupUseCase);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
   assert.ok(services.createProduct instanceof CreateProductUseCase);
   assert.ok(

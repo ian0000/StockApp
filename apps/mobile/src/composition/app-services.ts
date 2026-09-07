@@ -1,6 +1,7 @@
 import {
   AdjustStockUseCase,
   ArchiveProductUseCase,
+  CreateBackupUseCase,
   CreateInventoryUseCase,
   CreateProductUseCase,
   FindProductByBarcodeUseCase,
@@ -18,6 +19,7 @@ import {
   VoidSaleUseCase,
   VoidPurchaseUseCase,
   type Clock,
+  type BackupSnapshotReader,
   type HistoryReader,
   type InventoryIdGenerator,
   type InventoryMovementIdGenerator,
@@ -49,6 +51,7 @@ type AppIdGenerator = InventoryIdGenerator &
 export interface AppServices {
   readonly adjustStock: AdjustStockUseCase;
   readonly archiveProduct: ArchiveProductUseCase;
+  readonly createBackup: CreateBackupUseCase;
   readonly createInventory: CreateInventoryUseCase;
   readonly createProduct: CreateProductUseCase;
   readonly findProductByBarcode: FindProductByBarcodeUseCase;
@@ -68,6 +71,7 @@ export interface AppServices {
 }
 
 export interface AppServiceDependencies {
+  readonly backupSnapshotReader: BackupSnapshotReader;
   readonly clock: Clock;
   readonly idGenerator: AppIdGenerator;
   readonly historyReader: HistoryReader;
@@ -84,6 +88,7 @@ export interface AppServiceDependencies {
 }
 
 export function assembleAppServices({
+  backupSnapshotReader,
   clock,
   idGenerator,
   historyReader,
@@ -106,6 +111,10 @@ export function assembleAppServices({
     archiveProduct: new ArchiveProductUseCase({
       clock,
       productRepository,
+    }),
+    createBackup: new CreateBackupUseCase({
+      clock,
+      reader: backupSnapshotReader,
     }),
     createInventory: new CreateInventoryUseCase({
       inventoryIdGenerator: idGenerator,

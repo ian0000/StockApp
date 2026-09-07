@@ -4,6 +4,7 @@ import type {
   AdjustStockUseCase,
   ArchiveProductUseCase,
   CreateProductUseCase,
+  CreateBackupUseCase,
   FindProductByBarcodeUseCase,
   GetProductDetailsUseCase,
   GetPurchaseDetailsUseCase,
@@ -19,6 +20,12 @@ import type {
   VoidSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
+import type { BackupFileExporter } from '@/infrastructure/backup/backup-file-exporter';
+
+export interface BackupRuntimeServices {
+  readonly createBackup: CreateBackupUseCase;
+  readonly fileExporter: BackupFileExporter;
+}
 
 export interface ProductRuntimeServices {
   readonly archiveProduct: ArchiveProductUseCase;
@@ -53,6 +60,7 @@ export interface HistoryRuntimeServices {
 
 export interface AppRuntimeContextValue {
   readonly adjustmentServices: AdjustmentRuntimeServices | null;
+  readonly backupServices: BackupRuntimeServices | null;
   readonly inventory: Inventory;
   readonly historyServices: HistoryRuntimeServices | null;
   readonly persistence: 'sqlite' | 'web-preview';

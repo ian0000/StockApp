@@ -12,6 +12,7 @@ import { MultipleInventoriesNotSupportedError } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 
 import { createAppServices, type AppServices } from '@/composition';
+import { localBackupFileExporter } from '@/infrastructure/backup/local-backup-file-exporter.native';
 import { FirstRunSetup } from '@/ui/components/FirstRunSetup';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
@@ -129,6 +130,10 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
       value={{
         adjustmentServices: {
           adjustStock: state.services.adjustStock,
+        },
+        backupServices: {
+          createBackup: state.services.createBackup,
+          fileExporter: localBackupFileExporter,
         },
         inventory: state.inventory,
         historyServices: {

@@ -705,6 +705,19 @@ La operación deberá conservar productos, movimientos, ventas, compras y ajuste
 consistente, y deberá probarse con una copia real. Este formato sirve para recuperación de la app;
 no es la exportación comercial CSV/Excel reservada para Pro.
 
+El respaldo manual V1 utiliza un documento JSON lógico y versionado, no una copia del archivo
+SQLite ni un volcado SQL. Su envelope identifica `format = stockapp-backup`,
+`formatVersion = 1`, `createdAt` e `inventoryId`, y contiene las ocho colecciones persistidas. Los
+valores monetarios permanecen como enteros de unidades escaladas y los timestamps como epoch
+milliseconds; `null` conserva su significado y nunca se sustituye por cero.
+
+Infrastructure lee las ocho colecciones dentro de una única transacción SQLite de solo lectura.
+Application valida el alcance y las relaciones básicas, ordena determinísticamente por
+`createdAt ASC, id ASC` —y por `productId ASC` para `InventoryState`— y serializa el artifact. En
+iOS/Android se escribe temporalmente en cache y se entrega a la hoja nativa para que el usuario
+elija un destino fuera del sandbox. El archivo no está cifrado. Restauración, importación, backup
+automático y cloud quedan fuera de este formato inicial y se implementarán por separado.
+
 ---
 
 # 23. Cifrado completo de SQLite
