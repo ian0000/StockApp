@@ -15,6 +15,7 @@ import {
   SaleRepository,
   SalesSummaryReader,
   StockAdjustmentRepository,
+  TopSellingProductReader,
   TransactionRepositories,
 } from '@stock-app/application';
 import { and, asc, count, desc, eq, gte, lt, sql } from 'drizzle-orm';
@@ -391,6 +392,55 @@ export function createSqliteSalesSummaryReader(
           'Units sold',
           0,
         ),
+      });
+    },
+  };
+}
+
+export function createSqliteTopSellingProductReader(
+  executor: SqliteReadExecutor,
+): TopSellingProductReader {
+  return {
+    async getTopSellingProduct({ inventoryId, fromInclusive, toExclusive }) {
+      const unitsSold = sql<number>`sum(${saleItems.quantity})`;
+      const latestSaleAt = sql<number>`max(${sales.effectiveAt})`;
+      const rows = await executor
+        .select({
+          productId: products.id,
+          name: products.name,
+          variant: products.variant,
+          unitsSold,
+        })
+        .from(saleItems)
+        .innerJoin(sales, eq(saleItems.saleId, sales.id))
+        .innerJoin(
+          products,
+          and(
+            eq(saleItems.productId, products.id),
+            eq(products.inventoryId, sales.inventoryId),
+          ),
+        )
+        .where(
+          and(
+            eq(sales.inventoryId, inventoryId),
+            eq(sales.status, 'CONFIRMED'),
+            gte(sales.effectiveAt, fromInclusive),
+            lt(sales.effectiveAt, toExclusive),
+            eq(products.isArchived, false),
+          ),
+        )
+        .groupBy(products.id, products.name, products.variant)
+        .orderBy(desc(unitsSold), desc(latestSaleAt), desc(products.id))
+        .limit(1);
+      const row = rows[0];
+
+      if (row === undefined) return null;
+
+      return Object.freeze({
+        productId: row.productId,
+        name: row.name,
+        variant: row.variant,
+        unitsSold: requirePositiveSafeInteger(row.unitsSold, 'Units sold'),
       });
     },
   };

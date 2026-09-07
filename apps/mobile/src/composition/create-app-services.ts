@@ -6,6 +6,7 @@ import {
   createSqliteInventoryStateRepository,
   createSqliteProductRepository,
   createSqliteSalesSummaryReader,
+  createSqliteTopSellingProductReader,
   createSqliteTransactionManager,
   initializeAppDatabase,
   openAppDatabase,
@@ -48,6 +49,7 @@ export async function createAppRuntime(
       purchaseDetailsReader: createSqlitePurchaseDetailsReader(database.db),
       saleDetailsReader: createSqliteSaleDetailsReader(database.db),
       salesSummaryReader: createSqliteSalesSummaryReader(database.db),
+      topSellingProductReader: createSqliteTopSellingProductReader(database.db),
       transactionManager: createSqliteTransactionManager(database),
     });
 

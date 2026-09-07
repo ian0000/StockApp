@@ -189,6 +189,16 @@ Coca-Cola
 
 No habrá gráficos obligatorios.
 
+En V1, `Stock bajo` cuenta únicamente productos activos utilizando la regla de dominio y muestra una
+vista previa de hasta dos productos según el orden determinista del listado de Productos. El bloque
+completo navega a Productos sin introducir un filtro nuevo.
+
+`Producto más vendido hoy` suma las unidades de `SaleItem` pertenecientes a ventas confirmadas dentro
+del mismo día local usado por las métricas de Inicio. Excluye ventas anuladas y productos archivados:
+las ventas históricas permanecen en métricas e Historial, pero Inicio no promociona un producto que ya
+no está operativo. Los empates se resuelven por la venta confirmada más reciente del período y luego
+por `Product.id` descendente para mantener un resultado determinista.
+
 Si alguna venta del período tiene costo desconocido, `Ganancia estimada` mostrará `—` junto con una
 explicación breve de que el valor no está disponible. La UI nunca sumará esos costos como cero ni
 presentará un total parcial como si estuviera completo.

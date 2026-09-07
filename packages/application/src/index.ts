@@ -74,6 +74,12 @@ export {
   type SalesSummaryReader,
 } from './get-sales-summary';
 export {
+  GetTopSellingProductUseCase,
+  type GetTopSellingProductInput,
+  type TopSellingProduct,
+  type TopSellingProductReader,
+} from './get-top-selling-product';
+export {
   ListProductsUseCase,
   type ListProductsInput,
   type ProductSummary,
