@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -14,11 +15,19 @@ import type {
   RegisterPurchaseResult,
 } from '@stock-app/application';
 
+import { createPurchaseBarcodeScannerRoute } from '@/ui/barcode/barcode-scanner-presentation';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
 import { PurchaseConfirmation } from '@/ui/purchases/PurchaseConfirmation';
+import {
+  applyPurchaseProductSelection,
+  createPurchaseScanResultGate,
+  getPurchaseScannerActionPresentation,
+  normalizePurchaseScanResult,
+  resolvePurchaseScanProduct,
+} from '@/ui/purchases/purchase-barcode-scanner';
 import { parsePurchaseFormValues } from '@/ui/purchases/purchase-form';
 import { applySuggestedPrice } from '@/ui/purchases/purchase-price-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
@@ -42,9 +51,15 @@ type PriceDecisionStatus = 'pending' | 'saving' | 'applied' | 'kept' | 'error';
 
 export default function NewPurchaseScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    scannedProductId?: string | string[];
+    scanRequestId?: string | string[];
+  }>();
   const { inventory, persistence, productServices, purchaseServices } =
     useAppRuntime();
   const requestIdRef = useRef(0);
+  const scanRequestSequenceRef = useRef(0);
+  const scanResultGateRef = useRef(createPurchaseScanResultGate());
   const submittingRef = useRef(false);
   const updatingPriceRef = useRef(false);
   const [state, setState] = useState<ProductsState>({ status: 'loading' });
@@ -57,6 +72,15 @@ export default function NewPurchaseScreen() {
   const [unitCostText, setUnitCostText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const scanResult = useMemo(
+    () =>
+      normalizePurchaseScanResult(
+        params.scannedProductId,
+        params.scanRequestId,
+      ),
+    [params.scanRequestId, params.scannedProductId],
+  );
+  const scannerAction = getPurchaseScannerActionPresentation(Platform.OS);
 
   const loadProducts = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
@@ -94,6 +118,59 @@ export default function NewPurchaseScreen() {
     }, [loadProducts]),
   );
 
+  const selectProduct = useCallback(
+    (summary: ProductSummary) => {
+      if (isSubmitting) return;
+
+      const next = applyPurchaseProductSelection(
+        {
+          selectedProduct,
+          searchText,
+          quantityText,
+          unitCostText,
+          submitError,
+        },
+        summary,
+      );
+
+      setSelectedProduct(next.selectedProduct);
+      setSearchText(next.searchText);
+      setQuantityText(next.quantityText);
+      setUnitCostText(next.unitCostText);
+      setSubmitError(next.submitError);
+    },
+    [
+      isSubmitting,
+      quantityText,
+      searchText,
+      selectedProduct,
+      submitError,
+      unitCostText,
+    ],
+  );
+
+  useEffect(() => {
+    if (
+      phase.status !== 'editing' ||
+      state.status !== 'ready' ||
+      scanResult === null ||
+      !scanResultGateRef.current.tryConsume(scanResult.requestId)
+    ) {
+      return;
+    }
+
+    const product = resolvePurchaseScanProduct(state.products, scanResult);
+
+    if (product !== null) {
+      selectProduct(product);
+    }
+
+    router.setParams({
+      scannedProductId: undefined,
+      scanRequestId: undefined,
+    });
+  }, [phase.status, router, scanResult, selectProduct, state]);
+
   const visibleProducts = useMemo(
     () =>
       state.status === 'ready'
@@ -124,16 +201,6 @@ export default function NewPurchaseScreen() {
     !isSubmitting;
   const hasSearch = searchText.trim().length > 0;
 
-  const selectProduct = (summary: ProductSummary) => {
-    if (isSubmitting) return;
-
-    setSelectedProduct(summary);
-    setSearchText('');
-    setQuantityText('');
-    setUnitCostText('');
-    setSubmitError(null);
-  };
-
   const changeProduct = () => {
     if (isSubmitting) return;
 
@@ -141,6 +208,17 @@ export default function NewPurchaseScreen() {
     setQuantityText('');
     setUnitCostText('');
     setSubmitError(null);
+  };
+
+  const openBarcodeScanner = () => {
+    if (!scannerAction.enabled || isSubmitting) return;
+
+    scanRequestSequenceRef.current += 1;
+    router.push(
+      createPurchaseBarcodeScannerRoute(
+        `purchase-scan-${scanRequestSequenceRef.current}`,
+      ),
+    );
   };
 
   const registerPurchase = async () => {
@@ -310,6 +388,31 @@ export default function NewPurchaseScreen() {
               <Text style={styles.primaryActionText}>Ir a productos</Text>
             </Pressable>
           </View>
+        ) : null}
+
+        {state.status === 'ready' && state.products.length > 0 ? (
+          <Pressable
+            accessibilityHint={
+              scannerAction.enabled
+                ? 'Abre la cámara para seleccionar un producto por código'
+                : 'El escáner está disponible en iOS y Android'
+            }
+            accessibilityLabel={scannerAction.label}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !scannerAction.enabled }}
+            disabled={!scannerAction.enabled}
+            onPress={openBarcodeScanner}
+            style={({ pressed }) => [
+              styles.scannerAction,
+              !scannerAction.enabled && styles.scannerActionDisabled,
+              pressed && scannerAction.enabled && styles.scannerActionPressed,
+            ]}
+          >
+            <Text style={styles.scannerActionText}>{scannerAction.label}</Text>
+            {scannerAction.status === null ? null : (
+              <Text style={styles.scannerStatus}>{scannerAction.status}</Text>
+            )}
+          </Pressable>
         ) : null}
 
         {state.status === 'ready' &&
@@ -733,6 +836,34 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+  },
+  scannerAction: {
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 56,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  scannerActionDisabled: {
+    opacity: 0.68,
+  },
+  scannerActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  scannerActionText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
+  },
+  scannerStatus: {
+    color: colors.textSecondary,
+    fontSize: 10,
+    lineHeight: 14,
   },
   secondaryPressed: {
     backgroundColor: colors.accentSoft,

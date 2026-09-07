@@ -5,6 +5,8 @@ import {
   createBarcodeScanGate,
   createBarcodeNotFoundPresentation,
   createProductNewRouteFromBarcode,
+  createPurchaseBarcodeResultRoute,
+  createPurchaseBarcodeScannerRoute,
   createSaleBarcodeResultRoute,
   createSaleBarcodeScannerRoute,
   createBarcodeScannerFailurePresentation,
@@ -164,6 +166,27 @@ test('Sale scan result returns only productId and requestId', () => {
   });
 });
 
+test('Purchase scanner route carries only its bounded origin and request ID', () => {
+  assert.deepEqual(createPurchaseBarcodeScannerRoute('scan-2'), {
+    pathname: '/barcode/scan',
+    params: { origin: 'purchase', requestId: 'scan-2' },
+  });
+});
+
+test('Purchase scanner origin requires scalar origin and request params', () => {
+  assert.deepEqual(parseBarcodeScannerOrigin('purchase', ' scan-2 '), {
+    kind: 'purchase',
+    requestId: 'scan-2',
+  });
+});
+
+test('Purchase scan result returns only productId and requestId', () => {
+  assert.deepEqual(createPurchaseBarcodeResultRoute('product-2', 'scan-2'), {
+    pathname: '/purchase',
+    params: { scannedProductId: 'product-2', scanRequestId: 'scan-2' },
+  });
+});
+
 test('Sale not-found presentation keeps rescan and returns without Product creation', () => {
   assert.deepEqual(
     createBarcodeNotFoundPresentation('0012345', {
@@ -179,6 +202,26 @@ test('Sale not-found presentation keeps rescan and returns without Product creat
         createProduct: null,
         rescan: 'Escanear de nuevo',
         back: 'Volver a venta',
+      },
+    },
+  );
+});
+
+test('Purchase not-found keeps rescan/back and never offers Product creation', () => {
+  assert.deepEqual(
+    createBarcodeNotFoundPresentation('0012345', {
+      kind: 'purchase',
+      requestId: 'scan-2',
+    }),
+    {
+      message: 'Producto no encontrado',
+      supportingText:
+        'No existe un producto activo con este código en tu inventario.',
+      barcode: '0012345',
+      actions: {
+        createProduct: null,
+        rescan: 'Escanear de nuevo',
+        back: 'Volver a compra',
       },
     },
   );

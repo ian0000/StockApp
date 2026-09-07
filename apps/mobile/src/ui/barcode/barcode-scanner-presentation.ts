@@ -21,13 +21,14 @@ export interface BarcodeResultPresentation {
 
 export type BarcodeScannerOrigin =
   | { readonly kind: 'products' }
-  | { readonly kind: 'sale'; readonly requestId: string };
+  | { readonly kind: 'sale'; readonly requestId: string }
+  | { readonly kind: 'purchase'; readonly requestId: string };
 
 export interface BarcodeNotFoundPresentation extends BarcodeResultPresentation {
   readonly actions: {
     readonly createProduct: 'Crear producto' | null;
     readonly rescan: 'Escanear de nuevo';
-    readonly back: 'Volver' | 'Volver a venta';
+    readonly back: 'Volver' | 'Volver a venta' | 'Volver a compra';
   };
 }
 
@@ -58,7 +59,7 @@ export function createBarcodeNotFoundPresentation(
       createProduct:
         origin.kind === 'products' ? ('Crear producto' as const) : null,
       rescan: 'Escanear de nuevo',
-      back: origin.kind === 'sale' ? ('Volver a venta' as const) : 'Volver',
+      back: getBarcodeScannerBackLabel(origin),
     }),
   });
 }
@@ -78,9 +79,17 @@ export function parseBarcodeScannerOrigin(
 ): BarcodeScannerOrigin {
   const requestId = normalizeRouteParam(requestIdParam);
 
-  return originParam === 'sale' && requestId !== null
-    ? Object.freeze({ kind: 'sale', requestId })
-    : Object.freeze({ kind: 'products' });
+  if (requestId !== null) {
+    if (originParam === 'sale') {
+      return Object.freeze({ kind: 'sale', requestId });
+    }
+
+    if (originParam === 'purchase') {
+      return Object.freeze({ kind: 'purchase', requestId });
+    }
+  }
+
+  return Object.freeze({ kind: 'products' });
 }
 
 export function createSaleBarcodeScannerRoute(requestId: string) {
@@ -103,10 +112,32 @@ export function createSaleBarcodeResultRoute(
   });
 }
 
+export function createPurchaseBarcodeScannerRoute(requestId: string) {
+  return Object.freeze({
+    pathname: BARCODE_SCANNER_ROUTE,
+    params: Object.freeze({ origin: 'purchase' as const, requestId }),
+  });
+}
+
+export function createPurchaseBarcodeResultRoute(
+  productId: string,
+  requestId: string,
+) {
+  return Object.freeze({
+    pathname: '/purchase' as const,
+    params: Object.freeze({
+      scannedProductId: productId,
+      scanRequestId: requestId,
+    }),
+  });
+}
+
 export function getBarcodeScannerBackLabel(
   origin: BarcodeScannerOrigin,
-): 'Volver' | 'Volver a venta' {
-  return origin.kind === 'sale' ? 'Volver a venta' : 'Volver';
+): 'Volver' | 'Volver a venta' | 'Volver a compra' {
+  if (origin.kind === 'sale') return 'Volver a venta';
+  if (origin.kind === 'purchase') return 'Volver a compra';
+  return 'Volver';
 }
 
 export function createProductNewRouteFromBarcode(barcode: string) {
