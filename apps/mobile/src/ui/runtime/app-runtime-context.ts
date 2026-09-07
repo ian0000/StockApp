@@ -9,6 +9,7 @@ import type {
   GetPurchaseDetailsUseCase,
   GetSaleDetailsUseCase,
   GetSalesSummaryUseCase,
+  GetTopSellingProductUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
   RegisterPurchaseUseCase,
@@ -31,6 +32,7 @@ export interface ProductRuntimeServices {
 export interface SaleRuntimeServices {
   readonly getSaleDetails: GetSaleDetailsUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
+  readonly getTopSellingProduct: GetTopSellingProductUseCase;
   readonly registerSale: RegisterSaleUseCase;
   readonly voidSale: VoidSaleUseCase;
 }

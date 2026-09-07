@@ -12,6 +12,7 @@ import {
   GetPurchaseDetailsUseCase,
   GetSaleDetailsUseCase,
   GetSalesSummaryUseCase,
+  GetTopSellingProductUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
   RegisterPurchaseUseCase,
@@ -27,6 +28,7 @@ import {
   type ProductManagementRepository,
   type PurchaseDetailsReader,
   type SalesSummaryReader,
+  type TopSellingProductReader,
   type SaleDetailsReader,
   type TransactionManager,
 } from '@stock-app/application';
@@ -48,6 +50,7 @@ function createDependencies(): {
   readonly getProductBarcodeReadCount: () => number;
   readonly getPurchaseDetailsReadCount: () => number;
   readonly getSalesSummaryReadCount: () => number;
+  readonly getTopSellingProductReadCount: () => number;
   readonly getSaleDetailsReadCount: () => number;
   readonly getTransactionCount: () => number;
 } {
@@ -59,6 +62,7 @@ function createDependencies(): {
   let productBarcodeReadCount = 0;
   let purchaseDetailsReadCount = 0;
   let salesSummaryReadCount = 0;
+  let topSellingProductReadCount = 0;
   let saleDetailsReadCount = 0;
   let transactionCount = 0;
   const inventoryRepository: InventoryRepository = {
@@ -111,6 +115,12 @@ function createDependencies(): {
       };
     },
   };
+  const topSellingProductReader: TopSellingProductReader = {
+    async getTopSellingProduct() {
+      topSellingProductReadCount += 1;
+      return null;
+    },
+  };
   const historyReader: HistoryReader = {
     async listRecent() {
       historyReadCount += 1;
@@ -141,6 +151,7 @@ function createDependencies(): {
       purchaseDetailsReader,
       saleDetailsReader,
       salesSummaryReader,
+      topSellingProductReader,
       transactionManager,
     },
     getInventorySaveCount: () => inventorySaveCount,
@@ -151,6 +162,7 @@ function createDependencies(): {
     getProductBarcodeReadCount: () => productBarcodeReadCount,
     getPurchaseDetailsReadCount: () => purchaseDetailsReadCount,
     getSalesSummaryReadCount: () => salesSummaryReadCount,
+    getTopSellingProductReadCount: () => topSellingProductReadCount,
     getSaleDetailsReadCount: () => saleDetailsReadCount,
     getTransactionCount: () => transactionCount,
   };
@@ -172,6 +184,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'getPurchaseDetails',
     'getSaleDetails',
     'getSalesSummary',
+    'getTopSellingProduct',
     'listHistory',
     'listProducts',
     'registerPurchase',
@@ -192,6 +205,9 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.getPurchaseDetails instanceof GetPurchaseDetailsUseCase);
   assert.ok(services.getSaleDetails instanceof GetSaleDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
+  assert.ok(
+    services.getTopSellingProduct instanceof GetTopSellingProductUseCase,
+  );
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
   assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
@@ -212,6 +228,7 @@ test('composition performs no persistence automatically', () => {
     getPurchaseDetailsReadCount,
     getSaleDetailsReadCount,
     getSalesSummaryReadCount,
+    getTopSellingProductReadCount,
     getTransactionCount,
   } = createDependencies();
 
@@ -225,6 +242,7 @@ test('composition performs no persistence automatically', () => {
   assert.equal(getPurchaseDetailsReadCount(), 0);
   assert.equal(getSaleDetailsReadCount(), 0);
   assert.equal(getSalesSummaryReadCount(), 0);
+  assert.equal(getTopSellingProductReadCount(), 0);
   assert.equal(getTransactionCount(), 0);
 });
 
@@ -292,6 +310,21 @@ test('sales summary query uses the composed reader', async () => {
   assert.equal(getSalesSummaryReadCount(), 1);
 });
 
+test('top-selling product query uses the composed reader', async () => {
+  const { dependencies, getTopSellingProductReadCount } = createDependencies();
+  const services = assembleAppServices(dependencies);
+
+  assert.equal(
+    await services.getTopSellingProduct.execute({
+      inventoryId: 'inventory-123',
+      fromInclusive: 1_000,
+      toExclusive: 2_000,
+    }),
+    null,
+  );
+  assert.equal(getTopSellingProductReadCount(), 1);
+});
+
 test('sale detail query uses the composed reader', async () => {
   const { dependencies, getSaleDetailsReadCount } = createDependencies();
   const services = assembleAppServices(dependencies);
@@ -351,6 +384,9 @@ test('composition initialization is deferred until explicitly requested', async 
   assert.ok(services.getPurchaseDetails instanceof GetPurchaseDetailsUseCase);
   assert.ok(services.getSaleDetails instanceof GetSaleDetailsUseCase);
   assert.ok(services.getSalesSummary instanceof GetSalesSummaryUseCase);
+  assert.ok(
+    services.getTopSellingProduct instanceof GetTopSellingProductUseCase,
+  );
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
 });

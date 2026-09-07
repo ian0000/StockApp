@@ -8,7 +8,11 @@ import {
   View,
 } from 'react-native';
 
-import type { SalesSummary } from '@stock-app/application';
+import type {
+  ProductSummary,
+  SalesSummary,
+  TopSellingProduct,
+} from '@stock-app/application';
 import { Money } from '@stock-app/domain';
 
 import { EmptyState } from '@/ui/components/EmptyState';
@@ -22,6 +26,13 @@ import {
   type RecentOperationsState,
 } from '@/ui/history/history-presentation';
 import { getLocalDayRange } from '@/ui/home/local-day-range';
+import {
+  createHomeLowStockPresentation,
+  createTopSellingProductPresentation,
+  getHomeBlockContentKind,
+  PRODUCTS_TAB_ROUTE,
+  type HomeBlockState,
+} from '@/ui/home/home-dashboard-presentation';
 import { createPurchaseDetailsRoute } from '@/ui/purchases/purchase-details-presentation';
 import { createSaleDetailsRoute } from '@/ui/sales/sale-details-presentation';
 import { formatMoneyForDisplay } from '@/ui/products/product-form-values';
@@ -55,43 +66,114 @@ function Metric({ label, value }: MetricProps) {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { historyServices, inventory, persistence, saleServices } =
-    useAppRuntime();
+  const {
+    historyServices,
+    inventory,
+    persistence,
+    productServices,
+    saleServices,
+  } = useAppRuntime();
   const summaryRequestIdRef = useRef(0);
+  const lowStockRequestIdRef = useRef(0);
+  const topSellerRequestIdRef = useRef(0);
   const recentRequestIdRef = useRef(0);
   const [summaryState, setSummaryState] = useState<SummaryState>({
     status: 'loading',
   });
   const [recentOperationsState, setRecentOperationsState] =
     useState<RecentOperationsState>({ status: 'loading' });
+  const [lowStockState, setLowStockState] = useState<
+    HomeBlockState<readonly ProductSummary[]>
+  >({ status: 'loading' });
+  const [topSellerState, setTopSellerState] = useState<
+    HomeBlockState<TopSellingProduct>
+  >({ status: 'loading' });
 
-  const loadSummary = useCallback(async () => {
-    const requestId = summaryRequestIdRef.current + 1;
-    summaryRequestIdRef.current = requestId;
+  const loadSummary = useCallback(
+    async (range = getLocalDayRange(Date.now())) => {
+      const requestId = summaryRequestIdRef.current + 1;
+      summaryRequestIdRef.current = requestId;
 
-    if (saleServices === null) {
-      setSummaryState({ status: 'ready', summary: EMPTY_SUMMARY });
+      if (saleServices === null) {
+        setSummaryState({ status: 'ready', summary: EMPTY_SUMMARY });
+        return;
+      }
+
+      setSummaryState({ status: 'loading' });
+
+      try {
+        const summary = await saleServices.getSalesSummary.execute({
+          inventoryId: inventory.id,
+          ...range,
+        });
+
+        if (summaryRequestIdRef.current === requestId) {
+          setSummaryState({ status: 'ready', summary });
+        }
+      } catch {
+        if (summaryRequestIdRef.current === requestId) {
+          setSummaryState({ status: 'error' });
+        }
+      }
+    },
+    [inventory.id, saleServices],
+  );
+
+  const loadLowStock = useCallback(async () => {
+    const requestId = lowStockRequestIdRef.current + 1;
+    lowStockRequestIdRef.current = requestId;
+
+    if (productServices === null) {
+      setLowStockState({ status: 'ready', value: [] });
       return;
     }
 
-    setSummaryState({ status: 'loading' });
+    setLowStockState({ status: 'loading' });
 
     try {
-      const range = getLocalDayRange(Date.now());
-      const summary = await saleServices.getSalesSummary.execute({
+      const products = await productServices.listProducts.execute({
         inventoryId: inventory.id,
-        ...range,
       });
 
-      if (summaryRequestIdRef.current === requestId) {
-        setSummaryState({ status: 'ready', summary });
+      if (lowStockRequestIdRef.current === requestId) {
+        setLowStockState({ status: 'ready', value: products });
       }
     } catch {
-      if (summaryRequestIdRef.current === requestId) {
-        setSummaryState({ status: 'error' });
+      if (lowStockRequestIdRef.current === requestId) {
+        setLowStockState({ status: 'error' });
       }
     }
-  }, [inventory.id, saleServices]);
+  }, [inventory.id, productServices]);
+
+  const loadTopSeller = useCallback(
+    async (range = getLocalDayRange(Date.now())) => {
+      const requestId = topSellerRequestIdRef.current + 1;
+      topSellerRequestIdRef.current = requestId;
+
+      if (saleServices === null) {
+        setTopSellerState({ status: 'ready', value: null });
+        return;
+      }
+
+      setTopSellerState({ status: 'loading' });
+
+      try {
+        const value = await saleServices.getTopSellingProduct.execute({
+          inventoryId: inventory.id,
+          ...range,
+        });
+
+        if (topSellerRequestIdRef.current === requestId) {
+          setTopSellerState({ status: 'ready', value });
+        }
+      } catch {
+        if (topSellerRequestIdRef.current === requestId) {
+          setTopSellerState({ status: 'error' });
+        }
+      }
+    },
+    [inventory.id, saleServices],
+  );
 
   const loadRecentOperations = useCallback(async () => {
     const requestId = recentRequestIdRef.current + 1;
@@ -121,14 +203,20 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadSummary();
+      const today = getLocalDayRange(Date.now());
+
+      void loadSummary(today);
+      void loadLowStock();
+      void loadTopSeller(today);
       void loadRecentOperations();
 
       return () => {
         summaryRequestIdRef.current += 1;
+        lowStockRequestIdRef.current += 1;
+        topSellerRequestIdRef.current += 1;
         recentRequestIdRef.current += 1;
       };
-    }, [loadRecentOperations, loadSummary]),
+    }, [loadLowStock, loadRecentOperations, loadSummary, loadTopSeller]),
   );
 
   const summary = summaryState.status === 'ready' ? summaryState.summary : null;
@@ -144,6 +232,15 @@ export default function HomeScreen() {
   const recentContentKind = getRecentOperationsContentKind(
     recentOperationsState,
   );
+  const lowStockPresentation =
+    lowStockState.status === 'ready' && lowStockState.value !== null
+      ? createHomeLowStockPresentation(lowStockState.value)
+      : null;
+  const topSellerContentKind = getHomeBlockContentKind(topSellerState);
+  const topSellerPresentation =
+    topSellerState.status === 'ready' && topSellerState.value !== null
+      ? createTopSellingProductPresentation(topSellerState.value)
+      : null;
 
   return (
     <Screen>
@@ -231,10 +328,137 @@ export default function HomeScreen() {
       </View>
 
       <Section title="Stock bajo">
-        <EmptyState
-          message="Todo en orden por ahora"
-          supportingText="Los productos con poco stock aparecerán aquí."
-        />
+        {lowStockState.status === 'loading' ? (
+          <View accessibilityLiveRegion="polite" style={styles.blockStatus}>
+            <ActivityIndicator color={colors.accent} size="small" />
+            <Text style={styles.summaryStatusText}>Revisando existencias…</Text>
+          </View>
+        ) : null}
+        {lowStockState.status === 'error' ? (
+          <View style={styles.blockStatus}>
+            <Text
+              accessibilityLiveRegion="assertive"
+              style={styles.summaryErrorText}
+            >
+              No pudimos revisar el stock bajo.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void loadLowStock()}
+              style={({ pressed }) => [
+                styles.retryAction,
+                pressed && styles.retryActionPressed,
+              ]}
+            >
+              <Text style={styles.retryActionText}>Reintentar</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {lowStockPresentation !== null ? (
+          <Pressable
+            accessibilityHint="Abre la lista de productos"
+            accessibilityRole="button"
+            onPress={() => router.push(PRODUCTS_TAB_ROUTE)}
+            style={({ pressed }) => [
+              styles.dashboardCard,
+              pressed && styles.dashboardCardPressed,
+            ]}
+          >
+            <View style={styles.dashboardCardText}>
+              <Text style={styles.dashboardCardTitle}>
+                {lowStockPresentation.message}
+              </Text>
+              <Text style={styles.dashboardCardSupportingText}>
+                {lowStockPresentation.count === 0
+                  ? 'No hay productos que necesiten reposición.'
+                  : 'Revisa el catálogo para planificar la reposición.'}
+              </Text>
+              {lowStockPresentation.preview.map((product) => (
+                <View key={product.productId} style={styles.lowStockPreviewRow}>
+                  <View style={styles.dashboardCardText}>
+                    <Text style={styles.lowStockPreviewName}>
+                      {product.name}
+                    </Text>
+                    {product.variant === null ? null : (
+                      <Text style={styles.dashboardCardSupportingText}>
+                        {product.variant}
+                      </Text>
+                    )}
+                  </View>
+                  <Text style={styles.lowStockPreviewStock}>
+                    {product.stockLabel}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <Text accessibilityElementsHidden style={styles.dashboardArrow}>
+              ›
+            </Text>
+          </Pressable>
+        ) : null}
+      </Section>
+
+      <Section title="Producto más vendido hoy">
+        {topSellerContentKind === 'loading' ? (
+          <View accessibilityLiveRegion="polite" style={styles.blockStatus}>
+            <ActivityIndicator color={colors.accent} size="small" />
+            <Text style={styles.summaryStatusText}>Calculando resultado…</Text>
+          </View>
+        ) : null}
+        {topSellerContentKind === 'error' ? (
+          <View style={styles.blockStatus}>
+            <Text
+              accessibilityLiveRegion="assertive"
+              style={styles.summaryErrorText}
+            >
+              No pudimos cargar el producto más vendido.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void loadTopSeller()}
+              style={({ pressed }) => [
+                styles.retryAction,
+                pressed && styles.retryActionPressed,
+              ]}
+            >
+              <Text style={styles.retryActionText}>Reintentar</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {topSellerContentKind === 'empty' ? (
+          <EmptyState
+            message="Aún no hay ventas hoy"
+            supportingText="Aquí aparecerá el producto con más unidades vendidas."
+          />
+        ) : null}
+        {topSellerPresentation !== null ? (
+          <Pressable
+            accessibilityHint="Abre el detalle del producto"
+            accessibilityRole="button"
+            onPress={() => router.push(topSellerPresentation.route)}
+            style={({ pressed }) => [
+              styles.dashboardCard,
+              pressed && styles.dashboardCardPressed,
+            ]}
+          >
+            <View style={styles.dashboardCardText}>
+              <Text style={styles.dashboardCardTitle}>
+                {topSellerPresentation.name}
+              </Text>
+              {topSellerPresentation.variant === null ? null : (
+                <Text style={styles.dashboardCardSupportingText}>
+                  {topSellerPresentation.variant}
+                </Text>
+              )}
+              <Text style={styles.topSellerUnits}>
+                {topSellerPresentation.unitsLabel}
+              </Text>
+            </View>
+            <Text accessibilityElementsHidden style={styles.dashboardArrow}>
+              ›
+            </Text>
+          </Pressable>
+        ) : null}
       </Section>
 
       <Section title="RECIENTES" titleVariant="eyebrow">
@@ -326,6 +550,45 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     width: '100%',
   },
+  blockStatus: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    justifyContent: 'center',
+    minHeight: 96,
+  },
+  dashboardArrow: {
+    color: colors.accent,
+    fontSize: typography.size.metric,
+    fontWeight: typography.weight.bold,
+  },
+  dashboardCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    minHeight: 88,
+    padding: spacing.lg,
+  },
+  dashboardCardPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  dashboardCardSupportingText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
+    lineHeight: 18,
+  },
+  dashboardCardText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  dashboardCardTitle: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
+  },
   header: {
     paddingBottom: spacing.xs,
     paddingTop: spacing.sm,
@@ -349,6 +612,21 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.xs,
     minWidth: 72,
+  },
+  lowStockPreviewName: {
+    color: colors.text,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.medium,
+  },
+  lowStockPreviewRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  lowStockPreviewStock: {
+    color: colors.textSecondary,
+    fontSize: typography.size.caption,
   },
   metricDivider: {
     alignSelf: 'stretch',
@@ -458,5 +736,11 @@ const styles = StyleSheet.create({
     fontSize: typography.size.display,
     fontWeight: typography.weight.bold,
     letterSpacing: -0.8,
+  },
+  topSellerUnits: {
+    color: colors.accent,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.bold,
+    lineHeight: 18,
   },
 });

@@ -10,6 +10,7 @@ export {
   createSqliteSaleItemRepository,
   createSqliteSaleRepository,
   createSqliteSalesSummaryReader,
+  createSqliteTopSellingProductReader,
   createSqliteStockAdjustmentRepository,
 } from './repositories';
 export { createSqliteVoidSaleTransaction } from './void-sale';
