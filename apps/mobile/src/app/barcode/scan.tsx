@@ -20,6 +20,7 @@ import {
   createBarcodeScanGate,
   createBarcodeNotFoundPresentation,
   createBarcodeScannerFailurePresentation,
+  createPurchaseBarcodeResultRoute,
   createProductNewRouteFromBarcode,
   createSaleBarcodeResultRoute,
   COMMERCIAL_BARCODE_TYPES,
@@ -113,6 +114,10 @@ function NativeBarcodeScanner({
       if (origin.kind === 'sale') {
         router.dismissTo(
           createSaleBarcodeResultRoute(match.productId, origin.requestId),
+        );
+      } else if (origin.kind === 'purchase') {
+        router.dismissTo(
+          createPurchaseBarcodeResultRoute(match.productId, origin.requestId),
         );
       } else {
         router.replace(createProductDetailsRoute(match.productId));
@@ -347,7 +352,7 @@ function NativeBarcodeScanner({
       </View>
 
       <SecondaryAction
-        label={origin.kind === 'sale' ? 'Volver a venta' : 'Cancelar'}
+        label={origin.kind === 'products' ? 'Cancelar' : backLabel}
         onPress={() => router.back()}
       />
     </Screen>
