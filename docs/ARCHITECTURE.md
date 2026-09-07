@@ -130,6 +130,10 @@ Expo se utilizará principalmente para:
 - routing;
 - tooling.
 
+La línea de Expo seleccionada para el proyecto requiere iOS 16.4 o superior y mantiene soporte
+para Android 7 o superior. Como el proyecto utiliza Continuous Native Generation, estos mínimos se
+gestionan mediante el SDK de Expo y no mediante carpetas nativas versionadas.
+
 EAS Build puede simplificar builds y firma de aplicaciones, aunque también es posible realizar
 builds locales. Expo mantiene actualmente una capa gratuita limitada para ciertos servicios de
 build/update.
