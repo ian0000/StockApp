@@ -1,10 +1,10 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ColorValue } from 'react-native';
 
 import { colors, spacing, typography } from '@/ui/theme/tokens';
 
 interface TabMarkerProps {
-  readonly color: string;
+  readonly color: ColorValue;
   readonly focused: boolean;
 }
 
