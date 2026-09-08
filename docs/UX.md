@@ -1061,7 +1061,7 @@ rápido, pero una anulación posterior podrá solicitarse desde el detalle si la
 elegible.
 
 La UI actual no define `Deshacer` inmediato para compras. Decidir si se añade ese acceso rápido,
-además de la futura acción desde detalle, es una **DECISIÓN PENDIENTE** de UX. En caso de añadirse,
+además de la acción permanente existente desde detalle, es una **DECISIÓN PENDIENTE** de UX. En caso de añadirse,
 deberá invocar exactamente `VoidPurchase`.
 
 Los ajustes no muestran `Deshacer` ni `Anular` en V1. Un conteo incorrecto se corrige registrando
