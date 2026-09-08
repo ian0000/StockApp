@@ -1096,17 +1096,26 @@ Crear copia de seguridad
 Restaurar copia de seguridad
 ```
 
-La primera entrega expone `Más → Crear respaldo` y una pantalla breve que explica que la copia
-incluye productos, stock y operaciones. Mientras se construye muestra `Creando respaldo…` y evita
+La sección `Más → Respaldo` expone crear y restaurar. Crear muestra una pantalla breve que explica
+que la copia incluye productos, stock y operaciones. Mientras se construye muestra
+`Creando respaldo…` y evita
 envíos dobles. Cuando el artifact está listo abre la hoja nativa y comunica `Respaldo preparado` y
 `Elige dónde guardar una copia`; no afirma que fue guardado porque el usuario puede cerrar la hoja.
 
 La pantalla advierte que el archivo contiene información del negocio, no está cifrado y debe
-guardarse en un lugar seguro. En Web la acción se muestra deshabilitada como `Solo móvil`; no se
-genera un respaldo ficticio. La acción de restaurar permanece fuera de esta entrega.
+guardarse en un lugar seguro. Restaurar permite seleccionar manualmente un archivo, muestra
+`Leyendo respaldo…`, `Comprobando respaldo…` y un preview con fecha y cantidades antes de habilitar
+la acción destructiva.
 
-La restauración deberá explicar qué copia se seleccionó y pedir confirmación antes de reemplazar el
-estado local. Backup y restauración de seguridad no se presentarán como exportaciones comerciales.
+La confirmación debe decir que los datos actuales serán reemplazados, que no se combinan ambos
+inventarios y recomendar crear primero un respaldo si se desea conservarlos. `Cancelar` no escribe;
+`Restaurar` usa single-flight y muestra `Restaurando…`. Tras el éxito el runtime adopta el Inventory
+restaurado y ofrece volver a Inicio. Los errores de formato, versión y contenido usan mensajes
+comprensibles; solo se afirma que los datos anteriores no cambiaron cuando la transacción hizo
+rollback.
+
+En Web crear y restaurar se muestran como `Solo móvil`; no existe persistencia ficticia. Backup y
+restauración de seguridad no se presentan como exportaciones comerciales.
 
 Posteriormente:
 

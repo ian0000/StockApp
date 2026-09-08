@@ -31,7 +31,11 @@ export default function RootLayout() {
           options={{ title: 'Detalle de compra' }}
         />
         <Stack.Screen name="adjustment" options={{ title: 'Ajustar stock' }} />
-        <Stack.Screen name="backup" options={{ title: 'Respaldo' }} />
+        <Stack.Screen name="backup/index" options={{ title: 'Respaldo' }} />
+        <Stack.Screen
+          name="backup/restore"
+          options={{ title: 'Restaurar respaldo' }}
+        />
         <Stack.Screen
           name="barcode/scan"
           options={{ title: 'Escanear código' }}

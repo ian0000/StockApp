@@ -502,7 +502,8 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Validación física consolidada de anulaciones | PENDING | Debe comprobarse en iPhone, incluidos reinicio, déficit, multiproducto y precio sugerido conservado. |
 | Barcode | PENDING | Permiso de cámara, escaneo local, repetición, no encontrado e integración con alta, venta y compra. |
 | Dashboard básico | PENDING | Ventas, ganancia y unidades ya son reales; faltan más vendido y stock bajo real dentro de Inicio. |
-| Backup y restauración local | PENDING | Continúa siendo gate obligatorio antes de Alpha y requiere validación con una copia real. |
+| Backup y restauración local | DONE | Contrato V1, exportación, validación completa, preview y replace SQLite atómico implementados con regresión automatizada. |
+| Validación física de Backup/Restore | PENDING | Sigue siendo gate antes de Alpha: requiere copia real en iPhone, reemplazo, reinicio y recovery. |
 | Undo inmediato | PENDING | Duración no definida; compra requiere además decidir si ofrecerá este acceso rápido. |
 | Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
 | Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |

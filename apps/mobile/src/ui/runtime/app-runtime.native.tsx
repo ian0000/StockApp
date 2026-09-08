@@ -13,6 +13,7 @@ import type { Inventory } from '@stock-app/domain';
 
 import { createAppServices, type AppServices } from '@/composition';
 import { localBackupFileExporter } from '@/infrastructure/backup/local-backup-file-exporter.native';
+import { localBackupFilePicker } from '@/infrastructure/backup/local-backup-file-picker.native';
 import { FirstRunSetup } from '@/ui/components/FirstRunSetup';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
 
@@ -125,6 +126,15 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
     );
   }
 
+  const rehydrateInventory = async (): Promise<Inventory> => {
+    const inventory = await state.services.getCurrentInventory.execute();
+    if (inventory === null) {
+      throw new Error('Restore completed without an active Inventory.');
+    }
+    setState({ status: 'ready', inventory, services: state.services });
+    return inventory;
+  };
+
   return (
     <AppRuntimeContext.Provider
       value={{
@@ -134,6 +144,8 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
         backupServices: {
           createBackup: state.services.createBackup,
           fileExporter: localBackupFileExporter,
+          filePicker: localBackupFilePicker,
+          restoreBackup: state.services.restoreBackup,
         },
         inventory: state.inventory,
         historyServices: {
@@ -160,6 +172,7 @@ export function AppRuntimeProvider({ children }: PropsWithChildren) {
           registerSale: state.services.registerSale,
           voidSale: state.services.voidSale,
         },
+        rehydrateInventory,
       }}
     >
       {children}

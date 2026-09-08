@@ -1516,6 +1516,24 @@ escaladas, los timestamps conservan sus enteros epoch millisecond y los IDs/barc
 texto exacto. `null` y cero conocido son representaciones distintas. `InventoryMovement.metadata`
 se conserva como el texto nullable persistido para no descartar información compatible con V1.
 
+## Restauración lógica V1
+
+La restauración consume exclusivamente el contrato `stockapp-backup` con `formatVersion = 1` y
+requiere exactamente un `Inventory` cuyo ID coincida con `inventoryId`. Antes de escribir valida las
+ocho colecciones completas, unicidad de IDs, cobertura de un `InventoryState` por Product, scoping al
+Inventory, barcode activo, relaciones comerciales, snapshots y convenciones `sourceType/sourceId`,
+incluido un máximo de un `REVERSAL` por movimiento original.
+
+La semántica es reemplazar el dataset local, no combinarlo. El Inventory restaurado conserva su ID
+original aunque sea distinto del activo previamente. Money continúa como entero escalado,
+timestamps como epoch milliseconds, barcode como texto y costo desconocido como `null`; cero
+conocido permanece `0`. El estado actual se toma del `InventoryState` respaldado y no se reconstruye
+reproduciendo el historial.
+
+El reemplazo de las ocho tablas es atómico. Un documento inválido inicia cero escrituras y un fallo
+dentro de la transacción conserva íntegramente el dataset anterior. No existen tablas de staging,
+jobs de importación ni cambios de schema para Restore V1.
+
 ---
 
 # 52. Preparación para sync

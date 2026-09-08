@@ -715,8 +715,24 @@ Infrastructure lee las ocho colecciones dentro de una única transacción SQLite
 Application valida el alcance y las relaciones básicas, ordena determinísticamente por
 `createdAt ASC, id ASC` —y por `productId ASC` para `InventoryState`— y serializa el artifact. En
 iOS/Android se escribe temporalmente en cache y se entrega a la hoja nativa para que el usuario
-elija un destino fuera del sandbox. El archivo no está cifrado. Restauración, importación, backup
-automático y cloud quedan fuera de este formato inicial y se implementarán por separado.
+elija un destino fuera del sandbox. El archivo no está cifrado.
+
+La restauración V1 acepta únicamente ese mismo contrato con `formatVersion = 1`. Application parsea
+y valida completamente envelope, tipos, IDs, Money escalado, timestamps, relaciones, snapshots,
+estados y convenciones de movimientos antes de permitir cualquier escritura. Un archivo inválido no
+abre la transacción de reemplazo.
+
+Restore es `REPLACE`, no merge: elimina el dataset local y conserva exactamente el Inventory, IDs,
+timestamps, estados, snapshots, barcodes, metadata y distinción entre `null` y cero del respaldo. El
+delete usa orden de dependencias y el insert el orden inverso dentro de una única transacción SQLite
+exclusiva con foreign keys habilitadas; cualquier fallo revierte el dataset completo. Después del
+commit, el runtime vuelve a consultar el único Inventory V1 y adopta su identidad aunque difiera de
+la anterior. No reproduce casos de uso comerciales ni regenera historia.
+
+La UI móvil selecciona manualmente el JSON mediante el módulo oficial de documentos, muestra un
+preview y exige una confirmación explícita de reemplazo. Cancelar selector o confirmación no escribe.
+Web no ofrece restore persistente. Merge, restore parcial, migración de formatos, backup automático,
+cifrado y cloud quedan fuera de V1.
 
 ---
 

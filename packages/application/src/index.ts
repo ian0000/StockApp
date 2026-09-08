@@ -56,6 +56,18 @@ export {
   type StockAppBackupV1,
 } from './create-backup';
 export {
+  BackupValidationError,
+  RestoreBackupUseCase,
+  createBackupRestorePreview,
+  parseBackupV1,
+  type BackupRestorePreview,
+  type BackupRestoreTransaction,
+  type BackupValidationErrorCode,
+  type ParsedBackupV1,
+  type RestoreBackupInput,
+  type RestoreBackupResult,
+} from './restore-backup';
+export {
   FindProductByBarcodeUseCase,
   type FindProductByBarcodeInput,
   type ProductBarcodeMatch,

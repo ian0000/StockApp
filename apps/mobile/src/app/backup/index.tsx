@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,8 +17,10 @@ import {
 } from '@/ui/backup/backup-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
+import { RESTORE_BACKUP_ROUTE } from '@/ui/backup/restore-presentation';
 
 export default function BackupScreen() {
+  const router = useRouter();
   const { backupServices, inventory } = useAppRuntime();
   const gate = useRef(createBackupSubmissionGate());
   const [state, setState] = useState<BackupScreenPhase>('idle');
@@ -100,6 +103,21 @@ export default function BackupScreen() {
         ) : (
           <Text style={styles.actionText}>{status.actionLabel}</Text>
         )}
+      </Pressable>
+
+      <Pressable
+        accessibilityHint="Selecciona una copia existente y reemplaza los datos actuales después de confirmarlo."
+        accessibilityLabel="Restaurar respaldo"
+        accessibilityRole="button"
+        disabled={!isAvailable || isCreating}
+        onPress={() => router.push(RESTORE_BACKUP_ROUTE)}
+        style={({ pressed }) => [
+          styles.secondaryAction,
+          pressed && styles.secondaryActionPressed,
+          (!isAvailable || isCreating) && styles.actionDisabled,
+        ]}
+      >
+        <Text style={styles.secondaryActionText}>Restaurar respaldo</Text>
       </Pressable>
 
       {isCreating ? (
@@ -186,6 +204,24 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.size.body,
     textAlign: 'center',
+  },
+  secondaryAction: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 54,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  secondaryActionPressed: {
+    backgroundColor: colors.accentSoft,
+  },
+  secondaryActionText: {
+    color: colors.accent,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
   },
   success: {
     backgroundColor: colors.accentSoft,

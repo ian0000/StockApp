@@ -15,16 +15,20 @@ import type {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  RestoreBackupUseCase,
   UpdateProductUseCase,
   VoidPurchaseUseCase,
   VoidSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 import type { BackupFileExporter } from '@/infrastructure/backup/backup-file-exporter';
+import type { BackupFilePicker } from '@/infrastructure/backup/backup-file-picker';
 
 export interface BackupRuntimeServices {
   readonly createBackup: CreateBackupUseCase;
   readonly fileExporter: BackupFileExporter;
+  readonly filePicker: BackupFilePicker;
+  readonly restoreBackup: RestoreBackupUseCase;
 }
 
 export interface ProductRuntimeServices {
@@ -67,6 +71,7 @@ export interface AppRuntimeContextValue {
   readonly productServices: ProductRuntimeServices | null;
   readonly purchaseServices: PurchaseRuntimeServices | null;
   readonly saleServices: SaleRuntimeServices | null;
+  readonly rehydrateInventory: () => Promise<Inventory>;
 }
 
 export const AppRuntimeContext = createContext<AppRuntimeContextValue | null>(
