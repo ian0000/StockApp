@@ -18,10 +18,12 @@ import {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  RestoreBackupUseCase,
   UpdateProductUseCase,
   VoidSaleUseCase,
   VoidPurchaseUseCase,
   type HistoryReader,
+  type BackupRestoreTransaction,
   type BackupSnapshotReader,
   type InventoryRepository,
   type InventoryStateRepository,
@@ -69,6 +71,11 @@ function createDependencies(): {
   let transactionCount = 0;
   const backupSnapshotReader: BackupSnapshotReader = {
     async readSnapshot() {
+      throw new Error('A use case was executed during composition.');
+    },
+  };
+  const backupRestoreTransaction: BackupRestoreTransaction = {
+    async replace() {
       throw new Error('A use case was executed during composition.');
     },
   };
@@ -149,6 +156,7 @@ function createDependencies(): {
 
   return {
     dependencies: {
+      backupRestoreTransaction,
       backupSnapshotReader,
       clock: { now: () => 1_776_444_000_000 },
       idGenerator: { generate: () => 'test-id' },
@@ -198,6 +206,7 @@ test('composition exposes the application use cases and nothing else', () => {
     'listProducts',
     'registerPurchase',
     'registerSale',
+    'restoreBackup',
     'updateProduct',
     'voidPurchase',
     'voidSale',
@@ -222,6 +231,7 @@ test('composition exposes the application use cases and nothing else', () => {
   assert.ok(services.listProducts instanceof ListProductsUseCase);
   assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
   assert.ok(services.registerSale instanceof RegisterSaleUseCase);
+  assert.ok(services.restoreBackup instanceof RestoreBackupUseCase);
   assert.ok(services.updateProduct instanceof UpdateProductUseCase);
   assert.ok(services.voidSale instanceof VoidSaleUseCase);
   assert.ok(services.voidPurchase instanceof VoidPurchaseUseCase);

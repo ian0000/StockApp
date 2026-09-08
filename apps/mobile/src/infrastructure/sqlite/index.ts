@@ -30,3 +30,9 @@ export {
   stockAdjustments,
 } from './schema';
 export { createSqliteTransactionManager } from './transaction-manager';
+export {
+  createBackupRestoreTransaction,
+  type BackupRestoreExecutor,
+  type BackupRestorePhase,
+  type BackupRestoreTransactionRunner,
+} from './backup-restore-transaction';

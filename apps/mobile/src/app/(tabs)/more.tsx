@@ -30,7 +30,7 @@ export default function MoreScreen() {
           <Pressable
             accessibilityHint={
               backup.enabled
-                ? 'Abre la pantalla para crear una copia de tus datos.'
+                ? 'Abre las opciones para crear o restaurar una copia de tus datos.'
                 : 'Disponible únicamente en la aplicación móvil.'
             }
             accessibilityRole="button"
@@ -42,7 +42,7 @@ export default function MoreScreen() {
               !backup.enabled && styles.rowDisabled,
             ]}
           >
-            <Text style={styles.rowLabel}>Crear respaldo</Text>
+            <Text style={styles.rowLabel}>Respaldo</Text>
             <Text style={styles.rowStatus}>{backup.status ?? 'Abrir'}</Text>
           </Pressable>
         </View>

@@ -15,10 +15,12 @@ import {
   ListProductsUseCase,
   RegisterPurchaseUseCase,
   RegisterSaleUseCase,
+  RestoreBackupUseCase,
   UpdateProductUseCase,
   VoidSaleUseCase,
   VoidPurchaseUseCase,
   type Clock,
+  type BackupRestoreTransaction,
   type BackupSnapshotReader,
   type HistoryReader,
   type InventoryIdGenerator,
@@ -65,12 +67,14 @@ export interface AppServices {
   readonly listProducts: ListProductsUseCase;
   readonly registerPurchase: RegisterPurchaseUseCase;
   readonly registerSale: RegisterSaleUseCase;
+  readonly restoreBackup: RestoreBackupUseCase;
   readonly updateProduct: UpdateProductUseCase;
   readonly voidSale: VoidSaleUseCase;
   readonly voidPurchase: VoidPurchaseUseCase;
 }
 
 export interface AppServiceDependencies {
+  readonly backupRestoreTransaction: BackupRestoreTransaction;
   readonly backupSnapshotReader: BackupSnapshotReader;
   readonly clock: Clock;
   readonly idGenerator: AppIdGenerator;
@@ -88,6 +92,7 @@ export interface AppServiceDependencies {
 }
 
 export function assembleAppServices({
+  backupRestoreTransaction,
   backupSnapshotReader,
   clock,
   idGenerator,
@@ -157,6 +162,7 @@ export function assembleAppServices({
       clock,
       transactionManager,
     }),
+    restoreBackup: new RestoreBackupUseCase(backupRestoreTransaction),
     updateProduct: new UpdateProductUseCase({
       clock,
       productRepository,
