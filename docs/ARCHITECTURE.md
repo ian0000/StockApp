@@ -604,9 +604,9 @@ técnico se obtiene del `REVERSAL.createdAt` y `updatedAt` registra el cambio de
 requiere mostrar posteriormente el instante o motivo comercial de anulación sin consultar
 movimientos, deberá aprobarse una migración específica.
 
-### Matriz mínima de pruebas futuras
+### Matriz mínima de pruebas implementadas
 
-`VoidSale` deberá cubrir:
+La regresión automatizada de `VoidSale` cubre:
 
 - una línea y múltiples líneas;
 - stock positivo y venta que terminó en negativo;
@@ -617,7 +617,7 @@ movimientos, deberá aprobarse una migración específica.
 - correspondencia exacta entre SaleItem, movimiento original y `REVERSAL`;
 - fallo en cada escritura y rollback sin líneas parciales.
 
-`VoidPurchase` deberá cubrir:
+La regresión automatizada de `VoidPurchase` cubre:
 
 - stock anterior positivo, cero y negativo;
 - costo anterior conocido, conocido cero y `null` cuando sea válido;
@@ -628,7 +628,7 @@ movimientos, deberá aprobarse una migración específica.
 - inconsistencia entre estado actual y snapshots;
 - `REVERSAL` exacto y rollback ante cada fallo.
 
-Las pruebas de integración deberán comprobar además que History y los detalles conservan la
+Las pruebas de integración comprueban además que History y los detalles conservan la
 operación `VOIDED`, que los movimientos técnicos no aparecen como filas comerciales, que las
 métricas excluyen ventas anuladas y que Product list/detail/stock bajo reflejan el estado restaurado.
 

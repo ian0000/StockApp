@@ -499,17 +499,20 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
 | History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |
 | Anulación de Sale y Purchase | DONE | Domain, Application, SQLite y acción permanente desde detalles; regresión automatizada completa. |
-| Validación física consolidada de anulaciones | PENDING | Debe comprobarse en iPhone, incluidos reinicio, déficit, multiproducto y precio sugerido conservado. |
-| Barcode | PENDING | Permiso de cámara, escaneo local, repetición, no encontrado e integración con alta, venta y compra. |
-| Dashboard básico | PENDING | Ventas, ganancia y unidades ya son reales; faltan más vendido y stock bajo real dentro de Inicio. |
+| Validación física consolidada de anulaciones | BLOCKING | La regresión automatizada está completa, pero falta comprobar en iPhone reinicio, déficit, multiproducto y precio sugerido conservado. |
+| Barcode | DONE | Permiso bajo demanda, escaneo local, repetición controlada, no encontrado e integración con alta, venta y compra están implementados y cubiertos automáticamente. |
+| Validación física de Barcode | BLOCKING | Falta comprobar cámara, permisos y flujos integrados en un iPhone real. |
+| Dashboard básico | DONE | Inicio consulta ventas, ganancia, unidades, más vendido, stock bajo y cinco operaciones recientes reales. |
+| Validación física del núcleo UI | BLOCKING | Falta recorrer en iPhone Products, Sales, Purchases, Adjustments, History, Home, detalles, navegación y persistencia tras reinicio. |
 | Backup y restauración local | DONE | Contrato V1, exportación, validación completa, preview y replace SQLite atómico implementados con regresión automatizada. |
-| Validación física de Backup/Restore | PENDING | Sigue siendo gate antes de Alpha: requiere copia real en iPhone, reemplazo, reinicio y recovery. |
-| Undo inmediato | PENDING | Duración no definida; compra requiere además decidir si ofrecerá este acceso rápido. |
+| Validación física de Backup/Restore | BLOCKING | Sigue siendo gate antes de Alpha: requiere copia real en iPhone, reemplazo, reinicio, archivo inválido y recovery. |
+| Undo inmediato | DEFERRED | Las acciones permanentes de anulación ya existen; la duración y el acceso rápido de compra no están definidos y no bloquean Alpha. |
 | Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
 | Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |
+| Cloud, sync, auth, analytics y distribución pública | POST-ALPHA | Permanecen fuera de la V1 local y no forman parte del gate de Alpha controlada. |
 
-`DONE` significa implementado y validado automáticamente. No implica validación física cuando la fila
-correspondiente permanece `PENDING`.
+`DONE` significa implementado y validado automáticamente. `BLOCKING` identifica evidencia física
+necesaria antes de declarar `ALPHA READY`. `DEFERRED` y `POST-ALPHA` no forman parte de ese gate.
 
 ### Barcode
 
