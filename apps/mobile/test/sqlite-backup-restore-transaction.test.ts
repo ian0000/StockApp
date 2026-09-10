@@ -21,11 +21,11 @@ import {
   createBackupRestoreTransaction,
   type BackupRestoreExecutor,
   type BackupRestorePhase,
-} from '../src/infrastructure/sqlite/backup-restore-transaction';
+} from '../src/infrastructure/sqlite/backup-restore-transaction-core';
 import {
   createBackupSnapshotReader,
   type BackupReadExecutor,
-} from '../src/infrastructure/sqlite/backup-snapshot-reader';
+} from '../src/infrastructure/sqlite/backup-snapshot-reader-core';
 import {
   createInventoryRepository,
   createSqliteHistoryReader,

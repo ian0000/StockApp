@@ -9,7 +9,7 @@ import { drizzle } from 'drizzle-orm/sqlite-proxy';
 import {
   createBackupSnapshotReader,
   type BackupReadExecutor,
-} from '../src/infrastructure/sqlite/backup-snapshot-reader';
+} from '../src/infrastructure/sqlite/backup-snapshot-reader-core';
 
 const MIGRATION_FILES = [
   '0000_cool_purple_man.sql',

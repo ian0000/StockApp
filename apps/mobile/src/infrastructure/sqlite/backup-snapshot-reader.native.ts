@@ -8,7 +8,7 @@ import type { AppDatabase } from './database';
 import {
   createBackupSnapshotReader,
   type BackupReadExecutor,
-} from './backup-snapshot-reader';
+} from './backup-snapshot-reader-core';
 import * as schema from './schema';
 
 export function createSqliteBackupSnapshotReader(
