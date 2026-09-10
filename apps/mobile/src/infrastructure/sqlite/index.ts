@@ -35,4 +35,4 @@ export {
   type BackupRestoreExecutor,
   type BackupRestorePhase,
   type BackupRestoreTransactionRunner,
-} from './backup-restore-transaction';
+} from './backup-restore-transaction-core';

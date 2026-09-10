@@ -6,7 +6,7 @@ import type { AppDatabase } from './database';
 import {
   createBackupRestoreTransaction,
   type BackupRestoreExecutor,
-} from './backup-restore-transaction';
+} from './backup-restore-transaction-core';
 import * as schema from './schema';
 
 export function createSqliteBackupRestoreTransaction(
