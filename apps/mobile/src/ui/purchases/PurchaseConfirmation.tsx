@@ -58,14 +58,17 @@ export function PurchaseConfirmation({
         {price.costChanged ? (
           <>
             <SummaryRow
-              label="Costo anterior"
+              label="Costo promedio antes"
               value={price.previousCostLabel}
             />
-            <SummaryRow label="Costo actual" value={price.currentCostLabel} />
+            <SummaryRow
+              label="Costo promedio actual"
+              value={price.currentCostLabel}
+            />
           </>
         ) : (
           <SummaryRow
-            label="Costo promedio"
+            label="Costo promedio actual"
             value={formatMoneyForDisplay(purchase.averageCostAfter, currency)}
           />
         )}
@@ -73,18 +76,18 @@ export function PurchaseConfirmation({
 
       {price.costChanged ? (
         <View style={styles.analysisCard}>
-          <Text style={styles.analysisTitle}>El costo cambió</Text>
+          <Text style={styles.analysisTitle}>Cambió el costo promedio</Text>
           <SummaryRow
-            label={`Margen anterior con ${price.regularSalePriceLabel}`}
+            label={`Margen anterior con precio de venta ${price.regularSalePriceLabel}`}
             value={price.previousMarginLabel}
           />
           <SummaryRow
-            label="Margen actual con el mismo precio"
+            label="Margen actual con el mismo precio de venta"
             value={price.currentMarginLabel}
           />
           {price.suggestedSalePriceLabel !== null ? (
             <SummaryRow
-              label="Precio para conservar el margen anterior"
+              label="Precio de venta sugerido para conservar el margen anterior"
               value={price.suggestedSalePriceLabel}
             />
           ) : null}
@@ -95,7 +98,8 @@ export function PurchaseConfirmation({
         <View style={styles.decisionActions}>
           {priceDecision === 'error' ? (
             <Text accessibilityLiveRegion="assertive" style={styles.errorText}>
-              La compra se registró, pero no pudimos actualizar el precio.
+              La compra se registró, pero no pudimos actualizar el precio de
+              venta habitual.
             </Text>
           ) : null}
           <Pressable
@@ -113,10 +117,10 @@ export function PurchaseConfirmation({
           >
             <Text style={styles.primaryActionText}>
               {priceDecision === 'saving'
-                ? 'Actualizando precio…'
+                ? 'Actualizando precio de venta…'
                 : priceDecision === 'error'
-                  ? 'Reintentar cambio de precio'
-                  : `Usar ${price.suggestedSalePriceLabel ?? ''}`}
+                  ? 'Reintentar cambio de precio de venta'
+                  : `Usar precio de venta ${price.suggestedSalePriceLabel ?? ''}`}
             </Text>
           </Pressable>
           <Pressable
@@ -133,7 +137,7 @@ export function PurchaseConfirmation({
             ]}
           >
             <Text style={styles.secondaryActionText}>
-              Mantener {price.regularSalePriceLabel}
+              Mantener precio de venta {price.regularSalePriceLabel}
             </Text>
           </Pressable>
         </View>
@@ -141,12 +145,12 @@ export function PurchaseConfirmation({
         <>
           {priceDecision === 'applied' ? (
             <Text accessibilityLiveRegion="polite" style={styles.successText}>
-              Precio habitual actualizado.
+              Precio de venta habitual actualizado.
             </Text>
           ) : null}
           {priceDecision === 'kept' ? (
             <Text accessibilityLiveRegion="polite" style={styles.statusText}>
-              Conservaste el precio habitual actual.
+              Conservaste el precio de venta habitual actual.
             </Text>
           ) : null}
           <Pressable

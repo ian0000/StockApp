@@ -62,7 +62,10 @@ export function parsePurchaseFormValues({
     return Object.freeze({
       quantityError:
         quantity === null ? 'Usa una cantidad entera mayor que cero.' : null,
-      unitCostError: unitCost === null ? 'Usa un costo unitario válido.' : null,
+      unitCostError:
+        unitCost === null
+          ? 'Ingresa un costo de compra por unidad válido.'
+          : null,
       ok: false as const,
     });
   }
@@ -77,7 +80,8 @@ export function parsePurchaseFormValues({
   } catch {
     return Object.freeze({
       quantityError: null,
-      unitCostError: 'La cantidad y el costo producen un total no admitido.',
+      unitCostError:
+        'La cantidad y el costo de compra producen un total no admitido.',
       ok: false as const,
     });
   }

@@ -57,7 +57,12 @@ test('rejects missing, negative, ambiguous and over-precision costs', () => {
     const result = parsePurchaseFormValues({ quantity: '1', unitCost });
 
     assert.equal(result.ok, false, unitCost);
-    if (!result.ok) assert.notEqual(result.unitCostError, null, unitCost);
+    if (!result.ok)
+      assert.equal(
+        result.unitCostError,
+        'Ingresa un costo de compra por unidad válido.',
+        unitCost,
+      );
   }
 });
 

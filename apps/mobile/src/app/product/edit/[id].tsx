@@ -226,7 +226,7 @@ export default function EditProductScreen() {
               returnKeyType: 'next',
               value: values.regularSalePrice,
             }}
-            label={`Precio habitual (${inventory.currency}) *`}
+            label={`Precio de venta habitual (${inventory.currency}) *`}
           />
 
           <ProductFormField

@@ -336,7 +336,7 @@ export default function NewPurchaseScreen() {
       >
         <Text style={styles.introduction}>
           Selecciona un producto e indica cuántas unidades recibiste y su costo
-          real.
+          de compra por unidad.
         </Text>
 
         {persistence === 'web-preview' ? (
@@ -469,7 +469,7 @@ export default function NewPurchaseScreen() {
                   Stock actual: {selectedProduct.state.stock}
                 </Text>
                 <Text style={styles.secondaryText}>
-                  Costo actual:{' '}
+                  Costo promedio actual:{' '}
                   {selectedProduct.state.unitCost === null
                     ? '—'
                     : formatMoneyForDisplay(
@@ -517,9 +517,9 @@ export default function NewPurchaseScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Costo unitario</Text>
+              <Text style={styles.fieldLabel}>Costo de compra por unidad</Text>
               <TextInput
-                accessibilityLabel="Costo unitario de compra"
+                accessibilityLabel="Costo de compra por unidad"
                 autoCorrect={false}
                 keyboardType="decimal-pad"
                 onChangeText={setUnitCostText}
@@ -549,7 +549,7 @@ export default function NewPurchaseScreen() {
                   value={String(parsedForm.quantity)}
                 />
                 <PreviewRow
-                  label="Costo unitario"
+                  label="Costo de compra por unidad"
                   value={formatMoneyForDisplay(
                     parsedForm.unitCost,
                     inventory.currency,

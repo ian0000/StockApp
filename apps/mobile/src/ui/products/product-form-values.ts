@@ -106,7 +106,10 @@ export function parseProductFormValues(
   const regularSalePrice = parseNonNegativeMoney(values.regularSalePrice);
 
   if (regularSalePrice === null) {
-    return { ok: false, message: 'Usa un precio habitual válido.' };
+    return {
+      ok: false,
+      message: 'Ingresa un precio de venta habitual válido.',
+    };
   }
 
   const initialStock = parseNonNegativeSafeInteger(values.initialStock);
@@ -171,7 +174,10 @@ export function parseEditableProductFormValues(
   const regularSalePrice = parseNonNegativeMoney(values.regularSalePrice);
 
   if (regularSalePrice === null) {
-    return { ok: false, message: 'Usa un precio habitual válido.' };
+    return {
+      ok: false,
+      message: 'Ingresa un precio de venta habitual válido.',
+    };
   }
 
   const minimumStock =

@@ -264,7 +264,7 @@ export default function StockAdjustmentScreen() {
           />
           {isPositive && resultingState.unitCost !== null ? (
             <SummaryRow
-              label="Costo actual"
+              label="Costo promedio actual"
               value={formatMoneyForDisplay(
                 resultingState.unitCost,
                 inventory.currency,
@@ -356,7 +356,7 @@ export default function StockAdjustmentScreen() {
                 value={String(selectedProduct.state.stock)}
               />
               <SummaryRow
-                label="Costo actual"
+                label="Costo promedio actual"
                 value={
                   selectedProduct.state.unitCost === null
                     ? '—'
@@ -439,7 +439,7 @@ export default function StockAdjustmentScreen() {
                   </Text>
                 ) : (
                   <Choice
-                    label={`Usar costo actual — ${formatMoneyForDisplay(
+                    label={`Usar costo promedio actual — ${formatMoneyForDisplay(
                       selectedProduct.state.unitCost,
                       inventory.currency,
                     )}`}
@@ -449,15 +449,17 @@ export default function StockAdjustmentScreen() {
                   />
                 )}
                 <Choice
-                  label="Usar otro costo"
+                  label="Indicar otro costo por unidad"
                   onPress={() => setCostMode('CUSTOM_COST')}
                   selected={costMode === 'CUSTOM_COST'}
                 />
                 {costMode === 'CUSTOM_COST' ? (
                   <View style={styles.fieldGroup}>
-                    <Text style={styles.fieldLabel}>Costo unitario</Text>
+                    <Text style={styles.fieldLabel}>
+                      Costo por unidad agregada
+                    </Text>
                     <TextInput
-                      accessibilityLabel="Costo unitario de las unidades agregadas"
+                      accessibilityLabel="Costo por unidad agregada"
                       editable={!isSubmitting}
                       inputMode="decimal"
                       keyboardType="decimal-pad"
@@ -619,7 +621,7 @@ function ProductSelector({
               </View>
               <Text style={styles.costText}>
                 {summary.state.unitCost === null
-                  ? 'Costo —'
+                  ? 'Costo promedio —'
                   : formatMoneyForDisplay(summary.state.unitCost, currency)}
               </Text>
             </Pressable>

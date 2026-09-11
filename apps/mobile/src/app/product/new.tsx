@@ -141,7 +141,7 @@ export default function NewProductScreen() {
             returnKeyType: 'next',
             value: values.regularSalePrice,
           }}
-          label={`Precio habitual (${inventory.currency}) *`}
+          label={`Precio de venta habitual (${inventory.currency}) *`}
         />
 
         <ProductFormField
@@ -168,11 +168,11 @@ export default function NewProductScreen() {
               returnKeyType: 'next',
               value: values.initialUnitCost,
             }}
-            label={`Costo unitario inicial (${inventory.currency}) *`}
+            label={`Costo inicial por unidad (${inventory.currency}) *`}
           />
         ) : (
           <Text style={styles.fieldHint}>
-            Con stock inicial 0 no se registra un costo desconocido como cero.
+            Sin stock inicial puedes dejar el costo sin definir.
           </Text>
         )}
 
