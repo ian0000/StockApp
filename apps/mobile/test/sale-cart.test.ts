@@ -224,7 +224,7 @@ test('an invalid price edit keeps text and the last valid Money', () => {
 
   assert.equal(cart[0]?.unitSalePriceText, '1,2.3');
   assert.equal(cart[0]?.unitSalePrice.scaledUnits, 1_000_000);
-  assert.equal(cart[0]?.priceError, 'Usa un precio válido.');
+  assert.equal(cart[0]?.priceError, 'Usa un precio de venta válido.');
 });
 
 test('zero sale price remains invalid under the Baseline sale rule', () => {
@@ -236,7 +236,7 @@ test('zero sale price remains invalid under the Baseline sale rule', () => {
 
   assert.equal(cart[0]?.unitSalePriceText, '0,00');
   assert.equal(cart[0]?.unitSalePrice.scaledUnits, 1_000_000);
-  assert.equal(cart[0]?.priceError, 'Usa un precio mayor que cero.');
+  assert.equal(cart[0]?.priceError, 'Usa un precio de venta mayor que cero.');
 });
 
 test('a Product with zero regular price enters the cart with a price error', () => {
@@ -246,7 +246,7 @@ test('a Product with zero regular price enters the cart with a price error', () 
   );
 
   assert.equal(cart[0]?.unitSalePrice.scaledUnits, 0);
-  assert.equal(cart[0]?.priceError, 'Usa un precio mayor que cero.');
+  assert.equal(cart[0]?.priceError, 'Usa un precio de venta mayor que cero.');
 });
 
 test('marks quantity greater than positive stock as insufficient', () => {

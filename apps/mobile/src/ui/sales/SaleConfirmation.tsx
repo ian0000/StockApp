@@ -46,7 +46,7 @@ export function SaleConfirmation({
         </View>
         {sale.estimatedProfit === null ? (
           <Text style={styles.unknownCopy}>
-            Costo no disponible para todos los productos.
+            Ganancia no disponible: falta el costo de al menos un producto.
           </Text>
         ) : null}
       </View>

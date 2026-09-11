@@ -180,31 +180,37 @@ export default function ProductDetailsScreen() {
             </View>
           </Section>
 
-          <Section title="Precio y costo" titleVariant="eyebrow">
+          <Section
+            title="Precio de venta y costo promedio"
+            titleVariant="eyebrow"
+          >
             <View style={styles.card}>
               <DetailRow
-                label="Precio habitual"
+                label="Precio de venta habitual"
                 value={presentation.priceLabel}
               />
               <View style={styles.divider} />
-              <DetailRow label="Costo actual" value={presentation.costLabel} />
+              <DetailRow
+                label="Costo promedio actual"
+                value={presentation.costLabel}
+              />
             </View>
           </Section>
 
           <Section title="Rentabilidad" titleVariant="eyebrow">
             <View style={styles.card}>
               <DetailRow
-                label="Ganancia aprox. / unidad"
+                label="Ganancia estimada por unidad"
                 value={presentation.estimatedUnitProfitLabel}
               />
               <View style={styles.divider} />
               <DetailRow
-                label="Margen aprox."
+                label="Margen estimado"
                 value={presentation.marginLabel}
               />
               <View style={styles.divider} />
               <DetailRow
-                label="Markup aprox."
+                label="Recargo sobre costo (markup)"
                 value={presentation.markupLabel}
               />
             </View>

@@ -47,7 +47,9 @@ function createCartItem({ product, state }: ProductSummary): SaleCartItem {
     quantity: 1,
     unitSalePrice: product.regularSalePrice,
     unitSalePriceText: formatMoneyForInput(product.regularSalePrice),
-    priceError: priceIsPositive ? null : 'Usa un precio mayor que cero.',
+    priceError: priceIsPositive
+      ? null
+      : 'Usa un precio de venta mayor que cero.',
   });
 }
 
@@ -128,18 +130,18 @@ export function updateCartItemPrice(
   let priceError: string | null = null;
 
   if (normalizedPrice === null) {
-    priceError = 'Usa un precio válido.';
+    priceError = 'Usa un precio de venta válido.';
   } else {
     try {
       const parsedPrice = Money.fromDecimal(normalizedPrice);
 
       if (parsedPrice.compare(Money.zero()) <= 0) {
-        priceError = 'Usa un precio mayor que cero.';
+        priceError = 'Usa un precio de venta mayor que cero.';
       } else {
         nextPrice = parsedPrice;
       }
     } catch {
-      priceError = 'Usa un precio válido.';
+      priceError = 'Usa un precio de venta válido.';
     }
   }
 

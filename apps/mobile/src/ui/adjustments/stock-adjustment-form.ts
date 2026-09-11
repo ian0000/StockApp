@@ -181,7 +181,7 @@ export function evaluateAdjustmentForm({
       customUnitCost === null &&
       customUnitCostText.length > 0
     ) {
-      costError = 'Usa un costo unitario válido.';
+      costError = 'Usa un costo por unidad agregada válido.';
     }
   }
 

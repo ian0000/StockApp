@@ -199,12 +199,15 @@ export default function SaleDetailsScreen() {
                       {item.productVariant}
                     </Text>
                   ) : null}
+                  <Text style={styles.secondaryText}>
+                    Precio de venta por unidad
+                  </Text>
                   <Text style={styles.quantityPrice}>
                     {item.quantityAndPriceLabel}
                   </Text>
                   <DetailRow label="Subtotal" value={item.subtotalLabel} />
                   <DetailRow
-                    label="Costo unitario histórico"
+                    label="Costo histórico por unidad"
                     value={item.unitCostLabel}
                   />
                   <DetailRow

@@ -4,6 +4,18 @@
 no bug confirmado por rechazar un precio habitual vacío. **Base:** `2157e92`.
 **Rama:** `docs/price-semantics-review`. Revisión documental; no aprueba cambios de comportamiento.
 
+### Seguimiento — UX-PRICE-001
+
+La tarea `UX-PRICE-001` implementa la nomenclatura aprobada en alta/edición/detalle de Product,
+venta, compra, sus detalles y ajustes, incluidos mensajes de validación y accesibilidad. La tabla
+de esta revisión conserva los textos observados en `2157e92` como evidencia histórica, no como
+inventario de la UI posterior. La terminología vigente está en `UX.md`.
+
+No cambia el contrato obligatorio `regularSalePrice: Money`, costos desconocidos, fórmulas,
+schema ni Backup/Restore. La discrepancia sobre recomendar bajadas y el margen editable siguen
+pendientes de decisión; no fueron implementados ni resueltos por esta tarea. La validación física
+corta del nuevo wording se hará después del merge; no equivale a ejecutar PHYS-019.
+
 ## 1. Evidencia física y clasificación QA
 
 El responsable reportó validación física satisfactoria de Startup, Products, Low Stock, Sales,

@@ -355,7 +355,7 @@ El usuario no debería tener que escanearlo nuevamente.
 
 # 13. Precio durante venta
 
-El precio habitual aparecerá automáticamente.
+El precio de venta habitual aparecerá automáticamente.
 
 Ejemplo:
 
@@ -365,7 +365,7 @@ Coca-Cola
 Cantidad
 2
 
-Precio habitual
+Precio de venta habitual
 $1.00
 ```
 
@@ -374,7 +374,7 @@ El usuario no necesita tocar el precio para una venta normal.
 Si quiere cambiarlo:
 
 ```text
-Precio
+Precio de venta por unidad
 [ $0.90 ]
 ```
 
@@ -468,7 +468,7 @@ Producto
 Cantidad
 [ 24 ]
 
-Costo unitario
+Costo de compra por unidad
 [ $0.65 ]
 
 ────────────────
@@ -515,7 +515,7 @@ Cuando una compra modifica el costo:
 Stock
 18 → 42
 
-Costo promedio
+Costo promedio antes → después
 $0.60 → $0.63
 ```
 
@@ -531,7 +531,7 @@ Ahora        37%
 
 Manteniendo un margen similar:
 
-Precio sugerido
+Precio de venta sugerido
 $1.05
 ```
 
@@ -639,7 +639,7 @@ Variante
 Código
 [ Escanear ] [ Escribir ]
 
-Precio habitual
+Precio de venta habitual
 [ $1.00 ]
 
 Stock mínimo
@@ -712,16 +712,16 @@ Coca-Cola 500 ml
 21 unidades
 EN STOCK
 
-Precio
+Precio de venta habitual
 $1.00
 
-Costo promedio
+Costo promedio actual
 $0.67
 
-Ganas aprox.
+Ganancia estimada por unidad
 $0.33 / unidad
 
-Margen aprox.
+Margen estimado
 33%
 
 [ + Venta ]
@@ -866,17 +866,17 @@ Encontramos 2 unidades adicionales.
 Opciones:
 
 ```text
-● Usar costo actual
+● Usar costo promedio actual
   $0.65 por unidad
   Recomendado
 
-○ Otro costo
+○ Otro costo por unidad
 ```
 
 La opción precargada será utilizar el costo actual conocido.
 
 El usuario conserva la posibilidad de indicar otro costo. Si todavía no existe un costo actual,
-deberá indicar `Otro costo`. La aplicación nunca inventará un costo que el usuario no haya aceptado.
+deberá indicar `Otro costo por unidad`. La aplicación nunca inventará un costo que el usuario no haya aceptado.
 El costo explícito puede ser cero conocido. Para incrementos solo están disponibles los motivos
 `Conteo incorrecto` y `Otro`.
 
@@ -1023,7 +1023,7 @@ $0.65 c/u
 Total
 $15.60
 
-Costo promedio
+Costo promedio antes → después
 $0.60 → $0.63
 ```
 
@@ -1199,7 +1199,7 @@ Primero:
 
 ```text
 Nombre
-Precio
+Precio de venta habitual
 ```
 
 Después podremos añadir:
@@ -1247,6 +1247,29 @@ Esos conceptos pertenecen al sistema, no al trabajo cotidiano del usuario.
 ---
 
 # 40. Lenguaje
+
+## Terminología de costos, precios y rentabilidad
+
+- Product (alta, edición y detalle): **Precio de venta habitual**; obligatorio en V1. Es el precio
+  que se precarga en una venta, no el costo. Cero conocido no se muestra como «No definido».
+- Sale (campo, accesibilidad y detalle): **Precio de venta por unidad**; corresponde al precio
+  cobrado en esa operación. Las validaciones deben mencionar «precio de venta».
+- Purchase (campo, validación, accesibilidad y detalle): **Costo de compra por unidad**.
+- InventoryState: **Costo promedio actual**, no «Costo de compra actual». Representa el promedio
+  o último costo conocido, no necesariamente el costo de la última compra.
+- Snapshots de Purchase: **Costo promedio antes** y **Costo promedio después**.
+- Snapshot unitario de Sale: **Costo histórico por unidad**.
+- Product: **Ganancia estimada por unidad**, **Margen estimado** y **Recargo sobre costo (markup)**.
+  Margen divide ganancia por precio de venta; markup divide ganancia por costo. No son intercambiables.
+- Sugerencia: **Precio de venta sugerido** para conservar el margen anterior. El precio conservado
+  es el **precio de venta habitual actual**. Esto no aprueba cambios en el cálculo ni margen editable.
+- Stock inicial/ajuste: **Costo inicial por unidad** / **Costo por unidad agregada**, sin inventar
+  una compra comercial.
+
+El costo desconocido mantiene «No disponible», «Costo desconocido» o `—` según el contexto;
+nunca se muestra como cero. Etiquetas accesibles y errores usan el mismo vocabulario que los campos.
+Los listados pueden conservar importes compactos sin añadir etiquetas repetitivas. Inicio conserva
+**Ganancia estimada**; Historial conserva **Compra**, **Venta** y **Ajuste**.
 
 Preferir:
 

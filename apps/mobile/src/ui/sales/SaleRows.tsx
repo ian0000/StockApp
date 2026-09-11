@@ -124,9 +124,9 @@ export function SaleCartItemRow({
       </View>
 
       <View style={styles.priceEdit}>
-        <Text style={styles.fieldLabel}>Precio unitario</Text>
+        <Text style={styles.fieldLabel}>Precio de venta por unidad</Text>
         <TextInput
-          accessibilityLabel={`Precio unitario de ${item.name}`}
+          accessibilityLabel={`Precio de venta por unidad de ${item.name}`}
           autoCorrect={false}
           keyboardType="decimal-pad"
           onChangeText={onPriceChange}

@@ -203,7 +203,7 @@ export default function PurchaseDetailsScreen() {
               <DetailRow label="Cantidad" value={presentation.quantityLabel} />
               <View style={styles.divider} />
               <DetailRow
-                label="Costo unitario"
+                label="Costo de compra por unidad"
                 value={presentation.unitCostLabel}
               />
               <View style={styles.divider} />
@@ -223,12 +223,12 @@ export default function PurchaseDetailsScreen() {
               />
               <View style={styles.divider} />
               <DetailRow
-                label="Costo promedio anterior"
+                label="Costo promedio antes"
                 value={presentation.averageCostBeforeLabel}
               />
               <View style={styles.divider} />
               <DetailRow
-                label="Costo promedio posterior"
+                label="Costo promedio después"
                 value={presentation.averageCostAfterLabel}
               />
             </View>

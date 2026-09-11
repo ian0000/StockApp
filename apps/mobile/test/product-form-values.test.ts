@@ -162,7 +162,7 @@ test('keeps Money six-decimal precision after comma normalization', () => {
 test('continues rejecting money input with more than six decimals', () => {
   assert.deepEqual(
     parseProductFormValues(validValues({ regularSalePrice: '0,1234567' })),
-    { ok: false, message: 'Usa un precio habitual válido.' },
+    { ok: false, message: 'Ingresa un precio de venta habitual válido.' },
   );
 
   assert.deepEqual(
@@ -190,14 +190,14 @@ test('rejects an empty Product name with a useful message', () => {
 test('rejects an invalid regular sale price', () => {
   assert.deepEqual(
     parseProductFormValues(validValues({ regularSalePrice: '1.2.3' })),
-    { ok: false, message: 'Usa un precio habitual válido.' },
+    { ok: false, message: 'Ingresa un precio de venta habitual válido.' },
   );
 });
 
 test('rejects a negative regular sale price', () => {
   assert.deepEqual(
     parseProductFormValues(validValues({ regularSalePrice: '-1' })),
-    { ok: false, message: 'Usa un precio habitual válido.' },
+    { ok: false, message: 'Ingresa un precio de venta habitual válido.' },
   );
 });
 
@@ -354,7 +354,7 @@ test('editable Product parsing rejects invalid price and minimum stock', () => {
     parseEditableProductFormValues(
       validEditableValues({ regularSalePrice: '1.2.3' }),
     ),
-    { ok: false, message: 'Usa un precio habitual válido.' },
+    { ok: false, message: 'Ingresa un precio de venta habitual válido.' },
   );
   assert.deepEqual(
     parseEditableProductFormValues(validEditableValues({ minimumStock: '-1' })),
