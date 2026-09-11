@@ -3,6 +3,33 @@ import test from 'node:test';
 
 import { Percentage } from '../src/index';
 
+for (const [text, units] of [
+  ['0', 0],
+  ['30', 30_000_000],
+  ['33.333333', 33_333_333],
+  [' 0.5 ', 500_000],
+  ['-2.5', -2_500_000],
+  ['100', 100_000_000],
+  ['9007199254.740991', Number.MAX_SAFE_INTEGER],
+] as const) {
+  test(`parses Percentage decimal exactly: ${text}`, () => {
+    assert.equal(Percentage.fromDecimal(text).scaledUnits, units);
+  });
+}
+for (const text of [
+  '',
+  'abc',
+  '1e2',
+  '1,5',
+  '.5',
+  '1.1234567',
+  '9007199254.740992',
+]) {
+  test(`rejects invalid Percentage decimal: ${text}`, () => {
+    assert.throws(() => Percentage.fromDecimal(text), /decimal|safe integer/i);
+  });
+}
+
 test('creates a zero percentage', () => {
   assert.equal(Percentage.zero().scaledUnits, 0);
 });

@@ -30,6 +30,10 @@ import {
 } from '@/ui/purchases/purchase-barcode-scanner';
 import { parsePurchaseFormValues } from '@/ui/purchases/purchase-form';
 import { applySuggestedPrice } from '@/ui/purchases/purchase-price-presentation';
+import {
+  createInitialPurchaseMarginText,
+  parseDesiredMargin,
+} from '@/ui/purchases/purchase-margin-input';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { filterSaleProducts } from '@/ui/sales/sale-cart';
 import { colors, radii, spacing, typography } from '@/ui/theme/tokens';
@@ -45,6 +49,7 @@ type PurchasePhase =
       readonly status: 'confirmed';
       readonly result: RegisterPurchaseResult;
       readonly priceDecision: PriceDecisionStatus;
+      readonly desiredMarginText: string;
     };
 
 type PriceDecisionStatus = 'pending' | 'saving' | 'applied' | 'kept' | 'error';
@@ -248,7 +253,12 @@ export default function NewPurchaseScreen() {
       setSearchText('');
       setQuantityText('');
       setUnitCostText('');
-      setPhase({ status: 'confirmed', result, priceDecision: 'pending' });
+      setPhase({
+        status: 'confirmed',
+        result,
+        priceDecision: 'pending',
+        desiredMarginText: createInitialPurchaseMarginText(result),
+      });
       void loadProducts();
     } catch {
       setSubmitError(
@@ -266,11 +276,22 @@ export default function NewPurchaseScreen() {
     setPhase({ ...phase, priceDecision: 'kept' });
   };
 
+  const changeDesiredMargin = (text: string) => {
+    if (
+      phase.status !== 'confirmed' ||
+      updatingPriceRef.current ||
+      (phase.priceDecision !== 'pending' && phase.priceDecision !== 'error')
+    )
+      return;
+    setPhase({ ...phase, desiredMarginText: text, priceDecision: 'pending' });
+  };
+
   const applySuggestedPriceChoice = async () => {
     if (
       phase.status !== 'confirmed' ||
       productServices === null ||
-      updatingPriceRef.current
+      updatingPriceRef.current ||
+      (phase.priceDecision !== 'pending' && phase.priceDecision !== 'error')
     ) {
       return;
     }
@@ -278,23 +299,24 @@ export default function NewPurchaseScreen() {
     const confirmedResult = phase.result;
     updatingPriceRef.current = true;
     setPhase({
-      status: 'confirmed',
-      result: confirmedResult,
+      ...phase,
       priceDecision: 'saving',
     });
 
     try {
-      await applySuggestedPrice(confirmedResult, productServices.updateProduct);
+      await applySuggestedPrice(
+        confirmedResult,
+        productServices.updateProduct,
+        parseDesiredMargin(phase.desiredMarginText),
+      );
       setPhase({
-        status: 'confirmed',
-        result: confirmedResult,
+        ...phase,
         priceDecision: 'applied',
       });
       void loadProducts();
     } catch {
       setPhase({
-        status: 'confirmed',
-        result: confirmedResult,
+        ...phase,
         priceDecision: 'error',
       });
     } finally {
@@ -322,6 +344,8 @@ export default function NewPurchaseScreen() {
           onNewPurchase={startNewPurchase}
           onUseSuggestedPrice={() => void applySuggestedPriceChoice()}
           priceDecision={phase.priceDecision}
+          desiredMarginText={phase.desiredMarginText}
+          onChangeDesiredMargin={changeDesiredMargin}
           result={phase.result}
         />
       </Screen>

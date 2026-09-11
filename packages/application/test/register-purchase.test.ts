@@ -289,7 +289,7 @@ test('uses weighted average and exact snapshots for positive stock', async () =>
   assert.equal(result.priceAnalysis.costChanged, true);
   assert.equal(result.priceAnalysis.previousMargin?.scaledUnits, -400_000_000);
   assert.equal(result.priceAnalysis.currentMargin?.scaledUnits, -433_333_350);
-  assert.equal(result.priceAnalysis.suggestedSalePrice?.scaledUnits, 2_133_333);
+  assert.equal(result.priceAnalysis.suggestedSalePrice, null);
 });
 
 for (const [label, previousCost] of [
@@ -313,7 +313,7 @@ for (const [label, previousCost] of [
       assert.equal(priceAnalysis.suggestedSalePrice, null);
     } else {
       assert.equal(priceAnalysis.previousMargin?.scaledUnits, -350_000_000);
-      assert.equal(priceAnalysis.suggestedSalePrice?.scaledUnits, 444_444);
+      assert.equal(priceAnalysis.suggestedSalePrice, null);
     }
   });
 }
@@ -338,6 +338,7 @@ for (const [stockBefore, quantity, stockAfter] of [
 
 test('negative stock suggestion uses incoming cost without weighting the deficit', async () => {
   const harness = createHarness({
+    products: [{ ...product(), regularSalePrice: Money.fromDecimal('15') }],
     states: [state(-10, Money.fromDecimal('10'))],
   });
   const result = await harness.useCase.execute(
@@ -346,7 +347,10 @@ test('negative stock suggestion uses incoming cost without weighting the deficit
 
   assert.equal(result.afterInventoryState.stock, -6);
   assert.equal(result.priceAnalysis.currentUnitCost.scaledUnits, 12_000_000);
-  assert.equal(result.priceAnalysis.suggestedSalePrice?.scaledUnits, 2_400_000);
+  assert.equal(
+    result.priceAnalysis.suggestedSalePrice?.scaledUnits,
+    18_000_000,
+  );
 });
 
 test('preserves known zero purchase cost and resulting average', async () => {

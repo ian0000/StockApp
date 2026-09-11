@@ -1,9 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { RegisterPurchaseResult } from '@stock-app/application';
 
 import { formatMoneyForDisplay } from '../products/product-form-values';
 import { createPurchasePricePresentation } from './purchase-price-presentation';
+import { createPurchaseMarginPresentation } from './purchase-margin-input';
 import { formatStockTransition } from './purchase-form';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
@@ -15,6 +16,8 @@ interface PurchaseConfirmationProps {
   readonly onUseSuggestedPrice: () => void;
   readonly priceDecision: 'pending' | 'saving' | 'applied' | 'kept' | 'error';
   readonly result: RegisterPurchaseResult;
+  readonly desiredMarginText: string;
+  readonly onChangeDesiredMargin: (text: string) => void;
 }
 
 export function PurchaseConfirmation({
@@ -25,11 +28,18 @@ export function PurchaseConfirmation({
   onUseSuggestedPrice,
   priceDecision,
   result,
+  desiredMarginText,
+  onChangeDesiredMargin,
 }: PurchaseConfirmationProps) {
   const { purchase } = result;
   const price = createPurchasePricePresentation(result, currency);
+  const margin = createPurchaseMarginPresentation(
+    result,
+    desiredMarginText,
+    currency,
+  );
   const decisionIsOpen =
-    price.hasPriceDecision &&
+    margin.isEligible &&
     (priceDecision === 'pending' ||
       priceDecision === 'saving' ||
       priceDecision === 'error');
@@ -78,6 +88,10 @@ export function PurchaseConfirmation({
         <View style={styles.analysisCard}>
           <Text style={styles.analysisTitle}>Cambió el costo promedio</Text>
           <SummaryRow
+            label="Precio de venta habitual"
+            value={price.regularSalePriceLabel}
+          />
+          <SummaryRow
             label={`Margen anterior con precio de venta ${price.regularSalePriceLabel}`}
             value={price.previousMarginLabel}
           />
@@ -85,10 +99,45 @@ export function PurchaseConfirmation({
             label="Margen actual con el mismo precio de venta"
             value={price.currentMarginLabel}
           />
-          {price.suggestedSalePriceLabel !== null ? (
+          {decisionIsOpen ? (
+            <>
+              <Text style={styles.summaryLabel}>
+                Margen deseado (% del precio de venta)
+              </Text>
+              <TextInput
+                accessibilityLabel="Margen deseado (% del precio de venta)"
+                accessibilityHint="Indica qué porcentaje del precio de venta quieres que quede como margen."
+                editable={priceDecision !== 'saving'}
+                keyboardType="decimal-pad"
+                onChangeText={onChangeDesiredMargin}
+                style={styles.marginInput}
+                value={desiredMarginText}
+              />
+              <Text style={styles.summaryLabel}>
+                Indica qué porcentaje del precio de venta quieres que quede como
+                margen.
+              </Text>
+              {margin.errorMessage !== null ? (
+                <Text accessibilityLiveRegion="polite" style={styles.errorText}>
+                  {margin.errorMessage}
+                </Text>
+              ) : null}
+              {margin.recommendation.status ===
+              'CURRENT_PRICE_ALREADY_SUFFICIENT' ? (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={styles.statusText}
+                >
+                  Tu precio actual ya alcanza o supera el margen deseado. No
+                  necesitas reducirlo.
+                </Text>
+              ) : null}
+            </>
+          ) : null}
+          {margin.suggestedSalePriceLabel !== null ? (
             <SummaryRow
-              label="Precio de venta sugerido para conservar el margen anterior"
-              value={price.suggestedSalePriceLabel}
+              label="Precio de venta sugerido"
+              value={margin.suggestedSalePriceLabel}
             />
           ) : null}
         </View>
@@ -102,27 +151,29 @@ export function PurchaseConfirmation({
               venta habitual.
             </Text>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: priceDecision === 'saving' }}
-            disabled={priceDecision === 'saving'}
-            onPress={onUseSuggestedPrice}
-            style={({ pressed }) => [
-              styles.primaryAction,
-              priceDecision === 'saving' && styles.actionDisabled,
-              pressed &&
-                priceDecision !== 'saving' &&
-                styles.primaryActionPressed,
-            ]}
-          >
-            <Text style={styles.primaryActionText}>
-              {priceDecision === 'saving'
-                ? 'Actualizando precio de venta…'
-                : priceDecision === 'error'
-                  ? 'Reintentar cambio de precio de venta'
-                  : `Usar precio de venta ${price.suggestedSalePriceLabel ?? ''}`}
-            </Text>
-          </Pressable>
+          {margin.recommendation.status === 'PRICE_INCREASE_SUGGESTED' ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: priceDecision === 'saving' }}
+              disabled={priceDecision === 'saving'}
+              onPress={onUseSuggestedPrice}
+              style={({ pressed }) => [
+                styles.primaryAction,
+                priceDecision === 'saving' && styles.actionDisabled,
+                pressed &&
+                  priceDecision !== 'saving' &&
+                  styles.primaryActionPressed,
+              ]}
+            >
+              <Text style={styles.primaryActionText}>
+                {priceDecision === 'saving'
+                  ? 'Actualizando precio de venta…'
+                  : priceDecision === 'error'
+                    ? 'Reintentar cambio de precio de venta'
+                    : `Actualizar precio de venta a ${margin.suggestedSalePriceLabel ?? ''}`}
+              </Text>
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ disabled: priceDecision === 'saving' }}
@@ -195,6 +246,16 @@ function SummaryRow({
 }
 
 const styles = StyleSheet.create({
+  marginInput: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    color: colors.text,
+    fontSize: typography.size.body,
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+  },
   actionDisabled: {
     opacity: 0.65,
   },

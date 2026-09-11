@@ -495,6 +495,7 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Fundaciones técnicas | DONE | Workspace, TypeScript strict, quality gates, Expo, SQLite, Drizzle y ocho tablas versionadas. |
 | Productos | DONE | Crear, listar, buscar, consultar detalle, editar, archivar y derivar stock bajo. |
 | Compras | DONE | Registro atómico de un producto, costo promedio, snapshots, detalle y sugerencia de precio. |
+| Margen post-compra editable y sugerencia conservadora | DONE | PURCHASE-PRICE-002: porcentaje transitorio, solo aumentos explícitos y conservación del habitual si ya alcanza el margen; sin schema nuevo. Validación física corta pendiente en QA-ALPHA-002 antes de Alpha freeze. Promociones/descuentos POST-ALPHA. |
 | Ventas | DONE | Registro multiproducto atómico, stock negativo, snapshots de costo, ganancia y detalle. |
 | Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
 | History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |

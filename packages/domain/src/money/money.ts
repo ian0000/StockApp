@@ -1,7 +1,5 @@
 import { divideAndRoundHalfAwayFromZero } from '../internal/integer-arithmetic';
-
-const DECIMAL_PLACES = 6;
-const DECIMAL_PATTERN = /^(-?)(\d+)(?:\.(\d{1,6}))?$/;
+import { parseDecimalScaledUnits } from '../internal/decimal-scaled-units';
 
 function requireSafeInteger(value: number, label: string): number {
   if (!Number.isSafeInteger(value)) {
@@ -28,27 +26,7 @@ export class Money {
   }
 
   static fromDecimal(value: string): Money {
-    if (typeof value !== 'string') {
-      throw new TypeError('Decimal value must be a string.');
-    }
-
-    const match = DECIMAL_PATTERN.exec(value.trim());
-
-    if (match === null) {
-      throw new TypeError(
-        `Decimal value must use plain decimal notation with at most ${DECIMAL_PLACES} decimal places.`,
-      );
-    }
-
-    const [, sign, wholeUnits, fractionalUnits = ''] = match;
-    const scaledDigits = `${wholeUnits}${fractionalUnits.padEnd(DECIMAL_PLACES, '0')}`;
-    const magnitude = requireSafeInteger(
-      Number(scaledDigits),
-      'Decimal scaled units',
-    );
-    const scaledUnits = sign === '-' ? -magnitude : magnitude;
-
-    return Money.fromScaledUnits(scaledUnits);
+    return Money.fromScaledUnits(parseDecimalScaledUnits(value));
   }
 
   get scaledUnits(): number {

@@ -1,8 +1,9 @@
-import type {
-  RegisterPurchaseResult,
-  UpdateProductInput,
+import {
+  recommendPurchasePrice,
+  type RegisterPurchaseResult,
+  type UpdateProductInput,
 } from '@stock-app/application';
-import type { Product } from '@stock-app/domain';
+import type { Product, Percentage } from '@stock-app/domain';
 
 import { formatPercentageForDisplay } from '../products/product-details-presentation';
 import { formatMoneyForDisplay } from '../products/product-form-values';
@@ -56,11 +57,12 @@ export function createPurchasePricePresentation(
   });
 }
 
-export function createSuggestedPriceUpdateInput({
-  product,
-  priceAnalysis,
-}: RegisterPurchaseResult): UpdateProductInput | null {
-  if (priceAnalysis.suggestedSalePrice === null) return null;
+export function createSuggestedPriceUpdateInput(
+  { product, priceAnalysis }: RegisterPurchaseResult,
+  desiredMargin: Percentage | null = priceAnalysis.previousMargin,
+): UpdateProductInput | null {
+  const recommendation = recommendPurchasePrice(priceAnalysis, desiredMargin);
+  if (recommendation.status !== 'PRICE_INCREASE_SUGGESTED') return null;
 
   return Object.freeze({
     inventoryId: product.inventoryId,
@@ -68,7 +70,7 @@ export function createSuggestedPriceUpdateInput({
     name: product.name,
     variant: product.variant,
     barcode: product.barcode,
-    regularSalePrice: priceAnalysis.suggestedSalePrice,
+    regularSalePrice: recommendation.actionableSuggestedPrice,
     minimumStock: product.minimumStock,
   });
 }
@@ -80,8 +82,9 @@ interface SuggestedPriceUpdater {
 export async function applySuggestedPrice(
   result: RegisterPurchaseResult,
   updater: SuggestedPriceUpdater,
+  desiredMargin: Percentage | null = result.priceAnalysis.previousMargin,
 ): Promise<Product> {
-  const input = createSuggestedPriceUpdateInput(result);
+  const input = createSuggestedPriceUpdateInput(result, desiredMargin);
 
   if (input === null) {
     throw new Error('No suggested sale price is available.');

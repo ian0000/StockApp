@@ -588,6 +588,23 @@ La aplicación puede calcular qué precio permitiría conservar aproximadamente 
 
 Esto evita inventar un margen arbitrario.
 
+### Margen deseado transitorio post-compra — PURCHASE-PRICE-002
+
+Después de una compra elegible, el usuario puede editar el margen deseado, inicialmente igual al
+margen anterior con toda su precisión interna. Es margen sobre precio de venta, no markup.
+El rango de esta UX es `0 <= margen < 100%`; no admite márgenes negativos ni 100%.
+
+La compra debe haber cambiado el costo y disponer de margen anterior válido en ese rango y de un
+precio matemático calculable. No se inventa margen cuando el costo anterior es desconocido, el
+precio habitual es cero, el margen anterior es negativo/100%, el costo posterior es cero o el
+cálculo excede la precisión segura. Un costo conocido cero nunca se trata como desconocido.
+Sin cambio de costo no se ofrece el editor. La ausencia de sugerencia no impide registrar la compra.
+
+Editar el margen solo recalcula con el costo promedio resultante de la compra, incluido el caso
+de déficit. No modifica stock, costo ni movimientos. No se persiste `targetMargin`/`desiredMargin`.
+Aceptar un aumento actualiza el precio de Product por separado; un error o retry de esa actualización
+nunca vuelve a registrar la compra. Mantener el precio no escribe Product.
+
 ---
 
 # 22. El usuario controla el precio
@@ -645,6 +662,26 @@ tu margen aumentó de 30% a 35%.
 La aplicación NO recomendará automáticamente bajar el precio.
 
 Podrá informar de la nueva rentabilidad.
+
+### Política conservadora canónica — decisión B de PURCHASE-PRICE-002
+
+Esta política se aplica tanto si el costo sube como si baja y después de cada edición del margen:
+
+- calcular el precio matemático con `costo / (1 - margen)` y los helpers exactos existentes;
+- si `calculatedPrice > regularSalePrice`, producir `PRICE_INCREASE_SUGGESTED`: permitir el
+  aumento únicamente por aceptación explícita;
+- si `calculatedPrice <= regularSalePrice`, producir `CURRENT_PRICE_ALREADY_SUFFICIENT`: el
+  precio accionable sigue siendo el habitual; no ofrecer actualización igual ni inferior;
+- un cálculo no disponible no produce cifras ficticias ni una actualización.
+
+La sugerencia automática NUNCA recomienda reducir el precio de venta habitual. Una disminución
+del costo puede aumentar el margen manteniendo el precio. El cálculo matemático puro puede devolver
+un precio inferior, pero ese valor no es una recomendación comercial de bajada.
+
+Se conserva Money con seis decimales y el redondeo interno existente. Mostrar normalmente dos
+decimales no cambia el Money que se persiste al aceptar. No se añade redondeo comercial.
+Promociones/descuentos quedan POST-ALPHA y no forman parte de esta lógica. La edición manual del
+precio de una línea de Sale continúa siendo independiente del precio habitual de Product.
 
 ---
 
