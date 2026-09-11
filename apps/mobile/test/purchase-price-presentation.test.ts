@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { runInNewContext } from 'node:vm';
+import { URL } from 'node:url';
+import { isValidElement, type ReactElement, type ComponentProps } from 'react';
+import ts from 'typescript';
+import type { PurchaseConfirmation } from '../src/ui/purchases/PurchaseConfirmation';
 
-import type { RegisterPurchaseResult } from '@stock-app/application';
+import {
+  createPurchasePriceAnalysis,
+  type RegisterPurchaseResult,
+} from '@stock-app/application';
 import {
   createInventoryState,
   createProduct,
@@ -15,8 +25,139 @@ import {
   createPurchasePricePresentation,
   createSuggestedPriceUpdateInput,
 } from '../src/ui/purchases/purchase-price-presentation';
+import {
+  createInitialPurchaseMarginText,
+  createPurchaseMarginPresentation,
+  parseDesiredMargin,
+} from '../src/ui/purchases/purchase-margin-input';
 
 const TIMESTAMP = 1_776_444_000_000;
+
+// Exercise the actual confirmation tree with host primitives, without a native runtime/test library.
+function loadConfirmation() {
+  const path = new URL(
+    '../src/ui/purchases/PurchaseConfirmation.tsx',
+    import.meta.url,
+  );
+  const localRequire = createRequire(path);
+  const module: {
+    exports: { PurchaseConfirmation?: typeof PurchaseConfirmation };
+  } = { exports: {} };
+  const code = ts.transpileModule(readFileSync(path, 'utf8'), {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      jsx: ts.JsxEmit.ReactJSX,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  runInNewContext(code, {
+    module,
+    exports: module.exports,
+    require: (specifier: string): unknown =>
+      specifier === 'react-native'
+        ? {
+            Text: 'Text',
+            View: 'View',
+            TextInput: 'TextInput',
+            Pressable: 'Pressable',
+            StyleSheet: { create: (styles: unknown) => styles },
+          }
+        : localRequire(specifier),
+  });
+  assert.ok(module.exports.PurchaseConfirmation);
+  return module.exports.PurchaseConfirmation;
+}
+
+function elements(tree: unknown): ReactElement<Record<string, unknown>>[] {
+  if (Array.isArray(tree)) return tree.flatMap(elements);
+  if (!isValidElement<Record<string, unknown>>(tree)) return [];
+  return [tree, ...elements(tree.props.children)];
+}
+
+test('confirmation shows only Keep for sufficient margin, and Update after editing above threshold', () => {
+  const Confirmation = loadConfirmation();
+  let text = '0';
+  let accepted = 0;
+  let kept = 0;
+  const render = () =>
+    elements(
+      Confirmation({
+        currency: 'USD',
+        result: result(),
+        desiredMarginText: text,
+        priceDecision: 'pending',
+        onChangeDesiredMargin: (value) => {
+          text = value;
+        },
+        onGoProducts() {},
+        onNewPurchase() {},
+        onKeepPrice() {
+          kept++;
+        },
+        onUseSuggestedPrice() {
+          accepted++;
+        },
+      }),
+    );
+  let nodes = render();
+  assert.equal(nodes.filter((node) => node.type === 'Pressable').length, 1);
+  const input = nodes.find((node) => node.type === 'TextInput');
+  assert.equal(
+    input?.props.accessibilityLabel,
+    'Margen deseado (% del precio de venta)',
+  );
+  const change = input?.props.onChangeText;
+  assert.equal(typeof change, 'function');
+  if (typeof change !== 'function') assert.fail('Missing editor callback');
+  change('40');
+  nodes = render();
+  assert.equal(nodes.filter((node) => node.type === 'Pressable').length, 2);
+  assert.equal(accepted, 0);
+  assert.equal(kept, 0);
+  change('20');
+  assert.equal(render().filter((node) => node.type === 'Pressable').length, 1);
+  change('100');
+  assert.equal(render().filter((node) => node.type === 'Pressable').length, 1);
+});
+
+test('confirmation disables both actions and input while saving, and offers retry after failure', () => {
+  const Confirmation = loadConfirmation();
+  const props: ComponentProps<typeof PurchaseConfirmation> = {
+    currency: 'USD',
+    result: result(),
+    desiredMarginText: '40',
+    priceDecision: 'saving',
+    onChangeDesiredMargin() {},
+    onGoProducts() {},
+    onNewPurchase() {},
+    onKeepPrice() {},
+    onUseSuggestedPrice() {},
+  };
+  const saving = elements(Confirmation(props));
+  assert.equal(
+    saving.find((node) => node.type === 'TextInput')?.props.editable,
+    false,
+  );
+  assert.ok(
+    saving
+      .filter((node) => node.type === 'Pressable')
+      .every((node) => node.props.disabled === true),
+  );
+  const failed = elements(Confirmation({ ...props, priceDecision: 'error' }));
+  assert.ok(
+    failed.some(
+      (node) => node.props.children === 'Reintentar cambio de precio de venta',
+    ),
+  );
+  for (const priceDecision of ['kept', 'applied'] as const) {
+    assert.equal(
+      elements(Confirmation({ ...props, priceDecision })).some(
+        (node) => node.type === 'TextInput',
+      ),
+      false,
+    );
+  }
+});
 
 function result(
   overrides: Partial<RegisterPurchaseResult['priceAnalysis']> = {},
@@ -134,9 +275,162 @@ test('suggested price update preserves all Product metadata', () => {
 
 test('does not create an update when there is no distinct suggestion', () => {
   assert.equal(
-    createSuggestedPriceUpdateInput(result({ suggestedSalePrice: null })),
+    createSuggestedPriceUpdateInput(
+      result({ previousMargin: null, suggestedSalePrice: null }),
+    ),
     null,
   );
+});
+
+test('initial input preserves all six decimals of the previous margin', () => {
+  assert.equal(createInitialPurchaseMarginText(result()), '33.333333');
+  assert.equal(
+    createInitialPurchaseMarginText(result({ previousMargin: null })),
+    '',
+  );
+});
+
+for (const [input, units] of [
+  ['0', 0],
+  ['30', 30_000_000],
+  ['30,5', 30_500_000],
+  ['30.5', 30_500_000],
+  [',5', 500_000],
+  ['.5', 500_000],
+  [' 35 ', 35_000_000],
+  ['99.999999', 99_999_999],
+] as const) {
+  test(`desired margin input accepts ${input} exactly`, () => {
+    assert.equal(parseDesiredMargin(input)?.scaledUnits, units);
+  });
+}
+for (const input of [
+  '',
+  ' ',
+  'abc',
+  '100',
+  '101',
+  '-1',
+  '1e2',
+  'Infinity',
+  '9007199254740991',
+  '0.1234567',
+  '1,2.3',
+  '1.2,3',
+  '1,2,3',
+  '.',
+  ',',
+]) {
+  test(`desired margin input rejects ${JSON.stringify(input)}`, () => {
+    assert.equal(parseDesiredMargin(input), null);
+    const presentation = createPurchaseMarginPresentation(
+      result(),
+      input,
+      'USD',
+    );
+    assert.equal(presentation.recommendation.status, 'UNAVAILABLE');
+    assert.notEqual(presentation.errorMessage, null);
+    assert.equal(presentation.suggestedSalePriceLabel, null);
+  });
+}
+
+test('editing margin changes recommendation both ways without writes', () => {
+  const purchaseResult = result();
+  for (const [text, status] of [
+    ['0', 'CURRENT_PRICE_ALREADY_SUFFICIENT'],
+    ['40', 'PRICE_INCREASE_SUGGESTED'],
+    ['20', 'CURRENT_PRICE_ALREADY_SUFFICIENT'],
+  ] as const) {
+    const presentation = createPurchaseMarginPresentation(
+      purchaseResult,
+      text,
+      'USD',
+    );
+    assert.equal(presentation.recommendation.status, status);
+    assert.equal(
+      presentation.suggestedSalePriceLabel,
+      status === 'PRICE_INCREASE_SUGGESTED' ? 'USD 20.00' : null,
+    );
+  }
+  assert.equal(purchaseResult.product.regularSalePrice.scaledUnits, 15_000_000);
+  assert.equal(purchaseResult.afterInventoryState.stock, 20);
+  assert.equal(
+    purchaseResult.afterInventoryState.unitCost?.scaledUnits,
+    12_000_000,
+  );
+});
+
+test('explicit acceptance uses edited Money precision, never the display string', async () => {
+  const purchaseResult = result();
+  const margin = parseDesiredMargin('30');
+  let calls = 0;
+  const updated = await applySuggestedPrice(
+    purchaseResult,
+    {
+      async execute(input) {
+        calls++;
+        return {
+          ...purchaseResult.product,
+          regularSalePrice: input.regularSalePrice,
+        };
+      },
+    },
+    margin,
+  );
+  assert.equal(calls, 1);
+  assert.equal(updated.regularSalePrice.scaledUnits, 17_142_857);
+  assert.equal(purchaseResult.purchase.id, 'purchase-1');
+});
+
+test('sufficient, equal and invalid targets cannot write Product even if invoked', async () => {
+  for (const margin of [
+    Percentage.zero(),
+    Percentage.fromDecimal('20'),
+    null,
+  ]) {
+    let writes = 0;
+    await assert.rejects(
+      () =>
+        applySuggestedPrice(
+          result(),
+          {
+            async execute() {
+              writes++;
+              throw new Error('must not write');
+            },
+          },
+          margin,
+        ),
+      /No suggested/,
+    );
+    assert.equal(writes, 0);
+  }
+});
+
+test('cost decrease retains the current price and no lower CTA amount', () => {
+  const original = result();
+  const priceAnalysis = createPurchasePriceAnalysis({
+    beforeInventoryState: createInventoryState({
+      stock: 10,
+      unitCost: Money.fromDecimal('8'),
+    }),
+    afterInventoryState: createInventoryState({
+      stock: 20,
+      unitCost: Money.fromDecimal('6'),
+    }),
+    regularSalePrice: Money.fromDecimal('12'),
+  });
+  const presentation = createPurchaseMarginPresentation(
+    { ...original, priceAnalysis },
+    '33.333333',
+    'USD',
+  );
+  assert.equal(
+    presentation.recommendation.status,
+    'CURRENT_PRICE_ALREADY_SUFFICIENT',
+  );
+  assert.equal(presentation.suggestedSalePriceLabel, null);
+  assert.equal(presentation.errorMessage, null);
 });
 
 test('a failed price update can retry only the Product update', async () => {

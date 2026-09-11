@@ -46,6 +46,63 @@ function calculateAvailableSuggestion(
   }
 }
 
+export type PurchasePriceRecommendation =
+  | { readonly status: 'UNAVAILABLE' }
+  | {
+      readonly status:
+        'PRICE_INCREASE_SUGGESTED' | 'CURRENT_PRICE_ALREADY_SUFFICIENT';
+      readonly calculatedPrice: Money;
+      readonly actionableSuggestedPrice: Money;
+    };
+
+function isValidDesiredMargin(margin: Percentage | null): margin is Percentage {
+  return (
+    margin !== null &&
+    margin.scaledUnits >= 0 &&
+    margin.scaledUnits < 100_000_000
+  );
+}
+
+export function getInitialPurchaseMargin(
+  analysis: PurchasePriceAnalysis,
+): Percentage | null {
+  const margin = analysis.previousMargin;
+  return analysis.costChanged &&
+    isValidDesiredMargin(margin) &&
+    calculateAvailableSuggestion(analysis.currentUnitCost, margin) !== null
+    ? margin
+    : null;
+}
+
+export function recommendPurchasePrice(
+  analysis: PurchasePriceAnalysis,
+  desiredMargin: Percentage | null,
+): PurchasePriceRecommendation {
+  if (
+    getInitialPurchaseMargin(analysis) === null ||
+    !isValidDesiredMargin(desiredMargin)
+  ) {
+    return Object.freeze({ status: 'UNAVAILABLE' });
+  }
+  const calculatedPrice = calculateAvailableSuggestion(
+    analysis.currentUnitCost,
+    desiredMargin,
+  );
+  if (calculatedPrice === null) return Object.freeze({ status: 'UNAVAILABLE' });
+
+  // A mathematical price is not a recommendation to reduce the current selling price.
+  const increase = calculatedPrice.compare(analysis.regularSalePrice) > 0;
+  return Object.freeze({
+    status: increase
+      ? 'PRICE_INCREASE_SUGGESTED'
+      : 'CURRENT_PRICE_ALREADY_SUFFICIENT',
+    calculatedPrice,
+    actionableSuggestedPrice: increase
+      ? calculatedPrice
+      : analysis.regularSalePrice,
+  });
+}
+
 export function createPurchasePriceAnalysis({
   beforeInventoryState,
   afterInventoryState,
@@ -69,12 +126,12 @@ export function createPurchasePriceAnalysis({
     currentUnitCost,
   );
   const candidateSuggestion =
-    costChanged && previousMargin !== null
+    costChanged && isValidDesiredMargin(previousMargin)
       ? calculateAvailableSuggestion(currentUnitCost, previousMargin)
       : null;
   const suggestedSalePrice =
     candidateSuggestion !== null &&
-    !candidateSuggestion.equals(regularSalePrice)
+    candidateSuggestion.compare(regularSalePrice) > 0
       ? candidateSuggestion
       : null;
 

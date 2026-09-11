@@ -1,3 +1,5 @@
+import { parseDecimalScaledUnits } from '../internal/decimal-scaled-units';
+
 function requireSafeInteger(value: number): number {
   if (!Number.isSafeInteger(value)) {
     throw new RangeError('Percentage scaled units must be a safe integer.');
@@ -20,6 +22,10 @@ export class Percentage {
 
   static fromScaledUnits(scaledUnits: number): Percentage {
     return new Percentage(requireSafeInteger(scaledUnits));
+  }
+
+  static fromDecimal(value: string): Percentage {
+    return Percentage.fromScaledUnits(parseDecimalScaledUnits(value));
   }
 
   get scaledUnits(): number {

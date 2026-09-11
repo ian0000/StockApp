@@ -552,6 +552,32 @@ recalcularon ventas anteriores.
 
 # 20. Recomendación no intrusiva
 
+## Margen editable post-compra — PURCHASE-PRICE-002
+
+Dentro de la confirmación existente, una compra elegible muestra **Costo promedio actual**,
+**Precio de venta habitual** y el input **Margen deseado (% del precio de venta)**. Ayuda:
+«Indica qué porcentaje del precio de venta quieres que quede como margen.»
+
+El input comienza con el margen anterior exacto, admite coma o punto y hasta seis decimales,
+con `0 <= margen < 100%`. Recalcula al escribir, sin guardar nada ni repetir la compra.
+Vacío, valores inválidos y overflow muestran un error comprensible; mantienen disponible la
+acción de conservar precio, pero no la de actualizar.
+
+- `PRICE_INCREASE_SUGGESTED`: mostrar **Precio de venta sugerido**, **Actualizar precio de venta
+  a [importe]** y **Mantener precio de venta [importe]**.
+- `CURRENT_PRICE_ALREADY_SUFFICIENT`: «Tu precio actual ya alcanza o supera el margen deseado.
+  No necesitas reducirlo.» Solo ofrecer mantener; no una CTA para bajar o escribir el mismo precio.
+
+El usuario puede cruzar entre ambos estados editando el porcentaje. Durante el guardado se bloquean
+el input y ambas acciones para impedir doble envío. Si falla, la compra permanece registrada y el
+reintento afecta únicamente el precio. Salir de esta confirmación descarta el margen transitorio.
+
+No se ofrece editor si el costo no cambió, falta costo previo, el precio habitual es cero, el margen
+anterior es negativo/100%, el costo nuevo es cero o el precio inicial no es calculable con precisión
+segura. No se usa 30% ni otro valor arbitrario como sustituto. Estas exclusiones no bloquean comprar.
+La fórmula pura, los seis decimales de Money y su presentación habitual permanecen iguales.
+Promociones/descuentos quedan POST-ALPHA.
+
 La recomendación de precio NO debe impedir completar la compra.
 
 Primero:
@@ -1261,8 +1287,9 @@ Esos conceptos pertenecen al sistema, no al trabajo cotidiano del usuario.
 - Snapshot unitario de Sale: **Costo histórico por unidad**.
 - Product: **Ganancia estimada por unidad**, **Margen estimado** y **Recargo sobre costo (markup)**.
   Margen divide ganancia por precio de venta; markup divide ganancia por costo. No son intercambiables.
-- Sugerencia: **Precio de venta sugerido** para conservar el margen anterior. El precio conservado
-  es el **precio de venta habitual actual**. Esto no aprueba cambios en el cálculo ni margen editable.
+- Sugerencia: **Precio de venta sugerido** para el **Margen deseado (% del precio de venta)**,
+  inicialmente el margen anterior, según §20. El precio conservado es el **precio de venta habitual
+  actual**. Nunca se recomienda una bajada automática.
 - Stock inicial/ajuste: **Costo inicial por unidad** / **Costo por unidad agregada**, sin inventar
   una compra comercial.
 

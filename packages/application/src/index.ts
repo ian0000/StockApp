@@ -19,6 +19,9 @@ export {
 } from './register-purchase';
 export {
   createPurchasePriceAnalysis,
+  getInitialPurchaseMargin,
+  recommendPurchasePrice,
+  type PurchasePriceRecommendation,
   type PurchasePriceAnalysis,
   type PurchasePriceAnalysisInput,
 } from './purchase-price-analysis';

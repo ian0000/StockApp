@@ -1,8 +1,25 @@
 # QA-PRICE-001 — Revisión de semántica de precios
 
-**Estado inicial y vigente:** INVESTIGATING. **Clasificación:** decisión de producto y claridad UX,
+**Estado inicial:** INVESTIGATING. **Clasificación:** decisión de producto y claridad UX,
 no bug confirmado por rechazar un precio habitual vacío. **Base:** `2157e92`.
 **Rama:** `docs/price-semantics-review`. Revisión documental; no aprueba cambios de comportamiento.
+
+### Seguimiento — PURCHASE-PRICE-002
+
+**Contradicción de sugerencia: RESOLVED.** La decisión B de este ticket aprueba margen editable
+transitorio y política conservadora: sugerir solo aumentos; un precio calculado menor o igual
+conserva el habitual sin write. Las reglas vigentes están en BUSINESS_RULES §21/§24 y UX §20.
+Esta decisión B no es la alternativa B de precio nullable analizada en §5: Product sigue exigiendo Money.
+
+El editor inicia con el margen anterior exacto y solo admite `0 <= margen < 100%`. No aparece sin
+cambio de costo o referencia válida, con costo nuevo cero o cálculo inicial fuera de rango. Se
+reutiliza el parser decimal exacto de Money internamente para `Percentage.fromDecimal`, sin tratar
+porcentajes como dinero. Domain conserva la fórmula matemática general; Application diferencia
+`PRICE_INCREASE_SUGGESTED`, `CURRENT_PRICE_ALREADY_SUFFICIENT` y `UNAVAILABLE`.
+Schema y Backup V1 no cambian. La validación física de pricing y reinicio queda pendiente tras merge.
+
+Las secciones de investigación y los pendientes escritos debajo son evidencia histórica de la
+base indicada, no el estado posterior a PURCHASE-PRICE-002.
 
 ### Seguimiento — UX-PRICE-001
 

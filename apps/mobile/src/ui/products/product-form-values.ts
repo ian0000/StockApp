@@ -3,6 +3,9 @@ import type {
   UpdateProductInput,
 } from '@stock-app/application';
 import { Money } from '@stock-app/domain';
+import { normalizeDecimalInput as normalizeMoneyInput } from '../decimal-input';
+
+export { normalizeDecimalInput as normalizeMoneyInput } from '../decimal-input';
 
 export interface ProductFormValues {
   readonly name: string;
@@ -60,20 +63,6 @@ function parseNonNegativeSafeInteger(value: string): number | null {
   const parsed = Number(normalized);
 
   return Number.isSafeInteger(parsed) ? parsed : null;
-}
-
-export function normalizeMoneyInput(value: string): string | null {
-  const normalized = value.trim();
-
-  if (!/^(?:\d+|\d*[.,]\d+)$/.test(normalized)) {
-    return null;
-  }
-
-  const withLeadingZero = /^[.,]/.test(normalized)
-    ? `0${normalized}`
-    : normalized;
-
-  return withLeadingZero.replace(',', '.');
 }
 
 function parseNonNegativeMoney(value: string): Money | null {
