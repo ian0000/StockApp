@@ -33,3 +33,9 @@ Thumbs.db
 *.p12
 *.pem
 *.mobileprovision
+credentials.json
+*.pfx
+*.cer
+*.apk
+*.aab
+*.ipa

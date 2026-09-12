@@ -539,6 +539,10 @@ blockers, bugs, integridad de datos, compatibilidad de plataforma y UX crítica 
 testers Alpha. Las nuevas ideas van al backlog Post-Alpha/Beta, sin implementación automática.
 
 Próximo paso: **Prepare Alpha distribution and tester workflow. No new V1 features.**
+Preparación en curso: [DIST-ALPHA-001 / ALPHA_TESTING](ALPHA_TESTING.md), perfil Android interno
+con APK y flujo de testers. La entrega del artefacto y su smoke de instalación deben registrarse
+por separado; no se infieren del freeze ni de un export. Después: grupo de 3–10 testers,
+feedback, triage y corrección de blockers, sin ampliar funciones.
 No se declara preparación para Beta, producción ni publicación en stores.
 Cuando exista Android físico, validar especialmente cámara/barcode, permisos, share sheet,
 filesystem, document picker y comportamiento específico de fabricante/dispositivo.

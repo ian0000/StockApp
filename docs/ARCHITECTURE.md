@@ -138,6 +138,19 @@ EAS Build puede simplificar builds y firma de aplicaciones, aunque también es p
 builds locales. Expo mantiene actualmente una capa gratuita limitada para ciertos servicios de
 build/update.
 
+### Distribución Alpha interna — DIST-ALPHA-001
+
+La distribución Android se prepara mediante EAS Build, perfil `alpha` de
+`apps/mobile/eas.json`, con `distribution: internal` y artefacto APK. La compilación es un paso
+controlado y explícito, no un deployment automático de CI ni una dependencia del funcionamiento
+offline. EAS CLI y herramientas del build se fijan en la configuración para reproducibilidad.
+El versionado nativo es local y cada entrega debe identificar commit, versión, número e ID de build.
+
+No se activa `expo-updates` ni EAS Update: esta Alpha utiliza builds inmutables. iOS mantiene el
+testing controlado con Expo Go mientras se verifica la disponibilidad de credenciales Apple para
+Ad Hoc; no se configura TestFlight. Estado real, prerequisitos, firma y pruebas del artefacto en
+[ALPHA_TESTING.md](ALPHA_TESTING.md). Configurar distribución no equivale a validar un APK/IPA.
+
 ---
 
 # 6. Expo Router

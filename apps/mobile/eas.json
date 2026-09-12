@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "version": "24.3.0",
+    "appVersionSource": "local",
+    "requireCommit": true
+  },
+  "build": {
+    "alpha": {
+      "distribution": "internal",
+      "node": "22.16.0",
+      "pnpm": "11.0.9",
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
