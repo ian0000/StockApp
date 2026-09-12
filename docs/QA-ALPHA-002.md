@@ -4,6 +4,27 @@
 **Rama:** `qa/alpha-pricing-freeze`. **Estado:** validación física nueva pendiente;
 freeze no aprobado. Esta revisión no implementa features ni modifica datos del dispositivo.
 
+### Seguimiento — QA-PRICE-PHYS-001: FAIL / UX
+
+El responsable reporta fallo físico de claridad en el alta: «Precio de venta habitual» y
+«Costo inicial por unidad» todavía obligan a interpretar la relación venta/compra.
+Se aplica su propuesta únicamente a Nuevo producto:
+
+- **Precio de venta por unidad**: «Lo que normalmente cobras al vender una unidad.»
+- **Costo de compra inicial por unidad**: «Lo que te costó cada unidad de este stock inicial.»
+
+Clasificación: UX / MEDIUM, sin defecto financiero ni de persistencia demostrado. Se mantienen
+moneda, obligatoriedad, accesibilidad derivada del label y condición stock inicial > 0 para costo.
+No cambian Domain, parser, valores, transacciones ni schema. Edición y detalle conservan su copy.
+El test de terminología falla primero con el texto anterior; se actualiza con la nueva decisión.
+**Estado físico: FAIL reportado; corrección aplicada, retest pendiente.** No se convierte en PASS
+sin volver a revisar el formulario en iPhone. Las cifras y gates de §8 identifican la corrida base.
+
+Validación del ajuste: terminología 8/8 (antes 7 PASS / 1 FAIL), `pnpm check` PASS con
+1364/1364 tests (428 Domain, 414 Application, 522 Mobile/Infrastructure), `git diff --check` PASS,
+exports iOS 1435 módulos y Web 895 módulos PASS. Logs `%TEMP%/stockapp-alpha002-copy-{check,ios,web}.log`.
+No se repitió Doctor para este cambio de copy; su impedimento anterior sigue abierto.
+
 ## 1. Procedencia y límites de la evidencia
 
 El ticket del responsable reporta PASS físico previo en iPhone para startup, persistencia,
@@ -14,7 +35,8 @@ Se conserva ese resultado como **PASS reportado por el responsable**, no como un
 de Codex. No se repite QA-ALPHA-001 ni se solicita borrar la base de datos.
 
 La regresión de pricing de este ticket sucede después de UX-PRICE-001 y PURCHASE-PRICE-002.
-No se han recibido resultados físicos de esa nueva regresión ni del smoke post-pricing.
+Se recibió el FAIL de QA-PRICE-PHYS-001 descrito arriba; los demás resultados físicos nuevos y el
+smoke post-pricing siguen pendientes.
 Los tests Node, las inspecciones de fuentes y los exports no prueban teclado, cámara, reinicio
 de Expo Go, share sheet ni persistencia en el iPhone.
 
@@ -51,12 +73,12 @@ no se marca `Alpha readiness: PASS` ni `V1 Alpha feature freeze: COMPLETE`.
 
 `PASS` en Automated se limita a la lógica/copy cubierta por las suites indicadas en §5.
 `PARCIAL` identifica un alcance que no equivale al escenario físico completo.
-Todos los resultados físicos de esta tabla son **NOT EXECUTED** en esta revisión.
+Salvo el FAIL de 001 reportado por el responsable, los resultados físicos son **NOT EXECUTED**.
 `PENDIENTE` no significa un defecto reproducido.
 
 | Scenario | Automated | Physical | Result |
 | --- | --- | --- | --- |
-| QA-PRICE-PHYS-001 — Terminología Product New/Edit/Detail | PASS — copy y accesibilidad | NOT EXECUTED | PENDIENTE |
+| QA-PRICE-PHYS-001 — Terminología Product New/Edit/Detail | PASS — test actualizado al copy aprobado | FAIL reportado en alta | Corrección aplicada; RETEST PENDIENTE |
 | QA-PRICE-PHYS-002 — Terminología Sale/Detail | PASS — copy y snapshots | NOT EXECUTED | PENDIENTE |
 | QA-PRICE-PHYS-003 — Terminología Purchase/Detail | PASS — copy y snapshots | NOT EXECUTED | PENDIENTE |
 | QA-PRICE-PHYS-004 — Sale con costo desconocido / antiguo PHYS-019 | PASS — UNKNOWN/null, ganancia no disponible | NOT EXECUTED | PENDIENTE, bloquea freeze |
@@ -201,12 +223,14 @@ PASS automatizado en [CreateBackup](../packages/application/test/create-backup.t
 ## 10. Defectos e impedimentos
 
 No se encontró un defecto BLOCKER/HIGH reproducido en la regresión automatizada ni en la revisión
-de pricing. Eso no sustituye las pruebas físicas que faltan. No se implementó ningún bugfix.
+de pricing. Eso no sustituye las pruebas físicas que faltan. El seguimiento posterior registra
+una corrección de copy por FAIL / UX del responsable.
 
 | ID | Severity / clase | Expected | Actual | Status |
 | --- | --- | --- | --- | --- |
-| QA-ALPHA-002-GATE-01 | Gate bloqueante de evidencia, no bug confirmado | Pricing principal, PHYS-019, restart y smoke nuevos aprobados en iPhone | Sin resultados físicos nuevos recibidos | OPEN |
+| QA-ALPHA-002-GATE-01 | Gate bloqueante de evidencia | Pricing principal, PHYS-019, restart y smoke nuevos aprobados en iPhone | 001 FAIL reportado; retest y demás escenarios pendientes | OPEN |
 | QA-ALPHA-002-GATE-02 | Gate bloqueante de entorno, no defecto de producto confirmado | Expo Doctor 21/21 | Error DNS hacia exp.host en dos intentos | OPEN |
+| QA-PRICE-PHYS-001-UX | MEDIUM / claridad de alta | Diferenciar venta y compra inicial sin interpretación | Copy anterior confuso según prueba física | Corrección aplicada; RETEST PENDIENTE |
 
 No atribuir el bloqueo de red a un cambio de código ni ocultarlo como PASS.
 Si la ejecución física descubre un defecto de datos, pricing, Sale/Purchase o recovery, registrar

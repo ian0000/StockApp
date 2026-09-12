@@ -665,8 +665,9 @@ Variante
 Código
 [ Escanear ] [ Escribir ]
 
-Precio de venta habitual
+Precio de venta por unidad
 [ $1.00 ]
+Lo que normalmente cobras al vender una unidad.
 
 Stock mínimo
 [ Opcional ]
@@ -711,11 +712,11 @@ Si responde sí:
 
 [ 20 ]
 
-Costo aproximado por unidad
+Costo de compra inicial por unidad
 
 [ $0.60 ]
 
-Lo usamos para estimar tu ganancia.
+Lo que te costó cada unidad de este stock inicial.
 
 [ Agregar stock inicial ]
 ```
@@ -1225,7 +1226,7 @@ Primero:
 
 ```text
 Nombre
-Precio de venta habitual
+Precio de venta por unidad
 ```
 
 Después podremos añadir:
@@ -1276,8 +1277,13 @@ Esos conceptos pertenecen al sistema, no al trabajo cotidiano del usuario.
 
 ## Terminología de costos, precios y rentabilidad
 
-- Product (alta, edición y detalle): **Precio de venta habitual**; obligatorio en V1. Es el precio
-  que se precarga en una venta, no el costo. Cero conocido no se muestra como «No definido».
+- Product (alta): **Precio de venta por unidad**, con ayuda «Lo que normalmente cobras al vender
+  una unidad.»; **Costo de compra inicial por unidad**, con ayuda «Lo que te costó cada unidad de
+  este stock inicial.». Aclaración aprobada tras QA-PRICE-PHYS-001: solo cambia el copy del alta.
+  El precio sigue siendo `Product.regularSalePrice`, obligatorio; el costo inicial sigue siendo
+  aproximado, requerido con stock inicial positivo, y no crea una Purchase comercial.
+- Product (edición y detalle): **Precio de venta habitual**. Es el precio que se precarga en una
+  venta, no el costo. Cero conocido no se muestra como «No definido».
 - Sale (campo, accesibilidad y detalle): **Precio de venta por unidad**; corresponde al precio
   cobrado en esa operación. Las validaciones deben mencionar «precio de venta».
 - Purchase (campo, validación, accesibilidad y detalle): **Costo de compra por unidad**.
@@ -1290,7 +1296,7 @@ Esos conceptos pertenecen al sistema, no al trabajo cotidiano del usuario.
 - Sugerencia: **Precio de venta sugerido** para el **Margen deseado (% del precio de venta)**,
   inicialmente el margen anterior, según §20. El precio conservado es el **precio de venta habitual
   actual**. Nunca se recomienda una bajada automática.
-- Stock inicial/ajuste: **Costo inicial por unidad** / **Costo por unidad agregada**, sin inventar
+- Stock inicial/ajuste: **Costo de compra inicial por unidad** / **Costo por unidad agregada**, sin inventar
   una compra comercial.
 
 El costo desconocido mantiene «No disponible», «Costo desconocido» o `—` según el contexto;

@@ -133,6 +133,7 @@ export default function NewProductScreen() {
         />
 
         <ProductFormField
+          hint="Lo que normalmente cobras al vender una unidad."
           inputProps={{
             editable: !isSubmitting,
             keyboardType: 'decimal-pad',
@@ -141,7 +142,7 @@ export default function NewProductScreen() {
             returnKeyType: 'next',
             value: values.regularSalePrice,
           }}
-          label={`Precio de venta habitual (${inventory.currency}) *`}
+          label={`Precio de venta por unidad (${inventory.currency}) *`}
         />
 
         <ProductFormField
@@ -159,7 +160,7 @@ export default function NewProductScreen() {
 
         {requiresInitialCost ? (
           <ProductFormField
-            hint="Se utiliza para estimar la ganancia de estas unidades."
+            hint="Lo que te costó cada unidad de este stock inicial."
             inputProps={{
               editable: !isSubmitting,
               keyboardType: 'decimal-pad',
@@ -168,7 +169,7 @@ export default function NewProductScreen() {
               returnKeyType: 'next',
               value: values.initialUnitCost,
             }}
-            label={`Costo inicial por unidad (${inventory.currency}) *`}
+            label={`Costo de compra inicial por unidad (${inventory.currency}) *`}
           />
         ) : (
           <Text style={styles.fieldHint}>

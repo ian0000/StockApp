@@ -5,7 +5,15 @@ import { URL } from 'node:url';
 
 // Source-level copy checks follow the existing mobile tests without loading RN in Node.
 const screens = [
-  ['product/new.tsx', ['Precio de venta habitual']],
+  [
+    'product/new.tsx',
+    [
+      'Precio de venta por unidad',
+      'Costo de compra inicial por unidad',
+      'Lo que normalmente cobras al vender una unidad.',
+      'Lo que te costó cada unidad de este stock inicial.',
+    ],
+  ],
   ['product/edit/[id].tsx', ['Precio de venta habitual']],
   [
     'product/[id].tsx',
@@ -45,6 +53,12 @@ for (const [screen, labels] of screens) {
     );
     for (const label of labels)
       assert.ok(source.includes(label), `Missing ${label}`);
+    if (screen === 'product/new.tsx') {
+      assert.doesNotMatch(
+        source,
+        /Precio de venta habitual|Costo inicial por unidad/,
+      );
+    }
     assert.doesNotMatch(
       source,
       /Precio habitual|Precio unitario|Costo actual|Costo unitario|Ganancia aprox\.|Margen aprox\.|Markup aprox\./,
