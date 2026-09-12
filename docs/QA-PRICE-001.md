@@ -9,7 +9,9 @@ no bug confirmado por rechazar un precio habitual vacío. **Base:** `2157e92`.
 La elegibilidad y precarga descritas en el seguimiento anterior de PURCHASE-PRICE-002 quedan
 sustituidas por BUSINESS_RULES §21 y UX §20: costo actual calculable habilita el editor;
 referencia anterior válida → actual válida → vacío. Inputs iniciales a dos decimales sin perder
-valores semánticos exactos. Evidencia automatizada y retests físicos pendientes: QA-ALPHA-002.
+valores semánticos exactos. Retests de editor, precisión y política conservadora: PASS reportado
+por el responsable; terminología también PASS reportado. Cierre de evidencia en QA-ALPHA-002 y
+[QA-ALPHA-003](QA-ALPHA-003.md). La investigación histórica siguiente no representa blockers abiertos.
 
 ### Seguimiento histórico — PURCHASE-PRICE-002
 
