@@ -362,8 +362,10 @@ test('editable Product parsing rejects invalid price and minimum stock', () => {
   );
 });
 
-test('formats exact Money for editing without reducing stored precision', () => {
-  assert.equal(formatMoneyForInput(Money.fromDecimal('1.250001')), '1.250001');
+test('formats Money for initial editing at two decimals without mutating Money', () => {
+  const original = Money.fromDecimal('1.250001');
+  assert.equal(formatMoneyForInput(original), '1.25');
+  assert.equal(original.scaledUnits, 1_250_001);
   assert.equal(formatMoneyForInput(Money.fromDecimal('1.250000')), '1.25');
-  assert.equal(formatMoneyForInput(Money.zero()), '0');
+  assert.equal(formatMoneyForInput(Money.zero()), '0.00');
 });

@@ -17,6 +17,7 @@ interface PurchaseConfirmationProps {
   readonly priceDecision: 'pending' | 'saving' | 'applied' | 'kept' | 'error';
   readonly result: RegisterPurchaseResult;
   readonly desiredMarginText: string;
+  readonly desiredMarginIsDirty: boolean;
   readonly onChangeDesiredMargin: (text: string) => void;
 }
 
@@ -29,6 +30,7 @@ export function PurchaseConfirmation({
   priceDecision,
   result,
   desiredMarginText,
+  desiredMarginIsDirty,
   onChangeDesiredMargin,
 }: PurchaseConfirmationProps) {
   const { purchase } = result;
@@ -37,6 +39,7 @@ export function PurchaseConfirmation({
     result,
     desiredMarginText,
     currency,
+    desiredMarginIsDirty,
   );
   const decisionIsOpen =
     margin.isEligible &&
@@ -84,9 +87,13 @@ export function PurchaseConfirmation({
         )}
       </View>
 
-      {price.costChanged ? (
+      {price.costChanged || margin.isEligible ? (
         <View style={styles.analysisCard}>
-          <Text style={styles.analysisTitle}>Cambió el costo promedio</Text>
+          <Text style={styles.analysisTitle}>
+            {price.costChanged
+              ? 'Cambió el costo promedio'
+              : 'Precio de venta y margen'}
+          </Text>
           <SummaryRow
             label="Precio de venta habitual"
             value={price.regularSalePriceLabel}

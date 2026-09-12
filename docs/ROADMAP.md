@@ -495,7 +495,7 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Fundaciones técnicas | DONE | Workspace, TypeScript strict, quality gates, Expo, SQLite, Drizzle y ocho tablas versionadas. |
 | Productos | DONE | Crear, listar, buscar, consultar detalle, editar, archivar y derivar stock bajo. |
 | Compras | DONE | Registro atómico de un producto, costo promedio, snapshots, detalle y sugerencia de precio. |
-| Margen post-compra editable y sugerencia conservadora | DONE | PURCHASE-PRICE-002: porcentaje transitorio, solo aumentos explícitos y conservación del habitual si ya alcanza el margen; sin schema nuevo. Validación física corta pendiente en QA-ALPHA-002 antes de Alpha freeze. Promociones/descuentos POST-ALPHA. |
+| Margen post-compra editable y sugerencia conservadora | DONE | PURCHASE-PRICE-002 y fix BUG-QA-PRICE-001: disponibilidad independiente del margen anterior, referencia anterior válida → actual válida → vacío e inputs a dos decimales sin redondeo semántico. Solo aumentos explícitos; sin schema nuevo. Retest físico requerido en QA-ALPHA-002; promociones/descuentos POST-ALPHA. |
 | Ventas | DONE | Registro multiproducto atómico, stock negativo, snapshots de costo, ganancia y detalle. |
 | Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
 | History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |
@@ -507,7 +507,7 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Validación física del núcleo UI | PASS REPORTADO | El responsable confirma startup, persistencia, Products, low stock, Sales, Purchases, Adjustments, History, Home y detalles en la QA previa, según QA-ALPHA-002 §1. No aprueba por inferencia el pricing nuevo. |
 | Backup y restauración local | DONE | Contrato V1, exportación, validación completa, preview y replace SQLite atómico implementados con regresión automatizada. |
 | Validación física de Backup/Restore | PASS REPORTADO | El responsable confirma Backup, Restore, recovery A → B → Restore A → restart, archivo inválido y persistencia posterior, según QA-ALPHA-002 §1. No se repite recovery completo en esta regresión de pricing. |
-| QA-ALPHA-002 y Alpha freeze | BLOCKING | Pricing físico nuevo, PHYS-019 y smoke post-pricing pendientes de evidencia. Suite 1364/1364, exports iOS/Web y schema de ocho tablas pasan; Expo Doctor pendiente por fallo DNS hacia exp.host. Ver QA-ALPHA-002. |
+| QA-ALPHA-002 y Alpha freeze | BLOCKING | Alpha regression fixes, sin nueva feature: 001/002 PASS físicos reportados; 006 y precisión FIX IMPLEMENTED / RETEST REQUIRED. Resto pricing iOS y smoke Android pendientes. Suite 1396/1396, exports iOS/Android/Web y schema de ocho tablas pasan; GATE-02 Expo Doctor cerrado, 21/21 PASS. Ver QA-ALPHA-002. |
 | Undo inmediato | DEFERRED | Las acciones permanentes de anulación ya existen; la duración y el acceso rápido de compra no están definidos y no bloquean Alpha. |
 | Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
 | Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |

@@ -4,7 +4,14 @@
 no bug confirmado por rechazar un precio habitual vacío. **Base:** `2157e92`.
 **Rama:** `docs/price-semantics-review`. Revisión documental; no aprueba cambios de comportamiento.
 
-### Seguimiento — PURCHASE-PRICE-002
+### Seguimiento — BUG-QA-PRICE-001
+
+La elegibilidad y precarga descritas en el seguimiento anterior de PURCHASE-PRICE-002 quedan
+sustituidas por BUSINESS_RULES §21 y UX §20: costo actual calculable habilita el editor;
+referencia anterior válida → actual válida → vacío. Inputs iniciales a dos decimales sin perder
+valores semánticos exactos. Evidencia automatizada y retests físicos pendientes: QA-ALPHA-002.
+
+### Seguimiento histórico — PURCHASE-PRICE-002
 
 **Contradicción de sugerencia: RESOLVED.** La decisión B de este ticket aprueba margen editable
 transitorio y política conservadora: sugerir solo aumentos; un precio calculado menor o igual

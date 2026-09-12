@@ -149,13 +149,13 @@ for (const units of [-1, 100_000_000, 101_000_000, Number.MAX_SAFE_INTEGER]) {
   });
 }
 
-for (const [beforeCost, afterCost, price] of [
-  [null, '10', '15'],
-  ['0', '10', '15'],
-  ['10', '12', '0'],
-  ['10', '10', '15'],
-  ['10', '0', '15'],
-  ['20', '22', '15'],
+for (const [beforeCost, afterCost, price, reference, status] of [
+  [null, '10', '15', 'current', 'CURRENT_PRICE_ALREADY_SUFFICIENT'],
+  ['0', '10', '15', 'current', 'CURRENT_PRICE_ALREADY_SUFFICIENT'],
+  ['10', '12', '0', null, 'PRICE_INCREASE_SUGGESTED'],
+  ['10', '10', '15', 'previous', 'CURRENT_PRICE_ALREADY_SUFFICIENT'],
+  ['10', '0', '15', null, 'UNAVAILABLE'],
+  ['20', '22', '15', null, 'PRICE_INCREASE_SUGGESTED'],
 ] as const) {
   test(`no invented initial margin for ${beforeCost}/${afterCost}/${price}`, () => {
     const analysis = analyze({
@@ -163,10 +163,17 @@ for (const [beforeCost, afterCost, price] of [
       afterCost: Money.fromDecimal(afterCost),
       price,
     });
-    assert.equal(getInitialPurchaseMargin(analysis), null);
+    assert.strictEqual(
+      getInitialPurchaseMargin(analysis),
+      reference === 'previous'
+        ? analysis.previousMargin
+        : reference === 'current'
+          ? analysis.currentMargin
+          : null,
+    );
     assert.equal(
       recommendPurchasePrice(analysis, Percentage.zero()).status,
-      'UNAVAILABLE',
+      status,
     );
   });
 }

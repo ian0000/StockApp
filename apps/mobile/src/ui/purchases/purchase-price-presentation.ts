@@ -1,5 +1,6 @@
 import {
   recommendPurchasePrice,
+  getInitialPurchaseMargin,
   type RegisterPurchaseResult,
   type UpdateProductInput,
 } from '@stock-app/application';
@@ -59,7 +60,7 @@ export function createPurchasePricePresentation(
 
 export function createSuggestedPriceUpdateInput(
   { product, priceAnalysis }: RegisterPurchaseResult,
-  desiredMargin: Percentage | null = priceAnalysis.previousMargin,
+  desiredMargin: Percentage | null = getInitialPurchaseMargin(priceAnalysis),
 ): UpdateProductInput | null {
   const recommendation = recommendPurchasePrice(priceAnalysis, desiredMargin);
   if (recommendation.status !== 'PRICE_INCREASE_SUGGESTED') return null;
@@ -82,7 +83,9 @@ interface SuggestedPriceUpdater {
 export async function applySuggestedPrice(
   result: RegisterPurchaseResult,
   updater: SuggestedPriceUpdater,
-  desiredMargin: Percentage | null = result.priceAnalysis.previousMargin,
+  desiredMargin: Percentage | null = getInitialPurchaseMargin(
+    result.priceAnalysis,
+  ),
 ): Promise<Product> {
   const input = createSuggestedPriceUpdateInput(result, desiredMargin);
 

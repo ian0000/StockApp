@@ -17,7 +17,45 @@ import {
   isCartItemStockInsufficient,
   removeCartItem,
   updateCartItemPrice,
+  createRegisterSaleLines,
 } from '../src/ui/sales/sale-cart';
+
+test('sale prefill displays two decimals but untouched submission and quantity changes use exact Money', () => {
+  let cart = addProductToCart([], summary({ id: 'exact', price: '7.840909' }));
+  assert.equal(cart[0]?.unitSalePriceText, '7.84');
+  cart = incrementCartItem(cart, 'exact');
+  assert.equal(
+    createRegisterSaleLines(cart)[0]?.unitSalePrice.scaledUnits,
+    7_840_909,
+  );
+  assert.equal(calculateCartTotal(cart).scaledUnits, 15_681_818);
+});
+
+for (const [text, units] of [
+  ['7.50', 7_500_000],
+  ['7,50', 7_500_000],
+  ['7.840909', 7_840_909],
+  ['7.84', 7_840_000],
+] as const) {
+  test(`sale explicit edit ${text} uses the exact parsed value`, () => {
+    const cart = updateCartItemPrice(
+      addProductToCart([], summary({ id: 'exact', price: '7.840909' })),
+      'exact',
+      text,
+    );
+    assert.equal(
+      createRegisterSaleLines(cart)[0]?.unitSalePrice.scaledUnits,
+      units,
+    );
+  });
+}
+
+test('positive sub-cent Sale price displays 0.00 without becoming zero or invalid while untouched', () => {
+  const cart = addProductToCart([], summary({ id: 'tiny', price: '0.000001' }));
+  assert.equal(cart[0]?.unitSalePriceText, '0.00');
+  assert.equal(isCartReadyToRegister(cart), true);
+  assert.equal(createRegisterSaleLines(cart)[0]?.unitSalePrice.scaledUnits, 1);
+});
 
 function summary({
   id,
