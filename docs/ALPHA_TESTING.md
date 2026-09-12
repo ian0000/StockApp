@@ -16,9 +16,14 @@ La base funcional está congelada; no se incorporan nuevas funciones durante est
 
 ## 2. Instalación Android
 
-**APK y enlace: PENDIENTES. No existe todavía un artefacto validado para entregar.**
+**Android Alpha `0.1.0 (1)`: APK disponible, compilado e instalado con smoke PASS en emulador.**
 
-Cuando el responsable entregue el enlace de un build aprobado:
+[Descargar APK Alpha](https://expo.dev/artifacts/eas/lTRL2fVoHkOGqnWPllSpb0rp8eNoDGA4RPM7qAwhd5U.apk)
+· [Ficha del build](https://expo.dev/accounts/iankexpo/projects/inventory-app/builds/735f4448-71eb-40a2-a2ea-8e8667b8a5da).
+Requiere Android 7 / API 24 o posterior según el manifiesto del APK. La prueba física Android
+sigue pendiente; no se presenta la validación del emulador como QA de un teléfono real.
+
+Flujo de instalación para los testers invitados:
 
 1. Abre el enlace desde Android y descarga el archivo APK.
 2. Si Android lo solicita, autoriza la instalación desde ese navegador/gestor de archivos.
@@ -137,7 +142,7 @@ Rama: `chore/alpha-distribution`. La QA previa se conserva en [QA-ALPHA-003](QA-
 | Resultado / APK | FAILED: incompatibilidad nativa Reanimated/Worklets; no produjo APK |
 | Página del build | [Android Alpha 0.1.0 (1)](https://expo.dev/accounts/iankexpo/projects/inventory-app/builds/78554669-1839-4ed2-8612-5cda36302aef) |
 | Firma Android | Keystore creado y administrado por EAS; no descargado ni incluido en Git |
-| Instalación del APK en emulador | PENDIENTE; no confundir con el smoke anterior usando el flujo de desarrollo |
+| Instalación del primer intento | No aplicable: el build falló y no produjo APK; ver reintento validado abajo |
 
 El package aprobado usa la identidad de la cuenta Expo existente. Cambiarlo después implica
 otra identidad de aplicación y no traslada automáticamente sus datos ni su ficha de tienda.
@@ -155,7 +160,27 @@ Worklets ni se cambia código funcional. Esto expone una limitación del gate an
 Doctor/exports PASS no equivalían a compilación Gradle PASS.
 
 El primer intento no produjo ni distribuyó un binario. El reintento conserva versión `0.1.0 (1)`
-y la firma EAS, con otro build ID y commit que se registrarán al solicitarlo.
+y la firma EAS. Registro del reintento:
+
+| Campo | Valor |
+| --- | --- |
+| Build ID | `735f4448-71eb-40a2-a2ea-8e8667b8a5da` |
+| Fecha de solicitud | `2026-09-12T20:22:02Z` |
+| Commit | `64d0c71b38e6c7821657aa5e2288b8bd02c24c94`, confirmado por EAS |
+| Versión / build / plataforma / perfil | `0.1.0` / `1` / Android / `alpha` internal APK |
+| Fecha de finalización | `2026-09-12T20:42:46Z` |
+| Estado | FINISHED; APK firmado instalado y smoke PASS en emulador |
+| Página | [Android Alpha — dependencias alineadas](https://expo.dev/accounts/iankexpo/projects/inventory-app/builds/735f4448-71eb-40a2-a2ea-8e8667b8a5da) |
+| Artefacto | [APK Alpha 0.1.0 (1)](https://expo.dev/artifacts/eas/lTRL2fVoHkOGqnWPllSpb0rp8eNoDGA4RPM7qAwhd5U.apk) |
+| SHA-256 del APK descargado | `AFE03D905B94F47E2D705B3C1BDC708A087444938E3ED92535D83447CA56A79C` |
+
+El APK identifica `com.iankexpo.stockapp`, nombre visible `StockApp`, versión `0.1.0` y
+`versionCode=1`. El commit fuente del binario es `64d0c71`; el registro documental posterior no
+cambia ese artefacto ni debe confundirse con su fuente.
+
+La validación local del script oficial `validate-worklets-version.js` devuelve `ok: true` para
+Reanimated `4.5.1` con Worklets `0.10.1`. Regresión completa y exports repetidos después del ajuste:
+1396/1396, quality gates PASS, Doctor 21/21, iOS/Android/Web PASS, ocho tablas sin cambios.
 
 ## 8. Procedimiento reproducible para el responsable
 
@@ -218,12 +243,32 @@ Estos gates validan código/configuración, no sustituyen compilar e instalar un
 Cambio de dependencia estrictamente requerido por el build: Reanimated `4.5.1` explícito en mobile,
 en lugar de `4.6.0` indirecto. Sin cambios de schema, migraciones ni comportamiento funcional.
 
-- Android internal APK emulator: **PENDING** hasta instalar y probar el artefacto real.
+- Android internal APK emulator: **PASS**, artefacto `735f4448-71eb-40a2-a2ea-8e8667b8a5da`.
 - Android physical: **PENDING / post-freeze**, no bloquea preparar la configuración.
 - iOS existing physical QA: **PASS previously reported**, no es validación de un IPA nuevo.
 - Cuando haya Android físico: cámara, barcode real, permisos, share sheet del respaldo,
   document picker, restore, filesystem y reinicio. Limitaciones de cámara del emulador se reportan,
   nunca se convierten en PASS físico.
+
+### Smoke ejecutado sobre el APK firmado
+
+El 2026-09-12 se descargó el artefacto EAS y se instaló con `adb install -r` (**Success**) en
+AVD `Pixel_9`, Android 15 / API 35, `sdk_gphone64_x86_64`, serial `emulator-5554`.
+No se desinstaló ni borró información existente; el package nuevo no estaba instalado.
+La ejecución usa el JS incluido en el APK, no una sesión de Expo Go ni Metro.
+
+| Flujo real desde UI | Evidencia / resultado |
+| --- | --- |
+| Startup | Inicio en frío `Status: ok`; configuración inicial completada con inventario `AlphaAPK`, USD; Home abre |
+| Product | `AlphaProduct`, precio USD 1.00, stock inicial 10, costo inicial USD 0.70; aparece en Productos |
+| Sale | Venta de 1 unidad: total USD 1.00, ganancia estimada USD 0.30; stock pasa de 10 a 9 |
+| Purchase | Compra de 2 unidades a USD 0.70: total USD 1.40; stock pasa de 9 a 11; costo promedio USD 0.70 |
+| Restart | `am force-stop` seguido de inicio en frío: mismo inventario, Home conserva venta/ganancia; Productos muestra 11 unidades; Historial conserva venta y compra |
+
+Capturas de venta, compra, Home, Productos e Historial tras reinicio se conservaron localmente
+como evidencia de ejecución. Este smoke no incluye cámara física, backup/restore, actualización
+entre dos APK ni la regresión completa de un dispositivo Android real. Los datos de prueba
+permanecen en el emulador; no se borraron para terminar la validación.
 
 Con el APK validado, invitar inicialmente a **3–10 testers**, recoger feedback, hacer triage y
 corregir blockers. No comenzar nuevas features.
