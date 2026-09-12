@@ -1,10 +1,14 @@
 # QA-ALPHA-002 — Regresión de pricing y gate de Alpha Freeze V1
 
-**Fecha:** 2026-09-11, America/Guayaquil. **Base revisada:** `5e4005a`.
-**Rama:** `qa/alpha-pricing-freeze`. **Estado:** validación física nueva pendiente;
+**Fecha inicial:** 2026-09-11, America/Guayaquil. **Base inicial:** `5e4005a`.
+**Rama inicial:** `qa/alpha-pricing-freeze`. **Estado:** validación física nueva pendiente;
 freeze no aprobado. Esta revisión no implementa features ni modifica datos del dispositivo.
 
-### Seguimiento — QA-PRICE-PHYS-001: FAIL / UX
+**Seguimiento BUG-QA-PRICE-001, 2026-09-12:** base `31ea4fc`, rama
+`fix/purchase-pricing-physical-qa`. PR #64 integrado humanamente; ancestros `3a98e43` y `d322b67`
+verificados antes de implementar. Solo fixes de regresión; sin features nuevas.
+
+### Seguimiento — QA-PRICE-PHYS-001: PASS físico reportado
 
 El responsable reporta fallo físico de claridad en el alta: «Precio de venta habitual» y
 «Costo inicial por unidad» todavía obligan a interpretar la relación venta/compra.
@@ -17,13 +21,55 @@ Clasificación: UX / MEDIUM, sin defecto financiero ni de persistencia demostrad
 moneda, obligatoriedad, accesibilidad derivada del label y condición stock inicial > 0 para costo.
 No cambian Domain, parser, valores, transacciones ni schema. Edición y detalle conservan su copy.
 El test de terminología falla primero con el texto anterior; se actualiza con la nueva decisión.
-**Estado físico: FAIL reportado; corrección aplicada, retest pendiente.** No se convierte en PASS
-sin volver a revisar el formulario en iPhone. Las cifras y gates de §8 identifican la corrida base.
+**Retest 2026-09-12: PASS reportado por el responsable en iPhone.** Se validaron las dos etiquetas
+y sus dos ayudas indicadas arriba; el responsable confirma que la diferencia entre precio de venta
+y costo de compra queda clara. El FAIL inicial queda como antecedente resuelto por el fix `d322b67`.
+No es una ejecución física de Codex ni una aprobación de otros escenarios. Las cifras y gates de §8
+identifican la corrida base.
 
 Validación del ajuste: terminología 8/8 (antes 7 PASS / 1 FAIL), `pnpm check` PASS con
 1364/1364 tests (428 Domain, 414 Application, 522 Mobile/Infrastructure), `git diff --check` PASS,
 exports iOS 1435 módulos y Web 895 módulos PASS. Logs `%TEMP%/stockapp-alpha002-copy-{check,ios,web}.log`.
-No se repitió Doctor para este cambio de copy; su impedimento anterior sigue abierto.
+No se repitió Doctor para ese cambio de copy. El impedimento se cerró en BUG-QA-PRICE-001: 21/21 PASS.
+
+### Seguimiento — QA-PRICE-PHYS-006: FIX IMPLEMENTED / RETEST REQUIRED
+
+El 2026-09-12 el responsable reporta que no aparece el editor pese a existir un costo posterior
+calculable. Ejemplo físico transcrito: precio habitual USD 7.84, costo anterior USD 8.63,
+margen anterior -10.00%, costo actual USD 7.65 y margen actual 2.43%. Son valores mostrados/reportados,
+no una medición de las unidades escaladas internas. En este ejemplo el costo disminuye; se conserva
+el ID 006 utilizado por el responsable sin clasificar la operación como aumento de costo.
+
+**Expected reportado:** poder indicar un margen deseado tras una Purchase con costo calculable.
+**Actual:** el margen anterior negativo oculta el editor y no permite elegir otro porcentaje.
+**Estado:** FIX IMPLEMENTED / RETEST REQUIRED. El FAIL físico original se conserva como antecedente.
+
+Causa anterior: elegibilidad y recomendación dependían de `getInitialPurchaseMargin`, que rechazaba
+el margen anterior fuera de `[0, 100%)`. BUG-QA-PRICE-001 aprobó separar esas responsabilidades y
+actualizar BUSINESS_RULES §21 / UX §20. Ahora costo actual conocido positivo habilita el editor,
+independientemente de cambio de costo, precio cero o margen previo inválido. La referencia es:
+anterior válido → actual válido → vacío. Vacío no produce error, candidato ficticio ni escrituras.
+Costo null no se inventa; costo cero conocido conserva la ausencia de resultado del Domain vigente.
+Overflow de un candidato permite seguir editando. No hay recomendación de bajada.
+
+### Seguimiento — Precisión visible en inputs: FIX IMPLEMENTED / RETEST REQUIRED
+
+El 2026-09-12 el responsable reporta exposición de los seis decimales internos en inputs.
+El resultado solicitado es dinero y porcentaje con **dos decimales por defecto**, conservando
+la precisión actual de los cálculos internos. No se interpreta como una nueva precisión monetaria
+ni como autorización para limitar a dos decimales toda entrada manual.
+
+La causa era la serialización a seis decimales en `formatMoneyForInput` y
+`createInitialPurchaseMarginText`. Ahora el formato inicial es de dos decimales, sin sustituir
+el Money/Percentage original: Product Edit conserva original + texto + dirty; el margen obtiene
+la referencia exacta del resultado inmutable y mantiene dirty; Sale ya separaba Money y texto.
+Solo onChangeText sustituye el valor semántico mediante el parser exacto, incluso si el usuario
+reescribe el mismo texto visible. La entrada manual admite seis decimales y coma/punto.
+
+**Estado:** FIX IMPLEMENTED / RETEST REQUIRED. Tests cubren guardar otro atributo sin redondear,
+cantidad de Sale sin editar precio, margen exacto versus editado y persistencia SQLite.
+Los límites `99.999999% → 100.00` y `0.000001 → 0.00` son solo presentación; el valor original
+sigue válido sin editar, sin clamps. Editar explícitamente aplica la validación del nuevo valor.
 
 ## 1. Procedencia y límites de la evidencia
 
@@ -35,8 +81,10 @@ Se conserva ese resultado como **PASS reportado por el responsable**, no como un
 de Codex. No se repite QA-ALPHA-001 ni se solicita borrar la base de datos.
 
 La regresión de pricing de este ticket sucede después de UX-PRICE-001 y PURCHASE-PRICE-002.
-Se recibió el FAIL de QA-PRICE-PHYS-001 descrito arriba; los demás resultados físicos nuevos y el
-smoke post-pricing siguen pendientes.
+Se recibieron el FAIL inicial y el posterior PASS físico de QA-PRICE-PHYS-001, y el FAIL de
+QA-PRICE-PHYS-006 descritos arriba, además del FAIL / UX transversal de precisión en inputs.
+BUG-QA-PRICE-001 también aporta PASS físico reportado de QA-PRICE-PHYS-002 (Sale/Detail).
+Los fixes de 006 y precisión no tienen retest físico; los demás resultados y el smoke siguen pendientes.
 Los tests Node, las inspecciones de fuentes y los exports no prueban teclado, cámara, reinicio
 de Expo Go, share sheet ni persistencia en el iPhone.
 
@@ -73,17 +121,18 @@ no se marca `Alpha readiness: PASS` ni `V1 Alpha feature freeze: COMPLETE`.
 
 `PASS` en Automated se limita a la lógica/copy cubierta por las suites indicadas en §5.
 `PARCIAL` identifica un alcance que no equivale al escenario físico completo.
-Salvo el FAIL de 001 reportado por el responsable, los resultados físicos son **NOT EXECUTED**.
+Salvo los PASS de 001/002 y el FAIL original de 006 reportados por el responsable, los resultados físicos son
+**NOT EXECUTED**.
 `PENDIENTE` no significa un defecto reproducido.
 
 | Scenario | Automated | Physical | Result |
 | --- | --- | --- | --- |
-| QA-PRICE-PHYS-001 — Terminología Product New/Edit/Detail | PASS — test actualizado al copy aprobado | FAIL reportado en alta | Corrección aplicada; RETEST PENDIENTE |
-| QA-PRICE-PHYS-002 — Terminología Sale/Detail | PASS — copy y snapshots | NOT EXECUTED | PENDIENTE |
+| QA-PRICE-PHYS-001 — Terminología Product | PASS — test actualizado al copy aprobado | PASS reportado en iPhone, 2026-09-12; etiquetas y ayudas del alta | PASS |
+| QA-PRICE-PHYS-002 — Terminología Sale/Detail | PASS — copy y snapshots | PASS reportado en BUG-QA-PRICE-001 | PASS |
 | QA-PRICE-PHYS-003 — Terminología Purchase/Detail | PASS — copy y snapshots | NOT EXECUTED | PENDIENTE |
 | QA-PRICE-PHYS-004 — Sale con costo desconocido / antiguo PHYS-019 | PASS — UNKNOWN/null, ganancia no disponible | NOT EXECUTED | PENDIENTE, bloquea freeze |
 | QA-PRICE-PHYS-005 — Costo conocido cero | PASS — KNOWN/0, ganancia calculada | NOT EXECUTED | PENDIENTE |
-| QA-PRICE-PHYS-006 — Compra con aumento de costo | PASS — margen anterior exacto | NOT EXECUTED | PENDIENTE |
+| QA-PRICE-PHYS-006 — Editor tras cambio de costo / margen anterior negativo | PASS — elegibilidad independiente y fallback actual | FAIL original en iPhone; fix sin retest físico | FIX IMPLEMENTED / RETEST REQUIRED |
 | QA-PRICE-PHYS-007 — Editar margen | PASS — recalcula sin escrituras SQLite | NOT EXECUTED | PENDIENTE |
 | QA-PRICE-PHYS-008 — Aceptar aumento | PASS — actualiza Product; compra/stock/movimientos intactos | NOT EXECUTED | PENDIENTE |
 | QA-PRICE-PHYS-009 — Precio aceptado tras reinicio | PARCIAL — write/read SQLite probado, no cierre/reapertura de app | NOT EXECUTED | PENDIENTE, bloquea freeze |
@@ -111,7 +160,9 @@ Salvo el FAIL de 001 reportado por el responsable, los resultados físicos son *
   [presentación de Sale Detail](../apps/mobile/test/sale-details-presentation.test.ts): costo
   desconocido conserva `UNKNOWN`/null y «No disponible»; cero conocido conserva `KNOWN`/Money.zero().
 - [Política post-compra](../packages/application/test/purchase-price-analysis.test.ts): margen
-  anterior exacto, igualdad, bajada, aumento, 0%, 99%, inválidos, exclusiones y overflow.
+  anterior exacto, igualdad, bajada, aumento, 0%, 99%, inválidos y overflow. La suite nueva
+  [disponibilidad](../packages/application/test/purchase-margin-availability.test.ts) cubre
+  anterior válido/negativo, fallback actual, vacío, costo sin cambios, precio cero, null/cero y overflow.
 - [Presentación/input/confirmación](../apps/mobile/test/purchase-price-presentation.test.ts):
   parsing sin floats, seis decimales, cruce de estados, acciones y input bloqueados al guardar.
   Los controles nativos se sustituyen por primitivas host en estas pruebas Node.
@@ -158,8 +209,9 @@ y evidencia por ID. Usar productos de prueba identificables, sin editar la DB a 
   con 50% hay igualdad y con 60% candidato 15. Volver a 20% y mantener: no bajar Product.
 - **Déficit:** crear Product con stock 1, costo 7 y precio 10; vender 3 y comprar 1 a costo 8.
   Esperar stock -1 y costo 8, sin ponderar stock negativo ni reescribir el costo de la venta.
-- **Sin referencia:** en otro Product con stock 0/costo desconocido, la primera compra no debe
-  inventar margen; no mezclarlo con el caso desconocido antes de observar su Sale.
+- **Sin referencia:** usar precio habitual cero y primera compra con costo positivo: editor vacío,
+  sin inventar margen. Con precio positivo puede existir margen actual válido y usarse como fallback.
+  No mezclarlo con el caso desconocido antes de observar su Sale.
 - Registrar doble tap durante aceptación; comparar una sola compra, stock e historial antes/después.
   Si no hay fallo natural para retry, conservar NOT EXECUTED físico según la exención del ticket.
   No afirmar cero UPDATEs físicos únicamente mirando History; esa garantía también tiene evidencia
@@ -180,6 +232,9 @@ El PASS físico previo reportado en §1 no se reutiliza como resultado nuevo de 
 
 ## 8. Regresión automatizada y exports
 
+La tabla siguiente conserva la corrida inicial de QA-ALPHA-002. Su impedimento Doctor fue resuelto;
+los resultados nuevos del fix se registran al final de esta sección.
+
 | Gate ejecutado | Resultado |
 | --- | --- |
 | `pnpm test` | PASS: Domain 428/428, Application 414/414, Mobile/Infrastructure 522/522; total 1364/1364; shared 0 esperado |
@@ -197,12 +252,39 @@ El PASS físico previo reportado en §1 no se reutiliza como resultado nuevo de 
 Expo Doctor inició 21 comprobaciones y reportó una fallida: `Check Expo config (app.json/
 app.config.js) schema`, `TypeError: fetch failed`, `getaddrinfo EAI_AGAIN exp.host`.
 La comprobación independiente de DNS también falló. No es evidencia de schema de app inválido,
-pero no se registra 21/21 ni se salta la validación remota para obtener verde.
+pero entonces no se registró 21/21 ni se saltó la validación remota. Ese resultado es histórico.
 
 Logs locales de esta corrida: `%TEMP%/stockapp-alpha002-{tests,typecheck,lint,format,check,ios,doctor-retry,web}.log`.
 Exports ignorados por Git bajo `apps/mobile/.expo/qa-alpha002-{ios,web}`.
 La configuración existente de Prettier excluye los documentos canónicos de `docs/`; se mantiene
 su estilo Markdown y se revisa el diff documental manualmente, sin reformatear otros archivos.
+
+### Corrida BUG-QA-PRICE-001 — 2026-09-12
+
+- `pnpm test`: PASS, Domain **428/428**, Application **424/424**, Mobile/Infrastructure **544/544**;
+  total **1396/1396** (+32: 10 Application y 22 Mobile), shared 0 esperado. Sin reducir suites.
+- Test-first: disponibilidad falló antes del export/implementación; precisión tuvo 75 PASS / 12 FAIL.
+  Después, suites focalizadas 36/36 Application, 120/120 Mobile y 49/49 presentación/persistencia.
+  Typecheck detectó tres aserciones redundantes en tests nuevos; se corrigieron y pasó nuevamente.
+- `pnpm typecheck`, `pnpm lint`, `pnpm format:check` y `git diff --check`: PASS.
+- `pnpm check`: PASS, formato → lint → typecheck → 1396 tests, sin saltar workspaces.
+- `pnpm --filter @stock-app/mobile exec expo install --check`: PASS, dependencias actualizadas.
+- Desde `apps/mobile`, `pnpm dlx expo-doctor@latest --verbose`: **21/21 checks passed**,
+  versión ejecutada 1.20.4. GATE-02 cerrado; sin workaround ni limpieza de dependencias.
+- `pnpm --filter @stock-app/mobile db:generate`: **8 tables; No schema changes, nothing to migrate**.
+- `pnpm --filter @stock-app/mobile exec expo export --platform ios --output-dir .expo/bug-qa-price001-ios`:
+  PASS — **1435 módulos**.
+- Mismo comando con `--platform android --output-dir .expo/bug-qa-price001-android`:
+  PASS — **1570 módulos**; no es smoke físico Android.
+- Mismo comando con `--platform web --output-dir .expo/bug-qa-price001-web`:
+  PASS — **895 módulos**; Web sigue preview.
+- Aviso no bloqueante de consola: `NO_COLOR` ignorado cuando `FORCE_COLOR` está definido.
+  No se modificó el entorno global para ocultarlo.
+- SQLite real de test: guardar Product sin tocar `7.84` conserva **7_840_909** unidades;
+  escribir `7.50` guarda **7_500_000**. Margen original `4.000008%` mostrado `4.00` guarda candidato
+  **27_083_336**; reescribir `4.00` guarda **27_083_333**. Compra/stock/movimientos no se repiten.
+- Logs `%TEMP%/stockapp-pricing-fix-{tests,typecheck,lint,format,check,doctor,ios,android,web}.log`.
+  Exports ignorados por Git bajo `.expo/bug-qa-price001-*`.
 
 ## 9. Backup / Restore y schema freeze
 
@@ -228,11 +310,13 @@ una corrección de copy por FAIL / UX del responsable.
 
 | ID | Severity / clase | Expected | Actual | Status |
 | --- | --- | --- | --- | --- |
-| QA-ALPHA-002-GATE-01 | Gate bloqueante de evidencia | Pricing principal, PHYS-019, restart y smoke nuevos aprobados en iPhone | 001 FAIL reportado; retest y demás escenarios pendientes | OPEN |
-| QA-ALPHA-002-GATE-02 | Gate bloqueante de entorno, no defecto de producto confirmado | Expo Doctor 21/21 | Error DNS hacia exp.host en dos intentos | OPEN |
-| QA-PRICE-PHYS-001-UX | MEDIUM / claridad de alta | Diferenciar venta y compra inicial sin interpretación | Copy anterior confuso según prueba física | Corrección aplicada; RETEST PENDIENTE |
+| QA-ALPHA-002-GATE-01 | Gate bloqueante de evidencia | Pricing principal, PHYS-019, restart y smoke nuevos aprobados en iPhone | 001/002 PASS; 006 y precisión requieren retest; demás escenarios y smoke pendientes | OPEN |
+| QA-ALPHA-002-GATE-02 | Gate de entorno | Expo Doctor 21/21 | Repetido desde apps/mobile: 21/21 checks passed | CLOSED — PASS, 2026-09-12 |
+| QA-PRICE-PHYS-001-UX | MEDIUM / claridad de alta | Diferenciar venta y compra inicial sin interpretación | Retest en iPhone confirma claridad con las nuevas etiquetas y ayudas | CLOSED — PASS reportado, 2026-09-12 |
+| QA-PRICE-PHYS-006-PRODUCT-UX | Producto/UX | Editor con costo posterior calculable aunque margen previo sea negativo | Elegibilidad separada e inicialización anterior → actual → vacío, tests PASS | FIX IMPLEMENTED / RETEST REQUIRED |
+| QA-PRICE-INPUT-PRECISION | UX; identificador de seguimiento local | Dinero y porcentaje a dos decimales por defecto; precisión interna intacta | Texto a dos decimales, valor exacto preservado hasta edición, tests PASS | FIX IMPLEMENTED / RETEST REQUIRED |
 
-No atribuir el bloqueo de red a un cambio de código ni ocultarlo como PASS.
+El fallo DNS histórico no motivó cambios de dependencias; Doctor PASS corresponde a una nueva ejecución real.
 Si la ejecución física descubre un defecto de datos, pricing, Sale/Purchase o recovery, registrar
 ticket específico BLOCKER/HIGH y no declarar freeze. No abrir una tarea de polish por esta revisión.
 
@@ -253,10 +337,18 @@ No se implementa ninguno. Los aplazamientos no justifican omitir pricing físico
 
 **ALPHA NOT READY**
 
-Motivo: faltan los resultados físicos nuevos obligatorios y Expo Doctor no logró completar el gate
-remoto. No es una declaración de fallo funcional del pricing ni de pérdida de datos.
+Motivo: los fixes de QA-PRICE-PHYS-006 y precisión están implementados, pero falta su retest físico,
+otros resultados obligatorios de pricing iOS y el smoke físico Android. Expo Doctor ya no está pendiente.
+No demuestra corrupción de datos ni una fórmula incorrecta.
 
-Única continuación: cerrar QA-ALPHA-002-GATE-01 con el recorrido físico y evidencia, y
-QA-ALPHA-002-GATE-02 repitiendo Doctor con acceso funcional a Expo. Solo después de ambos PASS y sin
-BLOCKER/HIGH abierto se podrá actualizar ROADMAP a `V1 Alpha feature freeze: COMPLETE` y
-`Alpha readiness: PASS`. No declarar Production Ready ni App Store Ready.
+Después de PR y merge humanos, repetir primero sin borrar datos:
+
+- RETEST-A: margen anterior negativo / actual válido; editor visible con fallback a dos decimales.
+- RETEST-B: escribir 30%; precio sugerido correcto y aceptación explícita.
+- RETEST-C: Sale con precio interno de más de dos decimales; precarga visible a dos.
+- RETEST-D: confirmar sin editar; no redondeo silencioso. La suite exacta es autoridad para precisión.
+- RETEST-E: costo baja; no recomendación de reducir precio habitual.
+
+Luego continuar QA-ALPHA-002 y smoke Android. Solo con evidencia suficiente y sin BLOCKER/HIGH abierto
+se podrá declarar `V1 Alpha feature freeze: COMPLETE` / `Alpha readiness: PASS`.
+No nuevas features ni declaración Production Ready/App Store Ready.

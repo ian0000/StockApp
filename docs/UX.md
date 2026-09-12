@@ -558,10 +558,12 @@ Dentro de la confirmación existente, una compra elegible muestra **Costo promed
 **Precio de venta habitual** y el input **Margen deseado (% del precio de venta)**. Ayuda:
 «Indica qué porcentaje del precio de venta quieres que quede como margen.»
 
-El input comienza con el margen anterior exacto, admite coma o punto y hasta seis decimales,
-con `0 <= margen < 100%`. Recalcula al escribir, sin guardar nada ni repetir la compra.
-Vacío, valores inválidos y overflow muestran un error comprensible; mantienen disponible la
-acción de conservar precio, pero no la de actualizar.
+La referencia inicial sigue este orden: margen anterior válido, margen actual válido o campo vacío
+si ninguno pertenece a `0 <= margen < 100%`. Muestra dos decimales por defecto y conserva la
+referencia exacta mientras no se edite. Admite coma o punto y hasta seis decimales al escribir.
+Recalcula sin guardar nada ni repetir la compra. El campo vacío no muestra error ni precio ficticio.
+Valores no vacíos inválidos y overflow muestran un error comprensible; mantienen disponible la
+acción de conservar precio y el editor, pero no la de actualizar.
 
 - `PRICE_INCREASE_SUGGESTED`: mostrar **Precio de venta sugerido**, **Actualizar precio de venta
   a [importe]** y **Mantener precio de venta [importe]**.
@@ -572,11 +574,26 @@ El usuario puede cruzar entre ambos estados editando el porcentaje. Durante el g
 el input y ambas acciones para impedir doble envío. Si falla, la compra permanece registrada y el
 reintento afecta únicamente el precio. Salir de esta confirmación descarta el margen transitorio.
 
-No se ofrece editor si el costo no cambió, falta costo previo, el precio habitual es cero, el margen
-anterior es negativo/100%, el costo nuevo es cero o el precio inicial no es calculable con precisión
-segura. No se usa 30% ni otro valor arbitrario como sustituto. Estas exclusiones no bloquean comprar.
-La fórmula pura, los seis decimales de Money y su presentación habitual permanecen iguales.
+El editor está disponible con costo promedio actual conocido positivo, aunque no haya cambiado
+el costo, falte costo previo, el precio habitual sea cero o el margen anterior sea negativo/100%.
+El margen anterior negativo sigue visible como información. No se usa 30% ni otro default arbitrario.
+No se ofrece editor para costo actual desconocido ni cero: cero es conocido, pero la operación
+Domain vigente no devuelve sugerencia para ese costo. Estas condiciones no bloquean comprar.
+La fórmula pura y los seis decimales internos de Money/Percentage permanecen iguales.
 Promociones/descuentos quedan POST-ALPHA.
+
+### Precisión visible en inputs — BUG-QA-PRICE-001
+
+Dinero y porcentaje precargados muestran dos decimales por defecto; la entrada manual conserva
+soporte de hasta seis, con punto o coma. La presentación no es la fuente autoritativa del valor.
+Edición de Product y margen post-compra separan valor original, texto mostrado y estado de edición.
+El carrito conserva Money separado de su texto y solo lo sustituye cuando cambia el input.
+Guardar otro atributo, cambiar cantidad o aceptar sin editar utiliza el valor original exacto.
+Reescribir explícitamente el mismo texto visible cuenta como edición y usa el parser exacto.
+
+Ejemplos: `7.840909` se muestra `7.84` y `4.000008%` se muestra `4.00`, sin redondeo semántico.
+En los límites, `0.000001` puede mostrarse `0.00` y `99.999999%` como `100.00`; no se aplica clamp
+ni se altera su validez original. Una edición explícita se valida como el nuevo valor introducido.
 
 La recomendación de precio NO debe impedir completar la compra.
 

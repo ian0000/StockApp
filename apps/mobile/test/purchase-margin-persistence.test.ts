@@ -16,9 +16,22 @@ import {
   createSqliteTransactionRepositories,
 } from '../src/infrastructure/sqlite/repositories/repositories';
 import { applySuggestedPrice } from '../src/ui/purchases/purchase-price-presentation';
-import { createPurchaseMarginPresentation } from '../src/ui/purchases/purchase-margin-input';
+import {
+  createPurchaseMarginPresentation,
+  createInitialPurchaseMarginText,
+  resolvePurchaseDesiredMargin,
+} from '../src/ui/purchases/purchase-margin-input';
+import {
+  createInitialProductEditValues,
+  parseProductEditValues,
+  updateProductEditValue,
+} from '../src/ui/products/product-edit-presentation';
 
-async function setup() {
+async function setup({
+  price: initialPrice = '10',
+  beforeCost = '7',
+  purchaseCost = '8',
+} = {}) {
   const database = new DatabaseSync(':memory:');
   database.exec('PRAGMA foreign_keys = ON');
   for (const file of [
@@ -36,9 +49,17 @@ async function setup() {
   }
   database.exec(`
     INSERT INTO inventories (id, name, currency, created_at, updated_at) VALUES ('inv', 'Test', 'USD', 1, 1);
-    INSERT INTO products (id, inventory_id, name, regular_sale_price_units, is_archived, created_at, updated_at) VALUES ('product', 'inv', 'Coffee', 10000000, 0, 1, 1);
-    INSERT INTO inventory_states (inventory_id, product_id, stock, unit_cost_units) VALUES ('inv', 'product', 0, 7000000);
   `);
+  database
+    .prepare(
+      "INSERT INTO products (id, inventory_id, name, regular_sale_price_units, is_archived, created_at, updated_at) VALUES ('product', 'inv', 'Coffee', ?, 0, 1, 1)",
+    )
+    .run(Money.fromDecimal(initialPrice).scaledUnits);
+  database
+    .prepare(
+      "INSERT INTO inventory_states (inventory_id, product_id, stock, unit_cost_units) VALUES ('inv', 'product', 0, ?)",
+    )
+    .run(Money.fromDecimal(beforeCost).scaledUnits);
   // Implement the synchronous statement surface consumed by Drizzle's Expo driver on real Node SQLite.
   const client = {
     prepareSync(sql: string) {
@@ -87,7 +108,7 @@ async function setup() {
     inventoryId: 'inv',
     productId: 'product',
     quantity: 10,
-    unitCost: Money.fromDecimal('8'),
+    unitCost: Money.fromDecimal(purchaseCost),
   });
   const updater = new UpdateProductUseCase({
     clock: { now: () => 101 },
@@ -186,6 +207,96 @@ test('a real SQLite Product update failure retries only the price, never the Pur
     assert.equal(h.price(), 12_307_692);
     assert.equal(h.snapshot(), before);
     assert.equal(h.purchaseCalls(), 1);
+  } finally {
+    h.database.close();
+  }
+});
+
+test('untouched 4.00 margin acceptance persists the original 4.000008 percent calculation in SQLite', async () => {
+  const h = await setup({
+    price: '25',
+    beforeCost: '23.999998',
+    purchaseCost: '26',
+  });
+  try {
+    const before = h.snapshot();
+    const changes = h.writes();
+    const text = createInitialPurchaseMarginText(h.result);
+    assert.equal(text, '4.00');
+    const margin = resolvePurchaseDesiredMargin(h.result, text, false);
+    assert.equal(margin?.scaledUnits, 4_000_008);
+    createPurchaseMarginPresentation(h.result, text, 'USD', false);
+    assert.equal(h.writes(), changes);
+    await applySuggestedPrice(h.result, h.updater, margin);
+    assert.equal(h.price(), 27_083_336);
+    assert.equal(h.snapshot(), before);
+    assert.equal(h.purchaseCalls(), 1);
+  } finally {
+    h.database.close();
+  }
+});
+
+test('explicitly retyping 4.00 persists the new margin, without repeating the Purchase', async () => {
+  const h = await setup({
+    price: '25',
+    beforeCost: '23.999998',
+    purchaseCost: '26',
+  });
+  try {
+    const before = h.snapshot();
+    await applySuggestedPrice(
+      h.result,
+      h.updater,
+      resolvePurchaseDesiredMargin(h.result, '4.00', true),
+    );
+    assert.equal(h.price(), 27_083_333);
+    assert.equal(h.snapshot(), before);
+    assert.equal(h.purchaseCalls(), 1);
+  } finally {
+    h.database.close();
+  }
+});
+
+test('Product form save without touching its rounded price preserves the persisted exact Money', async () => {
+  const h = await setup({ price: '7.840909' });
+  try {
+    const before = h.snapshot();
+    const initial = createInitialProductEditValues({
+      id: 'product',
+      name: 'Coffee',
+      variant: null,
+      barcode: null,
+      minimumStock: null,
+      isLowStock: false,
+      stock: h.result.purchase.stockAfter,
+      unitCost: h.result.purchase.averageCostAfter,
+      regularSalePrice: h.result.product.regularSalePrice,
+      estimatedUnitProfit: null,
+      margin: null,
+      markup: null,
+    });
+    assert.equal(initial.regularSalePrice, '7.84');
+    const renamed = updateProductEditValue(initial, 'name', 'Renamed');
+    const parsed = parseProductEditValues(renamed);
+    if (!parsed.ok) assert.fail(parsed.message);
+    await h.updater.execute({
+      inventoryId: 'inv',
+      productId: 'product',
+      ...parsed.input,
+    });
+    assert.equal(h.price(), 7_840_909);
+    assert.equal(h.snapshot(), before);
+    const edited = parseProductEditValues(
+      updateProductEditValue(renamed, 'regularSalePrice', '7.50'),
+    );
+    if (!edited.ok) assert.fail(edited.message);
+    await h.updater.execute({
+      inventoryId: 'inv',
+      productId: 'product',
+      ...edited.input,
+    });
+    assert.equal(h.price(), 7_500_000);
+    assert.equal(h.snapshot(), before);
   } finally {
     h.database.close();
   }

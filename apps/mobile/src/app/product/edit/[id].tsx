@@ -15,12 +15,12 @@ import { ProductFormField } from '@/ui/products/ProductFormField';
 import {
   createInitialProductEditValues,
   getProductEditContentKind,
+  updateProductEditValue,
+  parseProductEditValues,
+  type ProductEditValues,
   type ProductEditState,
 } from '@/ui/products/product-edit-presentation';
-import {
-  parseEditableProductFormValues,
-  type EditableProductFormValues,
-} from '@/ui/products/product-form-values';
+import { type EditableProductFormValues } from '@/ui/products/product-form-values';
 import {
   createProductDetailsRequest,
   normalizeProductIdParam,
@@ -36,7 +36,7 @@ export default function EditProductScreen() {
   const requestIdRef = useRef(0);
   const submittingRef = useRef(false);
   const [state, setState] = useState<ProductEditState>({ status: 'loading' });
-  const [values, setValues] = useState<EditableProductFormValues | null>(null);
+  const [values, setValues] = useState<ProductEditValues | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -85,7 +85,7 @@ export default function EditProductScreen() {
     value: EditableProductFormValues[Key],
   ) {
     setValues((current) =>
-      current === null ? current : { ...current, [key]: value },
+      current === null ? current : updateProductEditValue(current, key, value),
     );
   }
 
@@ -99,7 +99,7 @@ export default function EditProductScreen() {
       return;
     }
 
-    const parsed = parseEditableProductFormValues(values);
+    const parsed = parseProductEditValues(values);
 
     if (!parsed.ok) {
       setErrorMessage(parsed.message);

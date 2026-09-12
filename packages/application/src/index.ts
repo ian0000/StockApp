@@ -20,6 +20,7 @@ export {
 export {
   createPurchasePriceAnalysis,
   getInitialPurchaseMargin,
+  canEditPurchaseMargin,
   recommendPurchasePrice,
   type PurchasePriceRecommendation,
   type PurchasePriceAnalysis,

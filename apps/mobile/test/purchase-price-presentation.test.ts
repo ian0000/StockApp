@@ -29,7 +29,89 @@ import {
   createInitialPurchaseMarginText,
   createPurchaseMarginPresentation,
   parseDesiredMargin,
+  resolvePurchaseDesiredMargin,
 } from '../src/ui/purchases/purchase-margin-input';
+
+test('initial margin display uses two decimals while untouched analysis uses original Percentage', () => {
+  const original = Percentage.fromDecimal('4.000008');
+  const purchase = result({ previousMargin: original });
+  const text = createInitialPurchaseMarginText(purchase);
+  assert.equal(text, '4.00');
+  assert.strictEqual(
+    resolvePurchaseDesiredMargin(purchase, text, false),
+    original,
+  );
+  assert.equal(
+    resolvePurchaseDesiredMargin(purchase, text, true)?.scaledUnits,
+    4_000_000,
+  );
+  const untouched = createPurchaseMarginPresentation(
+    purchase,
+    text,
+    'USD',
+    false,
+  );
+  const expected = createPurchaseMarginPresentation(
+    purchase,
+    '4.000008',
+    'USD',
+  );
+  assert.deepEqual(untouched.recommendation, expected.recommendation);
+});
+
+test('negative previous margin displays valid current reference and custom input calculates the physical example', () => {
+  const purchase = result({
+    previousMargin: Percentage.fromDecimal('-10'),
+    currentMargin: Percentage.fromDecimal('2.43'),
+    currentUnitCost: Money.fromDecimal('7.65'),
+    regularSalePrice: Money.fromDecimal('7.84'),
+  });
+  assert.equal(createInitialPurchaseMarginText(purchase), '2.43');
+  const presentation = createPurchaseMarginPresentation(purchase, '30', 'USD');
+  assert.equal(presentation.isEligible, true);
+  assert.equal(presentation.suggestedSalePriceLabel, 'USD 10.93');
+});
+
+test('no valid reference gives an available empty editor without an error or fictitious suggestion', () => {
+  const purchase = result({
+    previousMargin: null,
+    currentMargin: null,
+    regularSalePrice: Money.zero(),
+  });
+  assert.equal(createInitialPurchaseMarginText(purchase), '');
+  const empty = createPurchaseMarginPresentation(purchase, '', 'USD', false);
+  assert.equal(empty.isEligible, true);
+  assert.equal(empty.errorMessage, null);
+  assert.equal(empty.suggestedSalePriceLabel, null);
+  assert.equal(
+    createPurchaseMarginPresentation(purchase, '30', 'USD').recommendation
+      .status,
+    'PRICE_INCREASE_SUGGESTED',
+  );
+});
+
+test('rounded display 100.00 does not invalidate an untouched reference below 100 percent', () => {
+  const purchase = result({
+    previousMargin: Percentage.fromDecimal('99.999999'),
+    currentUnitCost: Money.fromDecimal('0.000001'),
+  });
+  const text = createInitialPurchaseMarginText(purchase);
+  assert.equal(text, '100.00');
+  assert.equal(
+    resolvePurchaseDesiredMargin(purchase, text, false)?.scaledUnits,
+    99_999_999,
+  );
+  assert.equal(
+    createPurchaseMarginPresentation(purchase, text, 'USD', false).errorMessage,
+    null,
+  );
+  assert.equal(resolvePurchaseDesiredMargin(purchase, text, true), null);
+});
+
+test('manual six-decimal margin still parses without changing display policy', () => {
+  assert.equal(parseDesiredMargin('30.123456')?.scaledUnits, 30_123_456);
+  assert.equal(parseDesiredMargin('30,123456')?.scaledUnits, 30_123_456);
+});
 
 const TIMESTAMP = 1_776_444_000_000;
 
@@ -85,6 +167,7 @@ test('confirmation shows only Keep for sufficient margin, and Update after editi
         currency: 'USD',
         result: result(),
         desiredMarginText: text,
+        desiredMarginIsDirty: true,
         priceDecision: 'pending',
         onChangeDesiredMargin: (value) => {
           text = value;
@@ -126,6 +209,7 @@ test('confirmation disables both actions and input while saving, and offers retr
     currency: 'USD',
     result: result(),
     desiredMarginText: '40',
+    desiredMarginIsDirty: true,
     priceDecision: 'saving',
     onChangeDesiredMargin() {},
     onGoProducts() {},
@@ -158,6 +242,45 @@ test('confirmation disables both actions and input while saving, and offers retr
     );
   }
 });
+
+for (const [label, analysis] of [
+  ['unchanged cost', { costChanged: false }],
+  [
+    'no initial reference',
+    {
+      previousMargin: null,
+      currentMargin: null,
+      regularSalePrice: Money.zero(),
+    },
+  ],
+] as const) {
+  test(`confirmation renders the editor for ${label}`, () => {
+    const purchase = result(analysis);
+    const Confirmation = loadConfirmation();
+    const nodes = elements(
+      Confirmation({
+        currency: 'USD',
+        result: purchase,
+        priceDecision: 'pending',
+        desiredMarginText: createInitialPurchaseMarginText(purchase),
+        desiredMarginIsDirty: false,
+        onChangeDesiredMargin() {},
+        onGoProducts() {},
+        onNewPurchase() {},
+        onKeepPrice() {},
+        onUseSuggestedPrice() {},
+      }),
+    );
+    assert.ok(nodes.some((node) => node.type === 'TextInput'));
+    if (label === 'no initial reference') {
+      assert.equal(
+        nodes.find((node) => node.type === 'TextInput')?.props.value,
+        '',
+      );
+      assert.equal(nodes.filter((node) => node.type === 'Pressable').length, 1);
+    }
+  });
+}
 
 function result(
   overrides: Partial<RegisterPurchaseResult['priceAnalysis']> = {},
@@ -282,11 +405,11 @@ test('does not create an update when there is no distinct suggestion', () => {
   );
 });
 
-test('initial input preserves all six decimals of the previous margin', () => {
-  assert.equal(createInitialPurchaseMarginText(result()), '33.333333');
+test('initial input displays two decimals and falls back to the current margin', () => {
+  assert.equal(createInitialPurchaseMarginText(result()), '33.33');
   assert.equal(
     createInitialPurchaseMarginText(result({ previousMargin: null })),
-    '',
+    '20.00',
   );
 });
 
@@ -329,7 +452,7 @@ for (const input of [
       'USD',
     );
     assert.equal(presentation.recommendation.status, 'UNAVAILABLE');
-    assert.notEqual(presentation.errorMessage, null);
+    assert.equal(presentation.errorMessage === null, input.trim() === '');
     assert.equal(presentation.suggestedSalePriceLabel, null);
   });
 }

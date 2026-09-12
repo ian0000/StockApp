@@ -32,7 +32,7 @@ import { parsePurchaseFormValues } from '@/ui/purchases/purchase-form';
 import { applySuggestedPrice } from '@/ui/purchases/purchase-price-presentation';
 import {
   createInitialPurchaseMarginText,
-  parseDesiredMargin,
+  resolvePurchaseDesiredMargin,
 } from '@/ui/purchases/purchase-margin-input';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
 import { filterSaleProducts } from '@/ui/sales/sale-cart';
@@ -50,6 +50,7 @@ type PurchasePhase =
       readonly result: RegisterPurchaseResult;
       readonly priceDecision: PriceDecisionStatus;
       readonly desiredMarginText: string;
+      readonly desiredMarginIsDirty: boolean;
     };
 
 type PriceDecisionStatus = 'pending' | 'saving' | 'applied' | 'kept' | 'error';
@@ -258,6 +259,7 @@ export default function NewPurchaseScreen() {
         result,
         priceDecision: 'pending',
         desiredMarginText: createInitialPurchaseMarginText(result),
+        desiredMarginIsDirty: false,
       });
       void loadProducts();
     } catch {
@@ -283,7 +285,12 @@ export default function NewPurchaseScreen() {
       (phase.priceDecision !== 'pending' && phase.priceDecision !== 'error')
     )
       return;
-    setPhase({ ...phase, desiredMarginText: text, priceDecision: 'pending' });
+    setPhase({
+      ...phase,
+      desiredMarginText: text,
+      desiredMarginIsDirty: true,
+      priceDecision: 'pending',
+    });
   };
 
   const applySuggestedPriceChoice = async () => {
@@ -307,7 +314,11 @@ export default function NewPurchaseScreen() {
       await applySuggestedPrice(
         confirmedResult,
         productServices.updateProduct,
-        parseDesiredMargin(phase.desiredMarginText),
+        resolvePurchaseDesiredMargin(
+          confirmedResult,
+          phase.desiredMarginText,
+          phase.desiredMarginIsDirty,
+        ),
       );
       setPhase({
         ...phase,
@@ -345,6 +356,7 @@ export default function NewPurchaseScreen() {
           onUseSuggestedPrice={() => void applySuggestedPriceChoice()}
           priceDecision={phase.priceDecision}
           desiredMarginText={phase.desiredMarginText}
+          desiredMarginIsDirty={phase.desiredMarginIsDirty}
           onChangeDesiredMargin={changeDesiredMargin}
           result={phase.result}
         />

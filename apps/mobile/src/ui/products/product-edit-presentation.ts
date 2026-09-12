@@ -1,7 +1,9 @@
 import type { ProductDetails } from '@stock-app/application';
+import type { Money } from '@stock-app/domain';
 
 import {
   formatMoneyForInput,
+  parseEditableProductFormValues,
   type EditableProductFormValues,
 } from './product-form-values';
 
@@ -22,15 +24,43 @@ export function createProductEditRoute(productId: string) {
 
 export function createInitialProductEditValues(
   details: ProductDetails,
-): EditableProductFormValues {
+): ProductEditValues {
   return Object.freeze({
     name: details.name,
     variant: details.variant ?? '',
     barcode: details.barcode ?? '',
     regularSalePrice: formatMoneyForInput(details.regularSalePrice),
+    originalRegularSalePrice: details.regularSalePrice,
+    isPriceDirty: false,
     minimumStock:
       details.minimumStock === null ? '' : String(details.minimumStock),
   });
+}
+
+export interface ProductEditValues extends EditableProductFormValues {
+  readonly originalRegularSalePrice: Money;
+  readonly isPriceDirty: boolean;
+}
+
+export function updateProductEditValue<
+  Key extends keyof EditableProductFormValues,
+>(
+  values: ProductEditValues,
+  key: Key,
+  value: EditableProductFormValues[Key],
+): ProductEditValues {
+  return {
+    ...values,
+    [key]: value,
+    isPriceDirty: values.isPriceDirty || key === 'regularSalePrice',
+  };
+}
+
+export function parseProductEditValues(values: ProductEditValues) {
+  return parseEditableProductFormValues(
+    values,
+    values.isPriceDirty ? undefined : values.originalRegularSalePrice,
+  );
 }
 
 export function getProductEditContentKind(

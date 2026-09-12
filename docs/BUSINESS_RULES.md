@@ -590,15 +590,24 @@ Esto evita inventar un margen arbitrario.
 
 ### Margen deseado transitorio post-compra — PURCHASE-PRICE-002
 
-Después de una compra elegible, el usuario puede editar el margen deseado, inicialmente igual al
-margen anterior con toda su precisión interna. Es margen sobre precio de venta, no markup.
+Después de una compra con costo promedio actual conocido positivo, el usuario puede editar el
+margen deseado. Es margen sobre precio de venta, no markup.
 El rango de esta UX es `0 <= margen < 100%`; no admite márgenes negativos ni 100%.
 
-La compra debe haber cambiado el costo y disponer de margen anterior válido en ese rango y de un
-precio matemático calculable. No se inventa margen cuando el costo anterior es desconocido, el
-precio habitual es cero, el margen anterior es negativo/100%, el costo posterior es cero o el
-cálculo excede la precisión segura. Un costo conocido cero nunca se trata como desconocido.
-Sin cambio de costo no se ofrece el editor. La ausencia de sugerencia no impide registrar la compra.
+La disponibilidad del editor no depende del margen anterior ni de que haya cambiado el costo.
+La referencia inicial es el margen anterior válido; si no lo es, el margen actual válido;
+si ninguno pertenece a ese rango, el campo queda vacío, sin porcentaje arbitrario ni error inicial.
+Un margen anterior negativo se conserva informativamente. El precio habitual cero o la ausencia
+de costo anterior no impiden introducir un margen cuando el costo actual es calculable.
+
+Costo actual desconocido no permite calcular. Costo conocido cero sigue distinto de null, pero
+la operación Domain vigente no devuelve precio sugerido para costo cero: no se ofrece editor
+en ese caso. Un overflow de un candidato no oculta el editor; permite elegir otro margen seguro.
+La ausencia de sugerencia no impide registrar la compra.
+
+La referencia semántica mantiene seis decimales internos aunque el input muestre dos por defecto.
+Mientras no se edite, se utiliza el valor original exacto; la edición explícita utiliza el parser
+exacto y admite hasta seis decimales. Mostrar un valor redondeado nunca cambia el valor almacenado.
 
 Editar el margen solo recalcula con el costo promedio resultante de la compra, incluido el caso
 de déficit. No modifica stock, costo ni movimientos. No se persiste `targetMargin`/`desiredMargin`.

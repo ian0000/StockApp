@@ -63,14 +63,19 @@ function isValidDesiredMargin(margin: Percentage | null): margin is Percentage {
   );
 }
 
+export function canEditPurchaseMargin(currentUnitCost: Money | null): boolean {
+  // The existing Domain suggestion has no result for known zero; zero is not unknown.
+  return currentUnitCost !== null && currentUnitCost.compare(Money.zero()) > 0;
+}
+
 export function getInitialPurchaseMargin(
   analysis: PurchasePriceAnalysis,
 ): Percentage | null {
-  const margin = analysis.previousMargin;
-  return analysis.costChanged &&
-    isValidDesiredMargin(margin) &&
-    calculateAvailableSuggestion(analysis.currentUnitCost, margin) !== null
-    ? margin
+  if (!canEditPurchaseMargin(analysis.currentUnitCost)) return null;
+  if (isValidDesiredMargin(analysis.previousMargin))
+    return analysis.previousMargin;
+  return isValidDesiredMargin(analysis.currentMargin)
+    ? analysis.currentMargin
     : null;
 }
 
@@ -79,7 +84,7 @@ export function recommendPurchasePrice(
   desiredMargin: Percentage | null,
 ): PurchasePriceRecommendation {
   if (
-    getInitialPurchaseMargin(analysis) === null ||
+    !canEditPurchaseMargin(analysis.currentUnitCost) ||
     !isValidDesiredMargin(desiredMargin)
   ) {
     return Object.freeze({ status: 'UNAVAILABLE' });

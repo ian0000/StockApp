@@ -3,7 +3,10 @@ import type {
   UpdateProductInput,
 } from '@stock-app/application';
 import { Money } from '@stock-app/domain';
-import { normalizeDecimalInput as normalizeMoneyInput } from '../decimal-input';
+import {
+  formatScaledUnitsForInput,
+  normalizeDecimalInput as normalizeMoneyInput,
+} from '../decimal-input';
 
 export { normalizeDecimalInput as normalizeMoneyInput } from '../decimal-input';
 
@@ -155,14 +158,16 @@ export function parseProductFormValues(
 
 export function parseEditableProductFormValues(
   values: EditableProductFormValues,
+  untouchedRegularSalePrice?: Money,
 ): ParseEditableProductFormResult {
   if (values.name.trim().length === 0) {
     return { ok: false, message: 'Ingresa un nombre.' };
   }
 
-  const regularSalePrice = parseNonNegativeMoney(values.regularSalePrice);
+  const regularSalePrice =
+    untouchedRegularSalePrice ?? parseNonNegativeMoney(values.regularSalePrice);
 
-  if (regularSalePrice === null) {
+  if (regularSalePrice === null || regularSalePrice.compare(Money.zero()) < 0) {
     return {
       ok: false,
       message: 'Ingresa un precio de venta habitual válido.',
@@ -194,32 +199,9 @@ export function parseEditableProductFormValues(
 }
 
 export function formatMoneyForInput(money: Money): string {
-  const isNegative = money.scaledUnits < 0;
-  const magnitude = Math.abs(money.scaledUnits);
-  const whole = Math.floor(magnitude / 1_000_000);
-  const fraction = String(magnitude % 1_000_000)
-    .padStart(6, '0')
-    .replace(/0+$/, '');
-  const sign = isNegative ? '-' : '';
-
-  return fraction.length === 0
-    ? `${sign}${whole}`
-    : `${sign}${whole}.${fraction}`;
+  return formatScaledUnitsForInput(money.scaledUnits);
 }
 
 export function formatMoneyForDisplay(money: Money, currency: string): string {
-  const isNegative = money.scaledUnits < 0;
-  const magnitude = Math.abs(money.scaledUnits);
-  const internalUnitsPerCent = 10_000;
-  let cents = Math.floor(magnitude / internalUnitsPerCent);
-
-  if (magnitude % internalUnitsPerCent >= internalUnitsPerCent / 2) {
-    cents += 1;
-  }
-
-  const whole = Math.floor(cents / 100);
-  const fraction = String(cents % 100).padStart(2, '0');
-  const sign = isNegative ? '-' : '';
-
-  return `${currency.trim().toUpperCase()} ${sign}${whole}.${fraction}`;
+  return `${currency.trim().toUpperCase()} ${formatMoneyForInput(money)}`;
 }
