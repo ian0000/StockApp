@@ -500,13 +500,14 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
 | History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |
 | Anulación de Sale y Purchase | DONE | Domain, Application, SQLite y acción permanente desde detalles; regresión automatizada completa. |
-| Validación física consolidada de anulaciones | BLOCKING | La regresión automatizada está completa, pero falta comprobar en iPhone reinicio, déficit, multiproducto y precio sugerido conservado. |
+| Validación física consolidada de anulaciones | PASS REPORTADO | El responsable confirma Sale Void y Purchase Void en la QA física previa, según QA-ALPHA-002 §1. No es una nueva ejecución de Codex; el smoke post-pricing sigue pendiente. |
 | Barcode | DONE | Permiso bajo demanda, escaneo local, repetición controlada, no encontrado e integración con alta, venta y compra están implementados y cubiertos automáticamente. |
-| Validación física de Barcode | BLOCKING | Falta comprobar cámara, permisos y flujos integrados en un iPhone real. |
+| Validación física de Barcode | PASS REPORTADO | El responsable confirma barcode en Products, Sale y Purchase en iPhone, según QA-ALPHA-002 §1. El smoke post-pricing sigue pendiente. |
 | Dashboard básico | DONE | Inicio consulta ventas, ganancia, unidades, más vendido, stock bajo y cinco operaciones recientes reales. |
-| Validación física del núcleo UI | BLOCKING | Falta recorrer en iPhone Products, Sales, Purchases, Adjustments, History, Home, detalles, navegación y persistencia tras reinicio. |
+| Validación física del núcleo UI | PASS REPORTADO | El responsable confirma startup, persistencia, Products, low stock, Sales, Purchases, Adjustments, History, Home y detalles en la QA previa, según QA-ALPHA-002 §1. No aprueba por inferencia el pricing nuevo. |
 | Backup y restauración local | DONE | Contrato V1, exportación, validación completa, preview y replace SQLite atómico implementados con regresión automatizada. |
-| Validación física de Backup/Restore | BLOCKING | Sigue siendo gate antes de Alpha: requiere copia real en iPhone, reemplazo, reinicio, archivo inválido y recovery. |
+| Validación física de Backup/Restore | PASS REPORTADO | El responsable confirma Backup, Restore, recovery A → B → Restore A → restart, archivo inválido y persistencia posterior, según QA-ALPHA-002 §1. No se repite recovery completo en esta regresión de pricing. |
+| QA-ALPHA-002 y Alpha freeze | BLOCKING | Pricing físico nuevo, PHYS-019 y smoke post-pricing pendientes de evidencia. Suite 1364/1364, exports iOS/Web y schema de ocho tablas pasan; Expo Doctor pendiente por fallo DNS hacia exp.host. Ver QA-ALPHA-002. |
 | Undo inmediato | DEFERRED | Las acciones permanentes de anulación ya existen; la duración y el acceso rápido de compra no están definidos y no bloquean Alpha. |
 | Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
 | Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |
@@ -514,6 +515,16 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 
 `DONE` significa implementado y validado automáticamente. `BLOCKING` identifica evidencia física
 necesaria antes de declarar `ALPHA READY`. `DEFERRED` y `POST-ALPHA` no forman parte de ese gate.
+
+`PASS REPORTADO` conserva la evidencia física comunicada por el responsable en el ticket
+QA-ALPHA-002; no significa que Codex haya ejecutado un iPhone. El resultado actual, las fuentes y
+los impedimentos del freeze están en [QA-ALPHA-002](QA-ALPHA-002.md). `BLOCKING` también incluye un
+quality gate obligatorio que no haya podido completarse. No se declara Alpha readiness ni feature
+freeze completos mientras esos gates permanezcan abiertos.
+
+Para este freeze siguen fuera: promociones/descuentos, scanner en Adjustment, backup automático,
+cifrado de backup, cloud backup, sync, auth, multi-inventory, charts/analytics, imágenes,
+monetización completa y distribución pública; además de los elementos DEFERRED de la tabla.
 
 ### Barcode
 
