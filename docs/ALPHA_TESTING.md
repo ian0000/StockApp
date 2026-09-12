@@ -131,14 +131,31 @@ Rama: `chore/alpha-distribution`. La QA previa se conserva en [QA-ALPHA-003](QA-
 | Android versionCode | `1`, primer build Alpha |
 | iOS bundleIdentifier / buildNumber | No definidos; no se inventan para desbloquear Android |
 | Perfil | `alpha`, distribución `internal`, APK Android explícito |
-| Build ID / fecha / commit de build | PENDIENTES; el commit de base no sustituye el commit que EAS construya |
-| Resultado / APK / URL | PENDIENTES |
+| Build ID | `78554669-1839-4ed2-8612-5cda36302aef` |
+| Fecha de solicitud | `2026-09-12T20:13:59Z` |
+| Commit de build | `e47bbbfb22b1b0e25ee1638f7fe09d468e85f470`, confirmado por EAS |
+| Resultado / APK | FAILED: incompatibilidad nativa Reanimated/Worklets; no produjo APK |
+| Página del build | [Android Alpha 0.1.0 (1)](https://expo.dev/accounts/iankexpo/projects/inventory-app/builds/78554669-1839-4ed2-8612-5cda36302aef) |
+| Firma Android | Keystore creado y administrado por EAS; no descargado ni incluido en Git |
 | Instalación del APK en emulador | PENDIENTE; no confundir con el smoke anterior usando el flujo de desarrollo |
 
 El package aprobado usa la identidad de la cuenta Expo existente. Cambiarlo después implica
 otra identidad de aplicación y no traslada automáticamente sus datos ni su ficha de tienda.
 `com.iankexpo.stockapp` es la identidad estable de StockApp y no debe cambiarse después de
 comenzar la distribución. El nombre visible continúa siendo StockApp.
+
+### Primer intento y corrección de compatibilidad
+
+El intento `78554669-1839-4ed2-8612-5cda36302aef` falló en Gradle,
+`:react-native-reanimated:assertWorkletsVersionTask`: la dependencia indirecta Reanimated `4.6.0`
+requería Worklets `0.12.x`, pero Expo SDK 57 fija Worklets `0.10.1`. El catálogo del Expo instalado
+(`bundledNativeModules.json`) indica Reanimated `4.5.1`; se declara explícitamente esa versión en
+mobile y se actualiza el lockfile para impedir la resolución indirecta incompatible. No se sube
+Worklets ni se cambia código funcional. Esto expone una limitación del gate anterior:
+Doctor/exports PASS no equivalían a compilación Gradle PASS.
+
+El primer intento no produjo ni distribuyó un binario. El reintento conserva versión `0.1.0 (1)`
+y la firma EAS, con otro build ID y commit que se registrarán al solicitarlo.
 
 ## 8. Procedimiento reproducible para el responsable
 
@@ -198,7 +215,8 @@ Validación de la preparación ejecutada el 2026-09-12:
 | EAS `config --platform android --profile alpha --non-interactive` | PASS, perfil resuelto con APK y credenciales remotas por defecto |
 
 Estos gates validan código/configuración, no sustituyen compilar e instalar un APK firmado.
-No se cambian dependencias del proyecto, schema, migraciones ni comportamiento funcional.
+Cambio de dependencia estrictamente requerido por el build: Reanimated `4.5.1` explícito en mobile,
+en lugar de `4.6.0` indirecto. Sin cambios de schema, migraciones ni comportamiento funcional.
 
 - Android internal APK emulator: **PENDING** hasta instalar y probar el artefacto real.
 - Android physical: **PENDING / post-freeze**, no bloquea preparar la configuración.
