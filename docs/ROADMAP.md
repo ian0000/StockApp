@@ -495,19 +495,20 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 | Fundaciones técnicas | DONE | Workspace, TypeScript strict, quality gates, Expo, SQLite, Drizzle y ocho tablas versionadas. |
 | Productos | DONE | Crear, listar, buscar, consultar detalle, editar, archivar y derivar stock bajo. |
 | Compras | DONE | Registro atómico de un producto, costo promedio, snapshots, detalle y sugerencia de precio. |
-| Margen post-compra editable y sugerencia conservadora | DONE | PURCHASE-PRICE-002 y fix BUG-QA-PRICE-001: disponibilidad independiente del margen anterior, referencia anterior válida → actual válida → vacío e inputs a dos decimales sin redondeo semántico. Solo aumentos explícitos; sin schema nuevo. Retest físico requerido en QA-ALPHA-002; promociones/descuentos POST-ALPHA. |
+| Margen post-compra editable y sugerencia conservadora | DONE | PURCHASE-PRICE-002 y fix BUG-QA-PRICE-001: editor independiente del margen anterior, referencia anterior válida → actual válida → vacío, display de dos decimales sin redondeo semántico. Retests de editor, precisión y política conservadora PASS reportados; promociones/descuentos POST-ALPHA. |
 | Ventas | DONE | Registro multiproducto atómico, stock negativo, snapshots de costo, ganancia y detalle. |
 | Ajustes | DONE | Conteo físico, motivos, costo de entradas y movimiento trazable. |
 | History y recientes | DONE | Cronología unificada, detalles navegables y operaciones anuladas sin filas `REVERSAL`. |
 | Anulación de Sale y Purchase | DONE | Domain, Application, SQLite y acción permanente desde detalles; regresión automatizada completa. |
-| Validación física consolidada de anulaciones | PASS REPORTADO | El responsable confirma Sale Void y Purchase Void en la QA física previa, según QA-ALPHA-002 §1. No es una nueva ejecución de Codex; el smoke post-pricing sigue pendiente. |
+| Validación física consolidada de anulaciones | PASS REPORTADO | El responsable confirma Sale Void y Purchase Void en iOS, incluido el reporte final de QA-ALPHA-003. No es ejecución de Codex. |
 | Barcode | DONE | Permiso bajo demanda, escaneo local, repetición controlada, no encontrado e integración con alta, venta y compra están implementados y cubiertos automáticamente. |
-| Validación física de Barcode | PASS REPORTADO | El responsable confirma barcode en Products, Sale y Purchase en iPhone, según QA-ALPHA-002 §1. El smoke post-pricing sigue pendiente. |
+| Validación física de Barcode | PASS REPORTADO | Barcode iOS confirmado por el responsable; Android emulator flow PASS reportado, sin equipararlo a cámara física Android. Ver QA-ALPHA-003. |
 | Dashboard básico | DONE | Inicio consulta ventas, ganancia, unidades, más vendido, stock bajo y cinco operaciones recientes reales. |
-| Validación física del núcleo UI | PASS REPORTADO | El responsable confirma startup, persistencia, Products, low stock, Sales, Purchases, Adjustments, History, Home y detalles en la QA previa, según QA-ALPHA-002 §1. No aprueba por inferencia el pricing nuevo. |
+| Validación física del núcleo UI | PASS REPORTADO | QA iOS completa por bloques: startup, persistencia, Products, low stock, Sales, Purchases, Adjustments, History, Home, detalles y pricing. Procedencia: User/device validation; QA-ALPHA-003. |
 | Backup y restauración local | DONE | Contrato V1, exportación, validación completa, preview y replace SQLite atómico implementados con regresión automatizada. |
-| Validación física de Backup/Restore | PASS REPORTADO | El responsable confirma Backup, Restore, recovery A → B → Restore A → restart, archivo inválido y persistencia posterior, según QA-ALPHA-002 §1. No se repite recovery completo en esta regresión de pricing. |
-| QA-ALPHA-002 y Alpha freeze | BLOCKING | Alpha regression fixes, sin nueva feature: 001/002 PASS físicos reportados; 006 y precisión FIX IMPLEMENTED / RETEST REQUIRED. Resto pricing iOS y smoke Android pendientes. Suite 1396/1396, exports iOS/Android/Web y schema de ocho tablas pasan; GATE-02 Expo Doctor cerrado, 21/21 PASS. Ver QA-ALPHA-002. |
+| Validación física de Backup/Restore | PASS REPORTADO | Responsable confirma Backup, Restore y recovery iOS; emulator Android PASS reportado. Rollback/roundtrip exactos también pasan automatizados. Ver QA-ALPHA-003. |
+| QA-ALPHA-002 y cierre QA-ALPHA-003 | PASS | Findings de pricing, precisión y terminología cerrados. Regresión 1396/1396, Expo Doctor 21/21, exports iOS/Android/Web y ocho tablas sin migración. QA iOS y emulator Android PASS reportados; evidencia final en QA-ALPHA-003. |
+| Android physical device validation | DEFERRED VALIDATION / TESTING | Android physical smoke: PENDING / DEFERRED VALIDATION. No bloquea Alpha Freeze por decisión explícita de producto/QA: export Android, emulator smoke y suite compartida PASS. No es una feature ni una prueba física ejecutada. |
 | Undo inmediato | DEFERRED | Las acciones permanentes de anulación ya existen; la duración y el acceso rápido de compra no están definidos y no bloquean Alpha. |
 | Consulta de archivados y desarchivado | DEFERRED | Archivar está completo; estas acciones adicionales no son requisito explícito del MVP actual. |
 | Anulación de StockAdjustment | DEFERRED | Excluida de V1; un error se corrige mediante otro conteo físico. |
@@ -516,11 +517,31 @@ La revisión consolidada posterior a las anulaciones clasifica el estado real as
 `DONE` significa implementado y validado automáticamente. `BLOCKING` identifica evidencia física
 necesaria antes de declarar `ALPHA READY`. `DEFERRED` y `POST-ALPHA` no forman parte de ese gate.
 
-`PASS REPORTADO` conserva la evidencia física comunicada por el responsable en el ticket
-QA-ALPHA-002; no significa que Codex haya ejecutado un iPhone. El resultado actual, las fuentes y
-los impedimentos del freeze están en [QA-ALPHA-002](QA-ALPHA-002.md). `BLOCKING` también incluye un
-quality gate obligatorio que no haya podido completarse. No se declara Alpha readiness ni feature
-freeze completos mientras esos gates permanezcan abiertos.
+`PASS REPORTADO` conserva la evidencia de dispositivo comunicada por el responsable; no significa
+que Codex haya ejecutado un iPhone o emulador. El cierre vigente está en
+[QA-ALPHA-003](QA-ALPHA-003.md); QA-ALPHA-002 conserva las corridas y hallazgos anteriores.
+`BLOCKING` también incluye cualquier quality gate obligatorio fallido. No hay gates bloqueantes
+abiertos para esta declaración Alpha; la validación física Android está diferida explícitamente.
+
+### V1 Alpha Freeze — base 8d4130f
+
+```text
+V1 Alpha feature development: COMPLETE
+V1 Alpha feature freeze: COMPLETE
+Alpha readiness: PASS
+V1 ALPHA FREEZE: PASS
+ALPHA READY
+Android physical smoke: pending post-freeze validation
+```
+
+No new V1 features before tester feedback. Desde esta base solo se permiten correcciones de
+blockers, bugs, integridad de datos, compatibilidad de plataforma y UX crítica reportada por
+testers Alpha. Las nuevas ideas van al backlog Post-Alpha/Beta, sin implementación automática.
+
+Próximo paso: **Prepare Alpha distribution and tester workflow. No new V1 features.**
+No se declara preparación para Beta, producción ni publicación en stores.
+Cuando exista Android físico, validar especialmente cámara/barcode, permisos, share sheet,
+filesystem, document picker y comportamiento específico de fabricante/dispositivo.
 
 Para este freeze siguen fuera: promociones/descuentos, scanner en Adjustment, backup automático,
 cifrado de backup, cloud backup, sync, auth, multi-inventory, charts/analytics, imágenes,
