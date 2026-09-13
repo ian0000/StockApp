@@ -3,6 +3,10 @@
     "name": "StockApp",
     "slug": "inventory-app",
     "version": "0.1.0",
+    "android": {
+      "package": "com.iankexpo.stockapp",
+      "versionCode": 1
+    },
     "orientation": "portrait",
     "scheme": "inventory-app",
     "plugins": [
@@ -19,6 +23,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fd2a3784-6fd8-48e2-8545-bbfb6f119597"
+      }
+    },
+    "owner": "iankexpo"
   }
 }

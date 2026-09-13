@@ -538,7 +538,11 @@ No new V1 features before tester feedback. Desde esta base solo se permiten corr
 blockers, bugs, integridad de datos, compatibilidad de plataforma y UX crítica reportada por
 testers Alpha. Las nuevas ideas van al backlog Post-Alpha/Beta, sin implementación automática.
 
-Próximo paso: **Prepare Alpha distribution and tester workflow. No new V1 features.**
+Distribución interna preparada: [DIST-ALPHA-001 / ALPHA_TESTING](ALPHA_TESTING.md), APK Android
+`0.1.0 (1)` compilado e instalado con smoke PASS de Startup, Product, Sale, Purchase y reinicio
+en emulador. La guía registra artefacto, commit y evidencia; Android físico sigue pendiente y
+no existe todavía un IPA autónomo. Próximo paso: grupo de 3–10 testers, feedback, triage y
+corrección de blockers, sin ampliar funciones.
 No se declara preparación para Beta, producción ni publicación en stores.
 Cuando exista Android físico, validar especialmente cámara/barcode, permisos, share sheet,
 filesystem, document picker y comportamiento específico de fabricante/dispositivo.
