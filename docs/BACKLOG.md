@@ -1,6 +1,6 @@
 # Backlog
 
-Registro acotado de preparación para stores; no sustituye el scope y las fases de
+Registro acotado de store readiness; no sustituye el scope y las fases de
 [ROADMAP.md](ROADMAP.md) ni declara disponibilidad pública en stores.
 
 ## STORE-AAB-001 — Google Play AAB Build Profile
@@ -172,3 +172,52 @@ decorativa excluida del nombre accesible. Sin rediseño ni prueba de TalkBack.
 
 Bloqueadores: **NONE**. La configuración de tiendas sigue como
 **PENDING EXTERNAL ACTION**; no condiciona la preparación de este PR.
+
+## STORE-READINESS-002 — Google Play Technical Readiness Audit
+
+**Estado: BLOCKED. Entrega: STORE-READINESS-002 NOT READY FOR PR**, conforme al
+criterio del ticket cuando hay bloqueadores de preparación para Play. El
+informe documental sí se entrega para revisión; no declara un build válido ni
+una configuración de Console terminada.
+
+Fuente de preparación: [GOOGLE_PLAY_READINESS.md](GOOGLE_PLAY_READINESS.md).
+Base `a164c8e`, PR #71 integrado; contiene el commit `60bc98d` de
+STORE-READINESS-001. Su validación anterior se conserva arriba.
+
+- Identidad confirmada: StockApp, `com.iankexpo.stockapp`, `0.1.0 (1)`, Expo SDK
+  57/57.0.26, React Native 0.86.3 y React 19.2.3.
+- `PLAY_TARGET_API: PASS`: prebuild temporal y resolución de catálogo Android
+  inspeccionados, compileSdk 36 / targetSdk 36 / minSdk 24. Sin AAB compilado.
+- `PLAY_AAB_PROFILE: BLOCKER`: solo existe alpha internal APK. Perfil store
+  propuesto en el informe, no aplicado a eas.json.
+- `PRIVACY_POLICY_MISMATCH: BLOCKER`: expo-camera incorpora ML Kit nativo;
+  la divulgación publicada omite sus métricas de uso/diagnóstico. Corregir en
+  un ticket separado de ian-k.dev; no hubo cambios en la web.
+- `DATA_SAFETY_RESOLUTION: BLOCKER`: candidato YES por métricas SDK; sharing,
+  tipos/condiciones definitivas y retención/borrado necesitan resolución antes
+  de enviar el formulario. La ausencia de backend/analytics propios no prueba
+  ausencia de telemetría transitiva. Esta auditoría amplía la evidencia del
+  ticket de enlaces; no invalida su smoke ni sus tests.
+- Audiencia/copy requieren decisión del responsable. Assets propios de icono
+  y feature graphic faltan; capturas Alpha reales disponibles pero históricas,
+  sin validación del release actual ni evidencia de tablet.
+- Signing EAS-managed registrado para Alpha; continuidad de credenciales,
+  Play App Signing, historial de uploads y manifest release pendientes.
+
+Se modifican únicamente este backlog y el informe. Sin código, dependencias,
+permisos, versión, SDK, EAS config, builds APK/AAB ni acciones en stores.
+Rama `docs/google-play-readiness`; commit/push autorizados por el ticket.
+Sin creación de PR ni merge automático.
+
+### Quality gates — STORE-READINESS-002 / 2026-10-02
+
+| Comando | Resultado |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | PASS; lockfile sin cambios |
+| `pnpm check` (format/lint/types/tests) | PASS; 1402/1402 tests, Domain 428 / Application 424 / Mobile 550 |
+| `pnpm --filter @stock-app/mobile exec expo install --check` | PASS; cero mismatches |
+| `git diff --check` | PASS |
+
+Detalles de inspección, confianza de respuestas, tabla de SDKs, matriz de
+preparación y checklist externo: informe canónico. Play Console permanece
+**PENDING EXTERNAL ACTION**.
