@@ -1,0 +1,29 @@
+@startuml
+title C4 Components API - TARGET
+rectangle "Mobile/Web" as clients
+package "API Railway" {
+  component "HTTP routes / contracts / errors" as transport
+  component "Better Auth / CSRF / owner context" as auth
+  component "Command envelope / receipts / lock" as commands
+  component "Application use cases" as app
+  component "Domain puro compartido" as domain
+  component "Postgres repositories / transaction" as repos
+  component "Sync delta / snapshots / import" as sync
+  component "Deletion/export/maintenance" as lifecycle
+}
+database PostgreSQL as db
+clients --> transport
+transport --> auth
+auth --> commands : Scope autorizado
+commands --> app
+app --> domain : Invariantes financieras
+app --> repos
+commands --> repos : Receipt + ChangeSet atomicos
+transport --> sync
+sync --> auth : Siempre autorizar
+sync --> commands : Push mismos comandos
+sync --> repos : Pull/import scoped
+lifecycle --> repos
+transport --> lifecycle
+repos --> db
+@enduml

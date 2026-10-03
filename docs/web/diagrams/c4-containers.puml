@@ -1,0 +1,21 @@
+@startuml
+title C4 Level 2 - TARGET StockApp, Mobile local conservado
+actor Owner
+package "StockApp" {
+  rectangle "Mobile\nExpo/RN + Domain/Application" as mobile <<Container>>
+  database "SQLite\nReplica aceptada + propuestas/outbox\nTARGET connected metadata" as local <<Container>>
+  rectangle "Web SPA\nReact/Vite online-first" as web <<Container>>
+  rectangle "API\nFastify + Better Auth + shared domain" as api <<Container>>
+  database "PostgreSQL Railway\nAceptados / receipts / changes / auth" as db <<Container>>
+}
+Owner --> mobile
+Owner --> web
+mobile --> local : Transaccion inmediata offline
+mobile --> api : Comandos + pull/cursor
+web --> api : HTTPS con cookie host-only API
+api --> db : Unico writer; lock Inventory
+note bottom of local
+  CURRENT SQLite ocho tablas local-only.
+  Replica/propuestas/outbox son TARGET, no implementados.
+end note
+@enduml

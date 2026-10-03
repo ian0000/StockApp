@@ -1,0 +1,20 @@
+@startuml
+title TARGET conflicto - Web cambia costo mientras Mobile offline
+actor Owner
+participant Mobile
+participant Web
+participant API
+database PostgreSQL as db
+database SQLite as local
+Mobile -> local : Venta local snapshot costo 10 / outbox
+Web -> API : Compra que cambia costo
+API -> db : Commit purchase / averageCost 12 / revision
+Mobile -> API : Sync sale con snapshot 10
+API -> db : Leer costo actual bajo lock
+db --> API : Costo 12
+API --> Mobile : COST_SNAPSHOT_CONFLICT sin crear Sale
+Mobile -> local : Conservar original/dependientes en revision
+Mobile --> Owner : Mostrar discrepancia y opciones
+Owner -> Mobile : Resolver explicitamente o continuar local
+note over Mobile,db : No reescribir profit original ni aceptar costo inventado.
+@enduml

@@ -1,0 +1,48 @@
+# Pruebas y DoD futura
+
+Suite actual node:test/tsx y SQLite real donde corresponde, descrita en CURRENT_STATE.
+Esta tarea documental no agrega tests que reflejen texto ni altera tests existentes.
+Validación fresca en VALIDATION. Diseño de pruebas abajo pertenece a implementación futura.
+
+## Matriz requerida
+
+| Nivel | Casos decisivos |
+| --- | --- |
+| Domain regression/test-first | Promedio, Money overflow/6 decimales, null/cero, negativo, margen/markup, sugerencia, reversals |
+| Shared contracts | Money string canonical→Money→JSON exacto, Percentage puntos porcentuales, unsafe number/revisions, additional props |
+| PostgreSQL real | Sale multiproducto atómica; fail cada write; purchase/adjust/void rollback; unique barcode y reversal; migrations upgrade |
+| Tenant isolation | A→B por resourceId/childId/history/import/export/cursor/receipt, 404 sin fuga |
+| Auth browsers/native | Cookie host-only/Safari/Chrome/Firefox, credentials+CORS, CSRF, verify/reset/revoke/logout/SecureStore |
+| Sync fault injection | Commit→ACK perdido; mismo ID/hash distinto; dup batches; crash aplicación página; cursor watermark ordering |
+| Concurrency | A/B venden mismo costo→delta negativo permitido; compra antes de sync venta cambia costo→conflicto sin reescribir profit |
+| Strict state | Compra/ajuste stale; venta multiproducto conflicto en una línea→sin writes; void con posterior o empate legacy bloqueado |
+| Local projection | Pull con pending no pisa delta; reset con cursor >90 días conserva outbox; rama conflictiva conservada/revisión dependientes |
+| Import | Ocho tablas/archivados/VOIDED/REVERSAL/unknown/zero; hash/chunks retry; no replay; cloud no vacío rechaza; crash activation rollback |
+| Lifecycle/recovery | Account delete/revoke/import purge; restore backup con supresión aplicada; export consistente; logout account-switch isolation |
+| Web E2E | Login→alta→compra→venta múltiple→historial→void elegible; stock warning, null/precisión, precio separado, uncertainty/reload |
+| Mobile physical | Guardar offline/reiniciar/sync en dos dispositivos, cámara/share/files/SecureStore; no sustituir con Expo export |
+
+Clock fixtures incluyen skew/futuro/empates; ordering server nunca UUID/time cliente.
+Datos ficticios, no backups reales de usuarios en CI. PostgreSQL no se sustituye por SQLite para
+probar locking/constraints cloud. Integration solo de HTTP mock no demuestra atomicidad real.
+
+## Objetivos de performance V1
+
+Dataset de referencia: 2000 productos, 50000 movimientos, venta de 20 líneas.
+Objetivo medido en staging: búsqueda p95 <=500ms API, comando p95 <=1s sin cold start,
+UI Web venta conocida 5–10s objetivo UX, lote sync 50 commands <=10s con red QA.
+No promesas/SLA comerciales. Medir antes de índices extra; locks por tenant y query planos reales.
+
+## DoD de implementación
+
+- Scope del ticket y docs revisados; ninguna regla inventada ni feature adicional.
+- Tests relevantes y suite de consumidores afectados PASS; test-first para cálculos críticos.
+- Typecheck strict, lint, format, build real de apps nuevas, API contract checks PASS.
+- Persistencia: migración versionada si aplica, datos previos y rollback/atomicidad probados.
+- Auth/ownership/errors/offline/idempotencia/observabilidad cubiertos según cambio.
+- No secrets/PII/payload comercial en logs; revisión de dependencias nuevas justificada.
+- Docs/contracts/diagramas ajustados cuando cambie diseño, diff completo revisado.
+- CI verde requerido, PR humano, review humana y merge manual; despliegue es gate separado.
+
+Un ticket no está DONE si solo compila o si su test financiero esperado se cambió para pasar.
+Un resultado NOT RUN lleva motivo y no se sustituye por PASS histórico.

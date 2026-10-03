@@ -1,0 +1,25 @@
+@startuml
+title TARGET sync - commands + delta completo
+participant Mobile
+participant API
+database PostgreSQL as db
+database SQLite as local
+Mobile -> local : Leer outbox FIFO / dependencias
+Mobile -> API : Push <=50 commands
+loop Cada command independiente
+  API -> db : Lock Inventory / receipt / validar / tx
+  db --> API : Commit y revision o conflicto
+end
+API --> Mobile : Results por operationId
+Mobile -> API : GET changes cursor/highWaterMark
+API -> db : Leer ChangeSets COMPLETOS
+db --> API : Pagina/cursor siguiente
+API --> Mobile : Changes + nextCursor
+Mobile -> local : BEGIN aplicar pagina + cursor preservando pending
+alt Crash/error
+  Mobile -> local : ROLLBACK, cursor previo
+else Exito
+  Mobile -> local : COMMIT
+end
+note over Mobile,API : Cursor expirado: snapshot staging + reset sin perder propuestas.
+@enduml

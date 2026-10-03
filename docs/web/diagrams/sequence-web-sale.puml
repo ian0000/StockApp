@@ -1,0 +1,24 @@
+@startuml
+title TARGET Web sale - commit antes de confirmar
+actor Owner
+participant Browser
+participant API
+participant "Shared Application / Domain" as domain
+database PostgreSQL as db
+Owner -> Browser : Confirma venta
+Browser -> API : POST sales / operationId / precio explicito
+API -> API : Sesion, owner, CSRF, shape
+API -> db : BEGIN / lock Inventory / receipt
+alt Receipt ya existe
+  db --> API : Resultado original
+else Nuevo comando
+  API -> db : Leer Products/States scoped
+  API -> domain : Validar/calcular exacto
+  domain --> API : Sale/items/movements/states
+  API -> db : Guardar todo + receipt + ChangeSet
+end
+API -> db : COMMIT
+API --> Browser : Resultado + revisiones
+Browser --> Owner : Venta registrada; refetch
+note over Browser,API : ACK perdido: consultar receipt/retry MISMA key.
+@enduml
