@@ -1,6 +1,7 @@
 # Modelo cloud conceptual
 
-Modelo OBJETIVO; no SQL/schema/migraciones creados. Drizzle PostgreSQL + driver pg;
+Schema de aplicación IMPLEMENTADO por CLOUD-02; SQL/migrations versionados en apps/api/drizzle.
+Modelo funcional/auth/sync objetivo todavía no ejecutable. Drizzle PostgreSQL + driver pg;
 SQLite conserva su schema y migraciones propias. Server schema en `apps/api` será autoridad
 para cloud; Domain/contratos son autoridad para semántica/representación común.
 
@@ -102,6 +103,30 @@ sin auto-push de schema en producción. Expand/contract y clientes `/v1` compati
 de metadata futuras son propiedad de apps/mobile y se prueban sobre base con datos actuales.
 No compartir `sqliteTable`/`pgTable` ni ejecutar scripts destructivos de reset en usuarios existentes.
 Backup/recovery y retención se definen exclusivamente en OPERATIONS.
+
+## Materialización CLOUD-02 y diferimientos explícitos
+
+14 tablas, schemas catalog/ledger/state/delivery, dos migrations core inventory → delivery metadata.
+Business.ownerUserId es text NOT NULL UNIQUE SIN FK: Better Auth no existe.
+FK Business.ownerUserId → Better Auth User DEFERRED TO CLOUD-03/CLOUD-04. DeletionRequest.userId
+es temporal nullable, sin auth FK; la relación y purga/supresión definitiva dependen de CLOUD-03/04/API-10.
+No users/session/account/verification fake. Business timestamps son server timestamptz; Inventory
+y las entidades del dominio conservan epoch BIGINT. Todos los BIGINT se leen como bigint/string.
+Inventory tiene generation UUID técnico (default gen_random_uuid, no identidad comercial) y revision
+BIGINT default 0; metadataRevision/stateRevision default 0. Revisiones no negativas hasta rango int64,
+sin límite JS-safe ni sequence global. lastMovementId y reversal FK incluyen inventory/product.
+reversalOfMovementId nullable permite el upgrade core sin inventar vínculos retrospectivos; import
+MIG-01 deberá validar/materializar relaciones conocidas. La unicidad parcial ya protege vínculos presentes.
+
+ImportSession.inventoryId es UUID reservado SIN FK a Inventory: onboarding permite reservar antes
+de crear Inventory. Business FK/hash unique existen; verificar reserva/ownership/generation dentro
+de transacción queda para MIG-01. Estado import/deletion y kind/resultCode no vacían sus campos,
+pero no congelan catálogos antes de sus tickets. JSONB ChangeSet/resultReferences/progreso es objeto;
+DTOs internos, allowlists y validación profunda en CLOUD-06/API-01/MIG-01/API-10, no event sourcing.
+Metadata de movimientos conserva NULL de Domain V1. FKs usan NO ACTION, sin cascadas financieras.
+Promedio ponderado, sumas entre líneas, cobertura de movimientos, ordering/conflictos y authorization
+siguen en Domain/Application/transacciones futuras. CHECKs protegen solo fila/relación.
+Comandos, estrategia de tests y evidencia en [CLOUD-02](CLOUD-02.md).
 
 El [ADR de DB](adr/ADR-WEB-004-database.md) y la
 [documentación PostgreSQL de tipos](https://www.postgresql.org/docs/current/datatype-numeric.html)

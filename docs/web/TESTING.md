@@ -3,6 +3,11 @@
 Suite actual node:test/tsx y SQLite real donde corresponde, descrita en CURRENT_STATE.
 Esta tarea documental no agrega tests que reflejen texto ni altera tests existentes.
 Validación fresca en VALIDATION. Diseño de pruebas abajo pertenece a implementación futura.
+Excepción materializada: CLOUD-01 foundation HTTP/contracts y CLOUD-02 schema/migrations PostgreSQL.
+`pnpm check` incluye API tests sin DB; `pnpm test:db` es gate separado obligatorio en CI, contra DB
+real local disposable. Migrate vacío/no-op, upgrade core con datos, constraints/FKs/barcode/reversal
+y exactitud BIGINT están probados. No equivalen a command transactions/auth/sync aún pendientes.
+Resultados y ejecución en [CLOUD-02](CLOUD-02.md).
 
 ## Matriz requerida
 
@@ -42,7 +47,7 @@ No promesas/SLA comerciales. Medir antes de índices extra; locks por tenant y q
 - Auth/ownership/errors/offline/idempotencia/observabilidad cubiertos según cambio.
 - No secrets/PII/payload comercial en logs; revisión de dependencias nuevas justificada.
 - Docs/contracts/diagramas ajustados cuando cambie diseño, diff completo revisado.
-- CI verde requerido, PR humano, review humana y merge manual; despliegue es gate separado.
+- CI verde requerido, PR/revisión y merge según autorización vigente de CI_CD; despliegue es gate separado.
 
 Un ticket no está DONE si solo compila o si su test financiero esperado se cambió para pasar.
 Un resultado NOT RUN lleva motivo y no se sustituye por PASS histórico.

@@ -42,7 +42,7 @@ React Native, Expo, Expo Router, TypeScript, SQLite y Drizzle ORM, organizados c
 | Ruta                                          | Responsabilidad                                |
 | --------------------------------------------- | ---------------------------------------------- |
 | [apps/mobile](apps/mobile/)                   | Interfaz, navegación y persistencia local      |
-| [apps/api](apps/api/)                         | Foundation HTTP local: liveness y errores      |
+| [apps/api](apps/api/)                         | API local y schema PostgreSQL versionado       |
 | [packages/contracts](packages/contracts/)     | Schemas y codecs base de transporte            |
 | [packages/domain](packages/domain/)           | Reglas de negocio en TypeScript                |
 | [packages/application](packages/application/) | Casos de uso y contratos                       |
@@ -88,6 +88,13 @@ pnpm check
 Ejecuta formato, lint, tipos, tests y build de API en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` o `pnpm build:api`. `pnpm format` aplica el formato.
 
 GitHub Actions ejecuta `pnpm check` en pushes a `main` y pull requests hacia esa rama.
+También ejecuta `pnpm test:db` contra PostgreSQL efímero y comprueba que regenerar migrations
+no modifica el historial. Localmente ese gate exige `TEST_DATABASE_URL` de una DB disposable.
+
+Persistencia API: `pnpm --filter @stock-app/api db:generate` genera SQL versionado y
+`pnpm --filter @stock-app/api db:migrate` aplica migrations usando `DATABASE_URL` explícita.
+El servidor HTTP no conecta ni migra automáticamente; `/live` sigue independiente de DB.
+Instrucciones y evidencia: [CLOUD-02](docs/web/CLOUD-02.md). No hay DB Railway ni auth implementados.
 
 ## Documentación
 

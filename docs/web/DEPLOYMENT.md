@@ -58,9 +58,10 @@ Scripts implementados CLOUD-01: `pnpm build:api` compila contracts y API con tsc
 Entry `apps/api/dist/server.js` consume `packages/contracts/dist` mediante workspace: ambos dist
 y node_modules deben conservarse. Start filtrado ejecuta `node dist/server.js` desde apps/api;
 `node apps/api/dist/server.js` desde raíz también funciona. Dev usa tsx/condition development.
-Domain/Application no se importan todavía. `migrate` sigue OBJETIVO, SQL versionado/lock DB.
+Domain/Application no se importan todavía. CLOUD-02 implementa db:migrate explícito, SQL versionado
+y advisory lock/cierre del pool; no predeploy ni variables Railway configuradas.
 Comando build Railway `pnpm --filter @stock-app/api build`; predeploy
-`pnpm --filter @stock-app/api migrate`; start filtrado o node según script fijado en CLOUD-01.
+`pnpm --filter @stock-app/api db:migrate`; start filtrado o node según script fijado en CLOUD-01.
 Migration es tarea única con advisory lock, falla y bloquea nuevo deploy si SQL falla;
 no correr auto migrations en cada request/start replica.
 

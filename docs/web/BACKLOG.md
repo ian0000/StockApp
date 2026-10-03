@@ -1,6 +1,6 @@
 # Backlog de implementación Cloud/Web
 
-47 tickets: CLOUD-01 **IMPLEMENTED** ([evidencia](CLOUD-01.md)); 46 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01/CLOUD-02 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md)); 45 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -10,7 +10,7 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
 | CLOUD-01 | IMPLEMENTED — API foundation Fastify/strict/build + contracts base | Baseline revisada | App mínima compilable, /live, codecs/envelope/error y tests HTTP; sin features |
-| CLOUD-02 | PostgreSQL/Drizzle schema y migraciones iniciales | CLOUD-01 | Modelo DATA_MODEL, constraints/indexes, migrate desde vacío/upgrade fixture; DB local QA real |
+| CLOUD-02 | IMPLEMENTED — PostgreSQL/Drizzle schema y migraciones iniciales | CLOUD-01 | Modelo DATA_MODEL, constraints/indexes, migrate desde vacío/upgrade fixture; DB local QA real |
 | CLOUD-03 | Better Auth email/password/sesiones/SMTP | CLOUD-02 | Verify/reset/revoke, cookie/Expo contract compatible, secrets locales ficticios; auth tests |
 | CLOUD-04 | Ownership Business/Inventory y habilitación piloto | CLOUD-03 | Un owner/negocio/inventario operativo, context scoped, signup no upload, A/B isolation |
 | CLOUD-05 | Seguridad transport/secrets/CSRF/rate limits | CLOUD-04 | Allowlist/size/redaction, CSRF/Origin, brute force durable; SECURITY tests |
@@ -18,8 +18,8 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 
 Primer ticket recomendado **CLOUD-01**: solo foundation, no endpoints financieros ni despliegue externo.
 
-CLOUD-01 completado; CLOUD-02 requiere solicitud posterior explícita. No comenzarlo por completar
-su dependencia. OpenAPI/DTO/envelopes completos siguen reservados para CLOUD-06.
+CLOUD-01/CLOUD-02 completados; CLOUD-03 requiere solicitud posterior explícita. No comenzarlo por
+completar su dependencia. OpenAPI/DTO/envelopes completos siguen reservados para CLOUD-06.
 
 ## F1 — Comandos y consultas server
 

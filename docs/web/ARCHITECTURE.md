@@ -3,7 +3,8 @@
 Normativa para la fase Cloud/Web; sistema actual en CURRENT_STATE. No hay servicios desplegados.
 
 CLOUD-01 (2026-10-03) implementa solo foundation HTTP local/contracts base. Roles de negocio,
-auth, ownership, sync y DB en las tablas siguientes continúan como objetivo.
+auth, ownership y sync continúan como objetivo. CLOUD-02 incorpora solo schema/migrations PostgreSQL
+y conexión explícita de mantenimiento/test, con servidor real local/CI; no DB desplegada.
 
 ## Sistemas y responsabilidades
 
@@ -46,7 +47,7 @@ Un solo `ian0000/StockApp` pnpm workspace, despliegues independientes por app:
 ```text
 apps/mobile/                  EXISTENTE, UI + SQLite
 apps/web/                     OBJETIVO, SPA + API client
-apps/api/                     EXISTENTE foundation HTTP; auth/sync/DB OBJETIVO
+apps/api/                     EXISTENTE HTTP + PostgreSQL schema/migrations; auth/sync OBJETIVO
 packages/domain/              EXISTENTE, reglas puras
 packages/application/         EXISTENTE, casos de uso/ports
 packages/shared/              EXISTENTE, aún vacío; no llenar por anticipación
