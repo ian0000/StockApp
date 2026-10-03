@@ -1,0 +1,29 @@
+@startuml
+title Fronteras - CURRENT / TARGET / INFRA / FUTURE
+package "CURRENT" {
+  rectangle "Mobile local/offline\nSQLite + Domain/Application" as mobile
+  rectangle "ian-k.dev public site\nRepo independiente" as public
+}
+package "TARGET NEXT PHASE - NO IMPLEMENTADO" {
+  rectangle "Web autenticada online-first" as web
+  rectangle "Cloud API/auth/sync" as api
+  database "PostgreSQL compartido aceptado" as db
+}
+package "SUPPORTING INFRA TARGET" {
+  cloud "Railway runtime/DB" as railway
+  cloud "Cloudflare Pages/DNS/TLS" as cf
+  rectangle "SMTP transporte" as smtp
+}
+package "FUTURE / DIFERIDO" {
+  rectangle "Offline Web / camara browser / Team\nBilling comercial / graficas avanzadas" as future
+}
+mobile ..> api : Sync opt-in FUTURO
+web --> api
+api --> db
+railway ..> api : Hosting
+railway ..> db : Hosting
+cf ..> web : Hosting
+cf ..> public : Existente separado
+api ..> smtp : Identidad
+note bottom of future : Sin implementacion anticipada.
+@enduml

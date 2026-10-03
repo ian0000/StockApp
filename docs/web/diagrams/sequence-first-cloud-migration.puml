@@ -1,0 +1,26 @@
+@startuml
+title TARGET primera migracion - opt-in y cloud vacio
+actor Owner
+participant "Mobile o Web importer" as client
+database "SQLite / backup JSON" as local
+participant API
+database "PostgreSQL staging/active" as db
+Owner -> client : Login/verificar email + consentir import
+client -> local : Backup/snapshot consistente + punto corte
+client -> API : Reservar import/hash/vacio
+API -> db : Reserva owner/generation
+client -> API : Chunks checksum idempotentes
+API -> db : Staging privado
+API -> API : Validar 8 colecciones / snapshots / IDs
+client -> API : Commit import
+API -> db : BEGIN lock / verificar sigue vacio / activar todo
+alt Fallo
+  API -> db : ROLLBACK
+  API --> client : Error / resume sin dataset parcial
+else Exito
+  API -> db : COMMIT receipt + baseline
+  API --> client : ACK inventory/generation/cursor
+  client -> local : Adoptar replica / liberar outbox posterior
+end
+note over client,db : Cloud no vacio: no merge/reemplazo automatico.
+@enduml

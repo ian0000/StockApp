@@ -1,0 +1,21 @@
+@startuml
+title C4 Components Web - TARGET online-first
+package "Browser SPA" {
+  component "Router / auth shell" as shell
+  component "Forms / carrito (React local)" as forms
+  component "TanStack Query (server state)" as query
+  component "API client / contracts / codecs" as client
+  component "Domain previews puros" as domain
+}
+rectangle "API Railway" as api
+shell --> forms
+shell --> query
+forms --> domain : Preview exacto
+forms --> client : Command + operationId
+query --> client : Lecturas/refetch
+client --> api : HTTPS credentials + CSRF
+note bottom of query
+  Memoria por sesion; clear logout.
+  Sin ledger offline ni token localStorage.
+end note
+@enduml

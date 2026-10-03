@@ -1,0 +1,21 @@
+@startuml
+title TARGET login - sesiones opacas DB
+actor Owner
+participant "Web Browser" as web
+participant "Mobile / SecureStore" as mobile
+participant "API Better Auth" as auth
+database "Auth DB" as db
+Owner -> web : Email/password
+web -> auth : sign-in/email HTTPS
+auth -> db : Validar hash / crear sesion
+db --> auth : Sesion opaca
+auth --> web : Set-Cookie host-only Secure HttpOnly
+web -> auth : /v1/me credentials + Origin
+auth -> db : Sesion + owner/business
+auth --> web : Contexto propio / habilitacion
+Owner -> mobile : Login cloud opcional
+mobile -> auth : Plugin Expo sign-in/email
+auth -> db : Crear otra sesion
+auth --> mobile : Plugin persiste cookie en SecureStore
+note over mobile : Sesion expirada pausa sync; local sigue operativo.
+@enduml

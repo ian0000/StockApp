@@ -1,0 +1,23 @@
+@startuml
+title TARGET Mobile offline sale - durabilidad local
+actor Owner
+participant Mobile
+participant "Shared Application / Domain" as domain
+database SQLite
+participant API
+Owner -> Mobile : Vende sin Internet
+Mobile -> domain : Calcula snapshots locales
+domain --> Mobile : Operacion/estado exactos
+Mobile -> SQLite : BEGIN / Sale + Items + Movements + State + Outbox
+Mobile -> SQLite : COMMIT
+Mobile --> Owner : Guardado local, pendiente sync
+... Internet disponible ...
+Mobile -> API : Push command estable y snapshot esperado
+alt Costo compatible/producto activo
+  API --> Mobile : ACCEPTED + estado compartido
+  Mobile -> SQLite : Replica/receipt/pending atomicos
+else Costo cambio
+  API --> Mobile : CONFLICT sin writes financieros
+  Mobile -> SQLite : Preservar propuesta para revision
+end
+@enduml

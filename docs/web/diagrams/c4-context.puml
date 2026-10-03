@@ -1,0 +1,23 @@
+@startuml
+title C4 Level 1 - StockApp CURRENT y TARGET (sin deployment cloud)
+actor "Propietario" as user
+rectangle "StockApp Mobile\nCURRENT local / TARGET sync" as mobile <<SoftwareSystem>>
+rectangle "StockApp Web App\nTARGET autenticada" as web <<SoftwareSystem>>
+rectangle "StockApp Backend/API\nTARGET comandos y sync" as api <<SoftwareSystem>>
+database "Cloud Database\nTARGET dataset aceptado" as db <<SoftwareSystem>>
+rectangle "ian-k.dev Public Website\nCURRENT marketing/legales" as public <<SoftwareSystem>>
+cloud "Railway\nSupporting hosting" as railway <<External>>
+cloud "Cloudflare Pages / DNS / TLS\nSupporting infrastructure" as cf <<External>>
+rectangle "SMTP provider\nTARGET email de identidad" as mail <<External>>
+user --> mobile : Opera offline
+user --> web : Opera online
+user --> public : Lee informacion publica
+mobile --> api : TARGET sync HTTPS
+web --> api : TARGET API HTTPS
+api --> db : Transacciones
+api --> mail : Verificar/reset email
+railway ..> api : Aloja
+railway ..> db : Aloja
+cf ..> web : Entrega SPA
+cf ..> public : Hosting separado
+@enduml

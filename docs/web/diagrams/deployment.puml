@@ -1,0 +1,37 @@
+@startuml
+title TARGET deployment - Runtime separado de Delivery
+package "Runtime" {
+  node "Browser" as browser {
+    artifact "Web SPA" as spa
+  }
+  node "Mobile device" as device {
+    artifact "Expo Mobile" as mobile
+    database "SQLite local" as sqlite
+  }
+  cloud "Cloudflare edge / DNS / TLS" as cf
+  node "Cloudflare Pages" as pages {
+    artifact "apps/web/dist" as assets
+  }
+  node "Railway API" as rail {
+    artifact "Fastify Node API" as api
+  }
+  node "Railway database" as storage {
+    database PostgreSQL as db
+  }
+}
+package "Development / Delivery" {
+  rectangle "GitHub StockApp\nPR/review/merge MANUAL" as github
+  rectangle "GitHub Actions\nCI ONLY" as ci
+}
+browser --> cf : HTTPS static
+cf --> pages : Entrega SPA
+spa --> api : HTTPS API host
+mobile --> sqlite : Local tx
+mobile --> api : HTTPS sync
+api --> db : Private connection
+github --> ci : Quality / build / tests
+github ..> pages : CD Web commit aprobado
+github ..> rail : CD API tras CI
+ci ..> github : Required result (no deploy)
+note bottom of storage : Production/staging aislados; no creados en esta fase.
+@enduml

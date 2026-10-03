@@ -1,0 +1,31 @@
+@startuml
+title TARGET data ownership V1 - owner unico
+entity "User / Identity" as user
+entity "Business\nownerUserId UNIQUE" as business
+entity "Inventory\nbusinessId UNIQUE" as inventory
+entity Product as product
+entity InventoryState as invState
+entity Sale as sale
+entity SaleItem as item
+entity Purchase as purchase
+entity StockAdjustment as adjust
+entity InventoryMovement as movement
+entity "Receipts / Changes / Devices" as sync
+user "1" -- "0..1" business : Propietario
+business "1" -- "0..1" inventory : Uno cuando operativo
+inventory "1" -- "0..*" product
+product "1" -- "1" invState
+inventory "1" -- "0..*" sale
+sale "1" -- "1..*" item
+item --> product : FK scope compuesto
+inventory --> purchase
+purchase --> product : Un producto
+inventory --> adjust
+adjust --> product
+product --> movement
+inventory --> sync : Scope autorizado
+note bottom of inventory
+  Todos los queries/children verifican propietario.
+  Sin roles/Team/membership N:M en V1.
+end note
+@enduml
