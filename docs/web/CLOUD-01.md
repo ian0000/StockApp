@@ -74,6 +74,8 @@ Entry ejecutable apps/api/dist/server.js; imports workspace resuelven contracts/
 Sin webpack/esbuild/tsup/bundle ni import TS en runtime compilado. Se conservan ambos dist y
 node_modules al ejecutar. development condition exporta source para tests/dev/typecheck;
 build resuelve export types/default compilado. No publicar npm ni mover paquetes existentes.
+El resolver ESLint de la API utiliza la condición development y su tsconfig local para resolver
+contracts desde source incluso en un checkout limpio, antes del build; reutiliza el resolver existente.
 
 | Paquete | Dependencia nueva | Motivo |
 | --- | --- | --- |
@@ -96,6 +98,7 @@ Fuentes primarias revisadas: [Fastify V5/Node](https://fastify.dev/docs/latest/G
 | --- | --- |
 | pnpm install --frozen-lockfile | PASS, siete workspaces, sin cambios tras frozen |
 | pnpm check | PASS: format/lint/typecheck/tests y build API |
+| pnpm check sin dist previo | PASS, mismos gates desde source sin artefactos anteriores |
 | API tests | PASS, 10 escenarios node:test/inject |
 | Contracts tests | PASS, 7 escenarios |
 | Domain/Application/Mobile | PASS: 428/424/550, sin modificar tests existentes |
@@ -116,10 +119,13 @@ Contracts: shape/optional fieldErrors, canonical roundtrip, rango safe, negativo
 rechazos no canónicos, revision grande sin pérdida, epoch seguro y null distinto de ausencia.
 La primera corrida de tests de transporte falló por módulo aún ausente (ERR_MODULE_NOT_FOUND),
 no por una regla financiera demostrada en rojo. La implementación posterior pasó estos casos.
+El primer CI del PR #76 falló en lint porque contracts/dist aún no existía en checkout limpio.
+Se corrigió la resolución de imports con apps/api/eslint.config.mjs y se repitió pnpm check sin
+ambas carpetas dist previas; PASS. El estado final de CI y merge se verifica en entrega del chat.
 
 ## Archivos y alcance
 
-API: package.json, tsconfig.json, tsconfig.build.json, src/app.ts, src/config.ts, src/server.ts,
+API: package.json, tsconfig.json, tsconfig.build.json, eslint.config.mjs, src/app.ts, src/config.ts, src/server.ts,
 src/routes/live.ts, test/app.test.ts, test/config.test.ts.
 Contracts: package.json, tsconfig.json, tsconfig.build.json, src/http.ts, src/transport.ts,
 src/index.ts, test/http.test.ts, test/transport.test.ts.
