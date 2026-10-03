@@ -76,7 +76,8 @@ pnpm --filter @stock-app/api start
 ```
 
 `GET http://localhost:3001/live` devuelve `{"status":"ok"}`. `HOST`/`PORT` configuran el bind.
-El build compila contracts y API; sin DB, auth, sync ni endpoints de negocio.
+El build compila contracts y API. Sin AUTH_BASE_URL, el start conserva el modo foundation;
+con configuración explícita registra Better Auth bajo /api/auth. Sin sync ni endpoints de negocio.
 Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
 
 ## Calidad
@@ -88,13 +89,15 @@ pnpm check
 Ejecuta formato, lint, tipos, tests y build de API en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` o `pnpm build:api`. `pnpm format` aplica el formato.
 
 GitHub Actions ejecuta `pnpm check` en pushes a `main` y pull requests hacia esa rama.
-También ejecuta `pnpm test:db` contra PostgreSQL efímero y comprueba que regenerar migrations
-no modifica el historial. Localmente ese gate exige `TEST_DATABASE_URL` de una DB disposable.
+También ejecuta `pnpm test:db` contra PostgreSQL efímero, auth y HTTP compilado con SMTP local,
+y comprueba la generación oficial de auth/migrations. Localmente ese gate exige un build previo
+y `TEST_DATABASE_URL` de una DB disposable.
 
 Persistencia API: `pnpm --filter @stock-app/api db:generate` genera SQL versionado y
 `pnpm --filter @stock-app/api db:migrate` aplica migrations usando `DATABASE_URL` explícita.
-El servidor HTTP no conecta ni migra automáticamente; `/live` sigue independiente de DB.
-Instrucciones y evidencia: [CLOUD-02](docs/web/CLOUD-02.md). No hay DB Railway ni auth implementados.
+El servidor HTTP no migra automáticamente; `/live` sigue independiente de DB.
+Persistencia: [CLOUD-02](docs/web/CLOUD-02.md). Identidad email/password, verify/reset, sesiones
+revocables y configuración SMTP: [CLOUD-03](docs/web/CLOUD-03.md). No hay DB Railway ni despliegue.
 
 ## Documentación
 

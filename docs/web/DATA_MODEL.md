@@ -1,7 +1,7 @@
 # Modelo cloud conceptual
 
 Schema de aplicación IMPLEMENTADO por CLOUD-02; SQL/migrations versionados en apps/api/drizzle.
-Modelo funcional/auth/sync objetivo todavía no ejecutable. Drizzle PostgreSQL + driver pg;
+Auth materializado por CLOUD-03; comandos comerciales/sync todavía no ejecutables. Drizzle PostgreSQL + driver pg;
 SQLite conserva su schema y migraciones propias. Server schema en `apps/api` será autoridad
 para cloud; Domain/contratos son autoridad para semántica/representación común.
 
@@ -107,9 +107,9 @@ Backup/recovery y retención se definen exclusivamente en OPERATIONS.
 ## Materialización CLOUD-02 y diferimientos explícitos
 
 14 tablas, schemas catalog/ledger/state/delivery, dos migrations core inventory → delivery metadata.
-Business.ownerUserId es text NOT NULL UNIQUE SIN FK: Better Auth no existe.
-FK Business.ownerUserId → Better Auth User DEFERRED TO CLOUD-03/CLOUD-04. DeletionRequest.userId
-es temporal nullable, sin auth FK; la relación y purga/supresión definitiva dependen de CLOUD-03/04/API-10.
+Business.ownerUserId es text NOT NULL UNIQUE SIN FK: ahora Better Auth existe, pero la relación
+FK/semántica Business.ownerUserId → User sigue DEFERRED TO CLOUD-04. DeletionRequest.userId
+es temporal nullable, sin auth FK; relación y purga/supresión definitiva dependen de CLOUD-04/API-10.
 No users/session/account/verification fake. Business timestamps son server timestamptz; Inventory
 y las entidades del dominio conservan epoch BIGINT. Todos los BIGINT se leen como bigint/string.
 Inventory tiene generation UUID técnico (default gen_random_uuid, no identidad comercial) y revision
@@ -127,6 +127,17 @@ Metadata de movimientos conserva NULL de Domain V1. FKs usan NO ACTION, sin casc
 Promedio ponderado, sumas entre líneas, cobertura de movimientos, ordering/conflictos y authorization
 siguen en Domain/Application/transacciones futuras. CHECKs protegen solo fila/relación.
 Comandos, estrategia de tests y evidencia en [CLOUD-02](CLOUD-02.md).
+
+## Materialización CLOUD-03
+
+auth-schema.ts generado por CLI oficial auth 1.7.7; user/session/account/verification, IDs text
+opacos de la librería. Migration 0002_auth_identity añade solo cuatro tablas, tres índices y dos
+FKs auth con cascada User→Session/Account requeridas por el generador. Ninguna cascada financiera.
+Nombres/columnas requeridos preservados, incluidos campos OAuth de Account aunque OAuth no habilitado.
+timestamps auth son timestamp sin zona según output oficial; Pool/migrator usan UTC, sin modificar
+generator a mano. Schema de negocio sigue epoch/timestamptz original. 0000/0001 intactas.
+Upgrade desde CLOUD-02 preserva dataset/revisions >JS-safe/null/negativo/archivado; identidad vacía.
+Sign-up no crea Business/Inventory ni vincula owner/deletion; no orquestador de borrado implementado.
 
 El [ADR de DB](adr/ADR-WEB-004-database.md) y la
 [documentación PostgreSQL de tipos](https://www.postgresql.org/docs/current/datatype-numeric.html)

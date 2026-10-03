@@ -3,11 +3,16 @@
 Suite actual node:test/tsx y SQLite real donde corresponde, descrita en CURRENT_STATE.
 Esta tarea documental no agrega tests que reflejen texto ni altera tests existentes.
 Validación fresca en VALIDATION. Diseño de pruebas abajo pertenece a implementación futura.
-Excepción materializada: CLOUD-01 foundation HTTP/contracts y CLOUD-02 schema/migrations PostgreSQL.
+Excepción materializada: CLOUD-01 foundation HTTP/contracts, CLOUD-02 schema/migrations PostgreSQL
+y CLOUD-03 Better Auth/SMTP/verify/reset/revoke.
 `pnpm check` incluye API tests sin DB; `pnpm test:db` es gate separado obligatorio en CI, contra DB
 real local disposable. Migrate vacío/no-op, upgrade core con datos, constraints/FKs/barcode/reversal
-y exactitud BIGINT están probados. No equivalen a command transactions/auth/sync aún pendientes.
+y exactitud BIGINT están probados. CLOUD-03 extiende test:db con auth PostgreSQL y HTTP compilado,
+SMTP efímero, verificación/reset/expiración/revocación/cookies/redacción y upgrade CLOUD-02.
+No equivalen a command transactions, ownership, browsers físicos/CORS o sync aún pendientes.
 Resultados y ejecución en [CLOUD-02](CLOUD-02.md).
+Auth/SMTP y conteo fresco en [CLOUD-03](CLOUD-03.md). Local test:auth/test:db requieren build:api previo
+para el smoke compilado, TEST_DATABASE_URL local disposable y no credenciales SMTP externas.
 
 ## Matriz requerida
 

@@ -3,7 +3,8 @@
 ARCH-STOCKAPP-WEB-001 · 2026-10-02 (America/Guayaquil).
 Estado: baseline aprobada humanamente y mergeada mediante PR #75. CLOUD-01 incorpora
 foundation API local y contracts base; CLOUD-02 añade schema/migrations PostgreSQL y QA real local/CI.
-Auth, negocio HTTP, sync, Web y despliegue siguen pendientes.
+CLOUD-03 añade identidad Better Auth/SMTP y sesiones PostgreSQL probadas local/CI.
+Ownership, negocio HTTP, sync, Web y despliegue siguen pendientes.
 Base auditada: `e2e76c623d5c1043fdd15d2710200ad5891c8ec0` de `main`.
 
 ## Lectura y autoridad
@@ -22,6 +23,7 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [CURRENT_STATE](CURRENT_STATE.md) | Evidencia del repositorio actual y diferencias con el objetivo |
 | [CLOUD-01](CLOUD-01.md) | Foundation local implementada, comandos y validación |
 | [CLOUD-02](CLOUD-02.md) | Persistencia PostgreSQL, migrations y QA real local/CI |
+| [CLOUD-03](CLOUD-03.md) | Identidad Better Auth, sesiones y SMTP local/CI |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |
 | [REQUIREMENTS](REQUIREMENTS.md) | Requisitos verificables y decisiones pendientes |
 | [SCOPE](SCOPE.md) | V1 cloud, exclusiones y compatibilidad con Free/Pro |
@@ -77,5 +79,6 @@ Los gates de release y pendientes no bloqueantes se detallan en REQUIREMENTS y P
 La prueba del protocolo y compatibilidad auth son gates de tickets posteriores, no pruebas ya realizadas.
 
 ARCH-STOCKAPP-WEB-001 terminó en documentación. CLOUD-01 y CLOUD-02 fueron autorizados
-por tickets separados; completar CLOUD-02 no autoriza iniciar CLOUD-03. Desde 2026-10-03 el usuario autoriza al agente crear PRs
+por tickets separados; CLOUD-03 también tiene autorización explícita. Completarlo no autoriza CLOUD-04.
+Desde 2026-10-03 el usuario autoriza al agente crear PRs
 y hacer merges después de validación/revisión y CI aprobado; sin despliegues automáticos.

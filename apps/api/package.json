@@ -13,18 +13,29 @@
     "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
-    "test:db": "tsx --conditions=development --test test/postgres/*.test.ts",
+    "test:db": "tsx --conditions=development --test test/postgres/*.test.ts test/auth/*.test.ts",
+    "test:auth": "tsx --conditions=development --test test/auth/*.test.ts",
+    "auth:generate": "auth generate --config src/auth/schema-config.ts --output src/infrastructure/postgres/auth-schema.ts --adapter drizzle --dialect postgresql --yes && prettier src/infrastructure/postgres/auth-schema.ts --write",
+    "auth:check": "auth check schema --config src/auth/schema-config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --conditions=development src/infrastructure/postgres/migrate.ts"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.7",
+    "@better-auth/expo": "1.7.7",
     "@stock-app/contracts": "workspace:*",
+    "better-auth": "1.7.7",
     "drizzle-orm": "0.45.2",
     "fastify": "5.12.5",
+    "nodemailer": "10.0.14",
     "pg": "8.23.1"
   },
   "devDependencies": {
+    "@types/nodemailer": "8.0.2",
     "@types/pg": "8.23.1",
-    "drizzle-kit": "0.31.10"
+    "@types/smtp-server": "3.5.13",
+    "auth": "1.7.7",
+    "drizzle-kit": "0.31.10",
+    "smtp-server": "3.19.16"
   }
 }

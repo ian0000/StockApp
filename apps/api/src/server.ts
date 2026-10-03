@@ -2,6 +2,8 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { buildApp } from './app.js';
 import { readServerConfig } from './config.js';
+import { createAuthRuntime } from './auth/runtime.js';
+import { registerAuthRoutes } from './auth/routes.js';
 
 export async function startServer(): Promise<void> {
   const app = buildApp({ logger: true });
@@ -22,9 +24,21 @@ export async function startServer(): Promise<void> {
   process.once('SIGINT', shutdown);
   process.once('SIGTERM', shutdown);
   try {
+    if (process.env.AUTH_BASE_URL) {
+      const runtime = createAuthRuntime(process.env, () => {
+        app.log.error(
+          { code: 'AUTH_EMAIL_FAILED' },
+          'Could not send authentication email.',
+        );
+      });
+      app.addHook('onClose', () => runtime.close());
+      registerAuthRoutes(app, runtime.auth, runtime.config);
+    }
     await app.listen(readServerConfig(process.env));
   } catch {
-    app.log.error('Could not start HTTP server. Check HOST and PORT.');
+    app.log.error(
+      'Could not start HTTP server. Check server and auth configuration.',
+    );
     process.exitCode = 1;
     await shutdown();
   }

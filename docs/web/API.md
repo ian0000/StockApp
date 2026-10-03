@@ -2,7 +2,7 @@
 
 REST JSON en `https://api-stockapp.ian-k.dev/v1`. Auth library bajo `/api/auth` con
 contrato separado fijado por versión. CLOUD-01 implementa solo GET /live y handlers de errores.
-El resto de la tabla sigue como objetivo, incluidos /health, negocio, auth y sync.
+CLOUD-03 implementa el subconjunto auth documentado abajo. /health, negocio y sync siguen como objetivo.
 JSON Schema/types/codecs base existen en packages/contracts. OpenAPI full contract generation
 deferred to CLOUD-06: sin plugin/spec en CLOUD-01. Antes de features Web se generará el contrato.
 
@@ -18,6 +18,34 @@ Revision conserva string sin Number; rango DB/protocolo específico en CLOUD-06.
 null/undefined; nullable/optional explícito por DTO futuro, sin sustituir cero. Sin rutas debug.
 
 ## Convenciones
+
+Auth real, Better Auth 1.7.7 bajo /api/auth (cuando se compone su configuración):
+
+| Método | Path relativo /api/auth | Contrato real |
+| --- | --- | --- |
+| POST | /sign-up/email | name/email/password, callbackURL opcional; user no verificado, token null |
+| POST | /sign-in/email | email/password; sesión solo verified, cookie y respuesta de librería |
+| GET | /get-session | session/user o null; consulta DB, sin renovar |
+| POST | /sign-out | Revoca sesión actual y limpia cookie |
+| POST | /send-verification-email | email/callbackURL opcional; respuesta genérica, reenvío |
+| GET | /verify-email | token/callbackURL opcional; 200 JSON sin callback, 302 con callback; error expirado 401 o redirect con error |
+| POST | /request-password-reset | email/redirectTo opcional; misma respuesta existing/missing |
+| GET | /reset-password/:token | callbackURL; redirige al callback con token o error |
+| POST | /reset-password | newPassword/token; reset de un uso, revoca todas |
+| GET | /list-sessions | Lista propia autenticada |
+| POST | /revoke-session | token de sesión propia |
+| POST | /revoke-other-sessions | Conserva sesión actual |
+| POST | /revoke-sessions | Revoca todas |
+| GET | /ok, /error | Auxiliares oficiales de la librería; sin datos comerciales |
+
+No aliases ni DTOs propios auth en contracts; éxito/errores normales conservan el shape de la librería.
+x-request-id servidor/no-store pasan por Fastify. Fallos inesperados/5xx se sanitizan como error auth
+genérico, sin raw SQL/stack; JSON inválido en parser Fastify usa su envelope foundation existente.
+Bridge deriva URL del AUTH_BASE_URL explícito, nunca del Host recibido; Set-Cookie múltiples preservados.
+No delete-user directo, perfil/change-email/password, social OAuth/proxy Expo ni endpoints /v1.
+Trusted origins no implementan CORS: preflight/credentials policy siguen CLOUD-05; no Web UI todavía.
+
+Convenciones siguientes corresponden a negocio futuro:
 
 IDs comerciales UUIDv7; Money/Percentage enteros escalados como strings (sin decimales ni exponentes),
 epoch ms seguros como números, revisiones como strings. Payload `null` distinto de campo ausente.
