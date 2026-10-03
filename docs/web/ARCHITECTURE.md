@@ -2,6 +2,9 @@
 
 Normativa para la fase Cloud/Web; sistema actual en CURRENT_STATE. No hay servicios desplegados.
 
+CLOUD-01 (2026-10-03) implementa solo foundation HTTP local/contracts base. Roles de negocio,
+auth, ownership, sync y DB en las tablas siguientes continúan como objetivo.
+
 ## Sistemas y responsabilidades
 
 | Sistema | Responsabilidad | Persistencia/autoridad |
@@ -27,7 +30,7 @@ estado React local para forms/carrito. Backend Node 22 (baseline mínimo 22.16.0
 JSON Schema de transporte con tipos derivados, Better Auth, Drizzle PostgreSQL y driver `pg`.
 REST JSON `/v1`, sesiones opacas revocables y comandos idempotentes.
 No Redux/Zustand, SSR, PWA, broker, Redis, microservicios ni endpoints DB directos en V1.
-Las versiones de nuevas dependencias se fijarán en tickets de foundation, sin instalar hoy.
+Foundation fija Fastify 5.12.5 y json-schema-to-ts 3.1.1; restantes dependencias en sus tickets.
 
 Fastify gana frente a Express por validación/serialización explícitas y composición pequeña;
 Nest añade estructura/decoradores innecesarios; Hono tiene menor ventaja aquí que en edge.
@@ -43,11 +46,11 @@ Un solo `ian0000/StockApp` pnpm workspace, despliegues independientes por app:
 ```text
 apps/mobile/                  EXISTENTE, UI + SQLite
 apps/web/                     OBJETIVO, SPA + API client
-apps/api/                     OBJETIVO, HTTP/auth/sync + PostgreSQL adapters
+apps/api/                     EXISTENTE foundation HTTP; auth/sync/DB OBJETIVO
 packages/domain/              EXISTENTE, reglas puras
 packages/application/         EXISTENTE, casos de uso/ports
 packages/shared/              EXISTENTE, aún vacío; no llenar por anticipación
-packages/contracts/           OBJETIVO, DTO/command envelopes, sin secrets ni ORM
+packages/contracts/           EXISTENTE schemas/codecs base; DTO/command envelopes OBJETIVO
 docs/web/                     ESTA ENTREGA
 ```
 

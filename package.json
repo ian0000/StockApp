@@ -12,7 +12,8 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "build:api": "pnpm --filter @stock-app/api build",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

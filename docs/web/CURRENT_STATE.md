@@ -1,7 +1,8 @@
 # Auditoría del estado actual
 
-Inspección read-only sobre base `e2e76c6`, 2026-10-02. Verificación del código,
-no inferencia desde nombres ni reproducción de los resultados históricos de QA.
+Auditoría Mobile original sobre base `e2e76c6`, 2026-10-02. Actualización CLOUD-01 del
+2026-10-03 desde main `1a803a8` (PR #75): API HTTP local y contracts base ahora existen.
+La validación de la baseline está en VALIDATION; la nueva en [CLOUD-01](CLOUD-01.md).
 
 ## Estructura y ejecución
 
@@ -10,7 +11,7 @@ no inferencia desde nombres ni reproducción de los resultados históricos de QA
 | pnpm monorepo `apps/*`, `packages/*` | `pnpm-workspace.yaml` |
 | Node mínimo 22.16.0, pnpm 11.0.9 | raíz `package.json`; CI fija Node 22.16.0 |
 | TypeScript strict y noEmit | `tsconfig.base.json`, tsconfig de paquetes |
-| Solo app mobile; domain/application/shared | directorios y sus package.json |
+| apps/mobile/api; domain/application/shared/contracts | directorios y sus package.json |
 | Expo ~57.0.26, RN 0.86.3, React 19.2.3, Expo Router ~57.0.24 | `apps/mobile/package.json` |
 | Drizzle 0.45.2 + expo-sqlite ~57.0.3 | mismo archivo |
 | Domain puro, sin deps de plataforma | `packages/domain/src`, package.json |
@@ -89,8 +90,8 @@ integraciones reales SQLite mediante `node:sqlite`/Drizzle sqlite-proxy (por eje
 y backup-restore); también doubles en otras pruebas. No equivalen a E2E físico.
 Suite reportada históricamente: 1402 tests; resultado fresco en [VALIDATION](VALIDATION.md).
 
-Gate canónico `pnpm check` = format:check → lint → typecheck → test. `docs/` está excluido de
-Prettier: gate de formato no comprueba estos Markdown. No hay script raíz `build`.
+Gate canónico `pnpm check` = format:check → lint → typecheck → test → build:api. `docs/` está excluido de
+Prettier: gate de formato no comprueba estos Markdown. Hay `build:api`; no hay script raíz `build`.
 CI GitHub Actions quality, en PR a main y pushes main; sin CD ni deploy EAS.
 EAS alpha APK internal y production AAB store están configurados; no se ejecutaron aquí.
 El perfil no prueba que haya artefacto production, firma verificada o publicación en stores.
@@ -107,3 +108,12 @@ Se leyeron únicamente Privacy y Terms del checkout independiente `Apps/ian-k.de
 Privacy fecha 2026-10-02, Terms 2026-10-01, ambas describen Mobile local sin cuentas/cloud.
 La herramienta web no pudo abrir las URLs públicas: publicación exacta NO verificada aquí.
 No se modificó ninguno de estos repositorios.
+
+## CLOUD-01: estado real añadido
+
+Fastify 5.12.5, Node 22.16.0, TS strict/NodeNext ESM. Factory sin listen; entrypoint separado
+HOST/PORT y SIGINT/SIGTERM. Solo GET /live; requestId UUID servidor, x-request-id y envelope
+NOT_FOUND/VALIDATION_ERROR/INTERNAL_ERROR sanitizado. Sin payloads/credenciales en logs.
+Contracts: JSON Schema y tipos derivados con json-schema-to-ts 3.1.1, Money string scaled safe,
+revision string, epoch ms seguro. Sin reglas de negocio/deps de plataforma. Build tsc contracts→API.
+No DB/auth/ownership/sync/Web ni servicios desplegados. Mobile/Domain/Application sin cambios.

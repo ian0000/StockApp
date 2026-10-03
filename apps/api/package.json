@@ -1,0 +1,21 @@
+{
+  "name": "@stock-app/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "scripts": {
+    "dev": "tsx --conditions=development src/server.ts",
+    "build": "pnpm --filter @stock-app/contracts build && tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "lint": "eslint src test --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --conditions=development --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@stock-app/contracts": "workspace:*",
+    "fastify": "5.12.5"
+  }
+}

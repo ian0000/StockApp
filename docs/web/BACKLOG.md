@@ -1,14 +1,15 @@
 # Backlog de implementación Cloud/Web
 
-47 tickets pequeños, todos **PLANNED / NO IMPLEMENTADOS**. Empezar solo después de revisión humana
-de ARCH-STOCKAPP-WEB-001. Cada ticket hereda [DoD](TESTING.md) y workflow PR/merge manual de CI_CD.
+47 tickets: CLOUD-01 **IMPLEMENTED** ([evidencia](CLOUD-01.md)); 46 **PLANNED / NO IMPLEMENTADOS**.
+Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
+y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
 
 ## F0 — Foundation y contracts
 
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
-| CLOUD-01 | API foundation Fastify/strict/build + contracts base | Baseline revisada | App mínima compilable, /live, codecs/envelope/error y tests HTTP; sin features |
+| CLOUD-01 | IMPLEMENTED — API foundation Fastify/strict/build + contracts base | Baseline revisada | App mínima compilable, /live, codecs/envelope/error y tests HTTP; sin features |
 | CLOUD-02 | PostgreSQL/Drizzle schema y migraciones iniciales | CLOUD-01 | Modelo DATA_MODEL, constraints/indexes, migrate desde vacío/upgrade fixture; DB local QA real |
 | CLOUD-03 | Better Auth email/password/sesiones/SMTP | CLOUD-02 | Verify/reset/revoke, cookie/Expo contract compatible, secrets locales ficticios; auth tests |
 | CLOUD-04 | Ownership Business/Inventory y habilitación piloto | CLOUD-03 | Un owner/negocio/inventario operativo, context scoped, signup no upload, A/B isolation |
@@ -16,6 +17,9 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 | CLOUD-06 | Contracts V1 congelados y adaptación Application IDs/tiempo | CLOUD-02, CLOUD-04 | OpenAPI/schema/DTO, ID/timestamps offline, regression consumers, ninguna fórmula duplicada |
 
 Primer ticket recomendado **CLOUD-01**: solo foundation, no endpoints financieros ni despliegue externo.
+
+CLOUD-01 completado; CLOUD-02 requiere solicitud posterior explícita. No comenzarlo por completar
+su dependencia. OpenAPI/DTO/envelopes completos siguen reservados para CLOUD-06.
 
 ## F1 — Comandos y consultas server
 
