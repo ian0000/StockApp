@@ -1161,6 +1161,31 @@ rollback.
 En Web crear y restaurar se muestran como `Solo móvil`; no existe persistencia ficticia. Backup y
 restauración de seguridad no se presentan como exportaciones comerciales.
 
+## Legal y soporte — STORE-READINESS-001
+
+La pantalla existente `Más` incluye la sección **Legal y soporte**, después de
+`Datos`, con tres filas accesibles:
+
+| Acción | URL pública canónica |
+| --- | --- |
+| Política de privacidad | `https://ian-k.dev/stockapp/privacy/` |
+| Términos de uso | `https://ian-k.dev/stockapp/terms/` |
+| Soporte | `https://ian-k.dev/stockapp/support/` |
+
+Cada fila abre el navegador externo mediante `Linking.openURL`, únicamente al
+pulsarla. Los textos legales y la ayuda permanecen en la web pública; no se
+duplican en móvil. Las acciones conservan las filas y el estado de pulsación
+existentes, target mínimo de 58px, nombre accesible explícito y role `link`.
+El indicador visual de navegación se excluye del nombre accesible.
+
+Si el sistema no puede abrir el enlace, se muestra un Alert con
+«No se pudo abrir el enlace.» y «Inténtalo nuevamente.»; no se propaga el fallo
+ni se atribuye automáticamente a falta de conexión. Consultar estas páginas
+requiere conexión; los flujos centrales continúan operativos offline.
+No hay petición al iniciar, tracking, WebView, aceptación obligatoria de
+términos ni interrupciones de venta/compra. La configuración de stores permanece
+pendiente y se registra en [BACKLOG.md](BACKLOG.md).
+
 Posteriormente:
 
 ```text

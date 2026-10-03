@@ -20,6 +20,19 @@ La ganancia es una estimación sobre el producto; no descuenta alquiler, impuest
 
 La versión Alpha se prueba con **datos ficticios**. No debe utilizarse como único registro de un negocio real. Los datos se guardan localmente y no hay sincronización entre dispositivos. Las instrucciones de distribución están en la guía Alpha; este README no anuncia una publicación en las tiendas.
 
+## Legal y soporte
+
+Desde **Más → Legal y soporte** puedes abrir en el navegador del dispositivo:
+
+- [Política de privacidad](https://ian-k.dev/stockapp/privacy/).
+- [Términos de uso](https://ian-k.dev/stockapp/terms/).
+- [Soporte](https://ian-k.dev/stockapp/support/).
+
+Estas páginas requieren conexión al consultarlas. Los flujos de inventario
+continúan funcionando offline. Si no se puede abrir un enlace, la app muestra
+un mensaje para reintentar. La configuración de Google Play y App Store sigue
+como **PENDING EXTERNAL ACTION**; consulta el [backlog](docs/BACKLOG.md).
+
 ## Tecnologías y estructura
 
 React Native, Expo, Expo Router, TypeScript, SQLite y Drizzle ORM, organizados con pnpm workspaces.
