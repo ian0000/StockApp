@@ -544,6 +544,10 @@ en emulador. La guía registra artefacto, commit y evidencia; Android físico si
 no existe todavía un IPA autónomo. Próximo paso: grupo de 3–10 testers, feedback, triage y
 corrección de blockers, sin ampliar funciones.
 No se declara preparación para Beta, producción ni publicación en stores.
+STORE-READINESS-001 autoriza únicamente añadir accesos a privacidad, términos y
+soporte públicos desde `Más`, como preparación de publicación. No reabre el
+desarrollo del núcleo V1 ni habilita distribución pública; implementación y
+pendientes externos en [BACKLOG.md](BACKLOG.md).
 Cuando exista Android físico, validar especialmente cámara/barcode, permisos, share sheet,
 filesystem, document picker y comportamiento específico de fabricante/dispositivo.
 

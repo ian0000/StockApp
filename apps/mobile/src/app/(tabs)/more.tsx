@@ -1,5 +1,12 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Screen } from '@/ui/components/Screen';
 import { Section } from '@/ui/components/Section';
@@ -9,6 +16,10 @@ import {
   backupAvailability,
 } from '@/ui/backup/backup-presentation';
 import { useAppRuntime } from '@/ui/runtime/app-runtime-context';
+import {
+  LEGAL_SUPPORT_LINKS,
+  openLegalSupportLink,
+} from '@/ui/more/legal-support-links';
 
 const FUTURE_SECTIONS = ['Configuración', 'Acerca de'];
 
@@ -45,6 +56,38 @@ export default function MoreScreen() {
             <Text style={styles.rowLabel}>Respaldo</Text>
             <Text style={styles.rowStatus}>{backup.status ?? 'Abrir'}</Text>
           </Pressable>
+        </View>
+      </Section>
+
+      <Section title="Legal y soporte">
+        <View style={styles.list}>
+          {LEGAL_SUPPORT_LINKS.map((link, index) => (
+            <Pressable
+              key={link.url}
+              accessibilityLabel={link.label}
+              accessibilityRole="link"
+              onPress={() =>
+                void openLegalSupportLink(link.url, {
+                  openURL: (url) => Linking.openURL(url),
+                  showError: (title, message) => Alert.alert(title, message),
+                })
+              }
+              style={({ pressed }) => [
+                styles.row,
+                index > 0 && styles.rowBorder,
+                pressed && styles.rowPressed,
+              ]}
+            >
+              <Text style={styles.rowLabel}>{link.label}</Text>
+              <Text
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={styles.rowStatus}
+              >
+                ›
+              </Text>
+            </Pressable>
+          ))}
         </View>
       </Section>
 
