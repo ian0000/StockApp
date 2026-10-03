@@ -4,7 +4,9 @@
 
 StockApp ayuda a pequeños negocios y emprendedores a saber qué tienen, qué compran, qué venden y cuánto ganan aproximadamente por producto. Las operaciones principales funcionan en el dispositivo, incluso sin Internet.
 
-[Presentación pública](https://ian-k.dev/stockapp) · [Guía Alpha](docs/ALPHA_TESTING.md) · [Capturas y presentación para testers](docs/alpha/TESTER_INTRO.md)
+[Presentación pública](https://ian-k.dev/stockapp/) · [Guía Alpha](docs/ALPHA_TESTING.md) · [Capturas y presentación para testers](docs/alpha/TESTER_INTRO.md)
+
+La presentación y las páginas de privacidad, términos y soporte están publicadas en **Cloudflare Pages**, desde el repositorio independiente [ian-k.dev](https://github.com/ian0000/ian-k.dev). La aplicación móvil conserva sus datos de inventario localmente en SQLite y funciona offline.
 
 ## Qué puedes hacer
 
