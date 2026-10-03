@@ -13,6 +13,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "build:api": "pnpm --filter @stock-app/api build",
+    "test:db": "pnpm --filter @stock-app/api test:db",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api"
   },
   "devDependencies": {

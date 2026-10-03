@@ -10,12 +10,21 @@
     "dev": "tsx --conditions=development src/server.ts",
     "build": "pnpm --filter @stock-app/contracts build && tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
-    "lint": "eslint src test --max-warnings=0",
+    "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx --conditions=development --test test/*.test.ts"
+    "test": "tsx --conditions=development --test test/*.test.ts",
+    "test:db": "tsx --conditions=development --test test/postgres/*.test.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --conditions=development src/infrastructure/postgres/migrate.ts"
   },
   "dependencies": {
     "@stock-app/contracts": "workspace:*",
-    "fastify": "5.12.5"
+    "drizzle-orm": "0.45.2",
+    "fastify": "5.12.5",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.10"
   }
 }

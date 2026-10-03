@@ -2,7 +2,10 @@
 
 Actual: `.github/workflows/ci.yml` corre `pnpm check` en PR a main/push main, Node 22.16.0,
 pnpm fijado y install frozen lockfile. CLOUD-01 añade build:api al check; sin root build ni CD.
-Workspaces nuevos participan automáticamente en formato/lint/typecheck/tests. Workflow sin cambios.
+Workspaces nuevos participan automáticamente en formato/lint/typecheck/tests. CLOUD-02 añade al
+mismo job quality un servicio postgres:18.6, verificación de generate sin diff y `pnpm test:db`.
+TEST_DATABASE_URL local disposable es explícita en ese paso, sin passwords ni secrets externos.
+Missing DB/config/constraints/migrations fallan el job; no tests skipped ni allow-failure.
 
 Objetivo: GitHub Actions **CI only**; Cloudflare Pages CD Web, Railway CD API.
 No workflow que haga merge/PR/deploy Mobile. Build EAS separado y explícito.
@@ -16,8 +19,8 @@ Jobs Web: build Vite, rutas/deep links, E2E core con API QA/dataset aislado.
 Shared domain/contracts/lockfile/config changes disparan todos los consumidores. Paths app-only
 pueden omitir jobs ajenos con evidencia; required summary job no queda skipped por filtros.
 
-Scripts API dev/build/start existen en CLOUD-01; nombres web/migrate target en DEPLOYMENT
-siguen pendientes. CI pin de runtime/acciones y permissions contents:read; secrets producción ausentes
+Scripts API dev/build/start existen en CLOUD-01; db:generate/db:migrate/test:db en CLOUD-02.
+Scripts Web y CD siguen pendientes. CI pin de runtime/acciones y permissions contents:read; secrets producción ausentes
 en PR/forks. Seguridad dependency review y scans sin imprimir .env ni usar datasets reales.
 
 ## Flujo

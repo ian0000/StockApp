@@ -3,6 +3,8 @@
 Auditoría Mobile original sobre base `e2e76c6`, 2026-10-02. Actualización CLOUD-01 del
 2026-10-03 desde main `1a803a8` (PR #75): API HTTP local y contracts base ahora existen.
 La validación de la baseline está en VALIDATION; la nueva en [CLOUD-01](CLOUD-01.md).
+Actualización CLOUD-02 (2026-10-03), base main `acf8fc5`: schema/migrations PostgreSQL y
+QA contra servidor PostgreSQL real local/CI, documentados en [CLOUD-02](CLOUD-02.md).
 
 ## Estructura y ejecución
 
@@ -117,3 +119,15 @@ NOT_FOUND/VALIDATION_ERROR/INTERNAL_ERROR sanitizado. Sin payloads/credenciales 
 Contracts: JSON Schema y tipos derivados con json-schema-to-ts 3.1.1, Money string scaled safe,
 revision string, epoch ms seguro. Sin reglas de negocio/deps de plataforma. Build tsc contracts→API.
 No DB/auth/ownership/sync/Web ni servicios desplegados. Mobile/Domain/Application sin cambios.
+
+## CLOUD-02: persistencia local/test
+
+Drizzle PostgreSQL 0.45.2, drizzle-kit 0.31.10, pg/@types/pg 8.23.1 dentro de apps/api.
+14 tablas de aplicación, dos migrations SQL: core inventory y delivery/revisions/lifecycle.
+Pool lazy/factory explícita; migrator separado con advisory lock y cierre del pool; no autoconexión
+ni automigración HTTP. Money/stock/tiempo domain BIGINT safe, revisiones BIGINT exactas, lectura
+Drizzle bigint/pg string, server timestamps timestamptz/sesión UTC. FK auth diferida.
+Constraints scoped, barcode/reversal uniques, transiciones y null/cero probados contra PostgreSQL 18.6
+portable en carpeta temporal local. CI añade servicio PostgreSQL y test:db obligatorio sin fallback.
+El schema existe; auth/authorization, sync ejecutable, Web, /health y Railway continúan pendientes.
+SQLite/Domain/Application sin cambios funcionales. CLOUD-01 arriba describe su entrega histórica.
