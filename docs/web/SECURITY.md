@@ -4,8 +4,9 @@ Activos: credenciales/sesiones, inventario/costos/rentabilidad, recibos y backup
 CLOUD-03 implementa solo foundation auth: verified obligatorio, sesiones DB sin refresh/cache,
 cookies host-only, verify/reset TTL, revoke, redacción y defensas propias de Better Auth.
 Detalles/evidencia en [CLOUD-03](CLOUD-03.md). La tabla siguiente sigue como política V1 objetivo:
-CLOUD-04 implementa ownership en tres rutas y piloto por CLI. CSRF de negocio, CORS,
-límites durables/por email y seguridad de clientes aún no implementados.
+CLOUD-04 implementa ownership y piloto por CLI. CLOUD-05 implementa CORS/Origin exactos,
+CSRF de negocio, límites durables por email/IP/user, JSON/body y sanitización local/CI.
+Seguridad de clientes e infraestructura permanece pendiente. [Evidencia CLOUD-05](CLOUD-05.md).
 Límites: dispositivo/browser no confiable → API autenticada → PostgreSQL privado;
 public site y previews no reciben autoridad sobre datos. Railway/SMTP/operador son superficies
 de infraestructura con acceso restringido, no actores comerciales.
@@ -42,8 +43,10 @@ El token de sesión nunca es 'secreto' que se pueda poner en VITE_*.
 
 Auth 1.7.7: disableOriginCheck=false y disableCSRFCheck=false explícitos, también en tests.
 Plugin Expo sin exp:// implícito; APP_ORIGIN/API origin/scheme exactos y redirect hostil rechazado.
-Rate limit built-in queda sin override: default activado por Better Auth en NODE_ENV=production,
-almacenamiento memory/defaults de librería; no equivale a los límites finales durables de CLOUD-05.
+Rate limit Better Auth enabled=true en todos los entornos, customStorage.consume atómico PostgreSQL.
+Reglas sensibles explícitas 30/min por IP/path; bridge adicional 30/min IP agregado, login 5/min
+y reset 3/h por email normalizado, sin reset por éxito. Lecturas /v1 120/min y comandos 60/min/user.
+Sin almacenamiento memory como autoridad. Detalle de ventanas y claves en CLOUD-05.
 Auth logger interno deshabilitado y onAPIError convierte excepciones inesperadas en APIError genérico
 para impedir console.error raw de better-call; bridge sanitiza 5xx. Logs Fastify sin URL/header/body.
 SMTP logger/debug/file/url access deshabilitados; TLS valida certificados, STARTTLS obligatorio cuando
@@ -68,5 +71,33 @@ Body/query mass assignment rechazado400; piloto solo CLI y enable precondiciones
 Signup/verify crean cero datasets; bootstrap nunca enable. Error DB sanitizado/requestId/no-store.
 FK owner NO ACTION y delete-user disabled, sin cascade del negocio. Sin imports Mobile/backup.
 Los controles aplican a metadata/bootstrap implementados; aún no prueban futuras rutas financieras,
-import/export/sync. Full CSRF/Origin/CORS/rate /v1 sigue CLOUD-05; sin exposición externa.
+import/export/sync. CLOUD-05 agrega CSRF/Origin/CORS/rate a estas rutas; sin exposición externa.
 Reporte [CLOUD-04](CLOUD-04.md).
+
+## IMPLEMENTED CLOUD-05
+
+CORS exact APP_ORIGIN, credentials=true, Vary Origin; ningún wildcard/reflect/pages.dev wildcard.
+OPTIONS válido no consulta sesión/ownership ni incrementa contadores. Origin /v1 hostil/null
+rechazado403 antes de DB, incluso con sesión/token válidos. Ausente no concede autoridad.
+CSRF HMAC-SHA256 con clave derivada separada, session.id oficial y timingSafeEqual;43 caracteres
+base64url, no session token/email/User ID en payload. Sesión se valida en DB por cada petición.
+JSON-only POST/PATCH/PUT /v1, global1MiB/bootstrap32KiB,413/415 sin writes. Headers de identidad,
+rol o Mobile ignorados. ApiError códigos usados, requestId servidor y no-store incluso en errores.
+Durable PostgreSQL consume atómico; login5/min/email, reset3/h/email, sensitive auth30/min/IP
+agregado e IP/path oficial30/min; negocio120 reads/60 commands por minuto/user.
+Claves rate HMAC con separación por scope, sin email/IP/user raw en esa tabla. Datos oficiales de
+sesión de Better Auth conservan su schema; no confundir privacy del rate store con sesiones.
+Fastify serializers excluyen URL/query/body/headers/raw errors, redaction defensiva adicional;
+Better Auth logger deshabilitado/sanitizer, SMTP sin debug/raw credentials.
+DATABASE_URL/BETTER_AUTH_SECRET/SMTP_PASSWORD/password/cookies/CSRF/verify/reset no se registran.
+Pruebas con canaries ficticios, dos pools/instancias, reinicio, concurrencia y clock de seguridad
+injectado (no cambia TTL auth ni clock Domain). [Resultados](CLOUD-05.md).
+
+## FUTURE / no verificado en infraestructura
+
+DEV-01/DEV-04: validar proxy sender/CIDR reales Railway; trustProxy permanece false. IP actual
+es del socket y puede agrupar usuarios detrás de proxy. No configurar forwarded trust por suposición.
+DEV-04: WAF/edge/TLS y HSTS después de verificar dominios; WEB-01: CSP de SPA.
+API-02..API-10/QA-01: seguridad por cada futura ruta financiera/deletion/export; SYNC-02/QA-01: abuso sync;
+MIG-01: límites de import; SYNC-06 y WEB-02: auth/CSRF/SecureStore clientes; DEV-05: monitoreo
+y mantenimiento periódico de rate store. No se declara release seguro/certificación ni despliegue.

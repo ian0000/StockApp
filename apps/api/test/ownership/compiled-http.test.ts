@@ -87,17 +87,32 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
   ownershipModule.registerOwnershipRoutes(app, runtime.auth, runtime.database);
   t.after(() => app.close());
   await app.listen({ host: '127.0.0.1', port: address.port });
-  const post = (path: string, body: unknown, cookie?: string) =>
-    fetch(`${baseURL}${path}`, {
+  const post = async (path: string, body: unknown, cookie?: string) => {
+    let csrf: string | undefined;
+    if (path === '/v1/business' && cookie) {
+      const result: unknown = await (
+        await fetch(`${baseURL}/v1/session/csrf`, { headers: { cookie } })
+      ).json();
+      assert.ok(
+        result &&
+          typeof result === 'object' &&
+          'token' in result &&
+          typeof result.token === 'string',
+      );
+      csrf = result.token;
+    }
+    return fetch(`${baseURL}${path}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         origin: runtime.config.appOrigin,
         ...(cookie ? { cookie } : {}),
+        ...(csrf ? { 'x-csrf-token': csrf } : {}),
       },
       body: JSON.stringify(body),
       redirect: 'manual',
     });
+  };
   const get = (path: string, cookie?: string) =>
     fetch(`${baseURL}${path}`, {
       headers: cookie ? { cookie } : {},
@@ -168,6 +183,16 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
       password: 'fictional-compiled-password',
     });
     assert.equal(login.status, 200);
+    assert.equal(
+      login.headers.get('access-control-allow-origin'),
+      runtime.config.appOrigin,
+    );
+    assert.equal(login.headers.get('access-control-allow-credentials'), 'true');
+    const setCookie = login.headers.getSetCookie()[0];
+    assert.match(setCookie, /HttpOnly/i);
+    assert.match(setCookie, /SameSite=Lax/i);
+    assert.match(setCookie, /Path=\//i);
+    assert.doesNotMatch(setCookie, /Domain=|;\s*Secure/i);
     const cookie = login.headers.getSetCookie()[0].split(';')[0];
     const me = await get('/v1/me', cookie);
     assert.equal(me.status, 200);
@@ -188,6 +213,69 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
     );
     assert.equal(identity.business, null);
     assert.equal(identity.inventory, null);
+    const missingCsrf = await fetch(`${baseURL}/v1/business`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: runtime.config.appOrigin,
+      },
+      body: JSON.stringify({
+        inventoryName: `Empty ${letter}`,
+        currency: 'USD',
+        reportingTimeZone: 'UTC',
+      }),
+    });
+    assert.equal(missingCsrf.status, 403);
+    assert.equal(
+      missingCsrf.headers.get('access-control-allow-origin'),
+      runtime.config.appOrigin,
+    );
+    assert.equal(
+      missingCsrf.headers.get('access-control-allow-credentials'),
+      'true',
+    );
+    assert.match(missingCsrf.headers.get('vary') ?? '', /Origin/i);
+    const csrfResponse = await get('/v1/session/csrf', cookie);
+    assert.equal(csrfResponse.status, 200);
+    assert.equal(csrfResponse.headers.get('cache-control'), 'no-store');
+    const csrf: unknown = await csrfResponse.json();
+    assert.ok(
+      csrf &&
+        typeof csrf === 'object' &&
+        'token' in csrf &&
+        typeof csrf.token === 'string',
+    );
+    for (const [origin, token] of [
+      ['https://evil.example', csrf.token],
+      [runtime.config.appOrigin, 'bad'],
+    ]) {
+      const denied = await fetch(`${baseURL}/v1/business`, {
+        method: 'POST',
+        headers: {
+          cookie,
+          origin,
+          'content-type': 'application/json',
+          'x-csrf-token': token,
+        },
+        body: JSON.stringify({
+          inventoryName: `Empty ${letter}`,
+          currency: 'USD',
+          reportingTimeZone: 'UTC',
+        }),
+      });
+      assert.equal(denied.status, 403);
+      const body: unknown = await denied.json();
+      assert.ok(
+        body &&
+          typeof body === 'object' &&
+          'error' in body &&
+          body.error &&
+          typeof body.error === 'object' &&
+          'requestId' in body.error,
+      );
+      assert.equal(body.error.requestId, denied.headers.get('x-request-id'));
+    }
     const created = await post(
       '/v1/business',
       {
@@ -208,7 +296,7 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
     );
     await operator(identity.user.id, '--enable');
     await operator(identity.user.id, '--enable');
-    return { cookie, userId: identity.user.id, dataset };
+    return { cookie, userId: identity.user.id, dataset, csrf: csrf.token };
   }
   assert.equal((await get('/live')).status, 200);
   assert.equal((await get('/health')).status, 404);
@@ -254,12 +342,82 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
     403,
   );
   for (const owner of [a, b]) {
+    let blocked = false;
+    for (let i = 0; i < 60; i++) {
+      const decision = await runtime.auth.security.consume(
+        'business-command-user',
+        owner.userId,
+        { window: 60, max: 60 },
+      );
+      if (!decision.allowed) {
+        blocked = true;
+        break;
+      }
+    }
+    assert.equal(blocked, true);
+    const limited = await post(
+      '/v1/business',
+      {
+        inventoryName: 'No new data',
+        currency: 'USD',
+        reportingTimeZone: 'UTC',
+      },
+      owner.cookie,
+    );
+    assert.equal(limited.status, 429);
+    assert.ok(Number(limited.headers.get('retry-after')) > 0);
+    const limitedBody: unknown = await limited.json();
+    assert.ok(
+      limitedBody &&
+        typeof limitedBody === 'object' &&
+        'error' in limitedBody &&
+        limitedBody.error &&
+        typeof limitedBody.error === 'object' &&
+        'code' in limitedBody.error &&
+        'requestId' in limitedBody.error,
+    );
+    assert.equal(limitedBody.error.code, 'RATE_LIMITED');
+    assert.equal(
+      limitedBody.error.requestId,
+      limited.headers.get('x-request-id'),
+    );
     assert.equal(
       (await post('/api/auth/sign-out', {}, owner.cookie)).status,
       200,
     );
     assert.equal((await get('/v1/me', owner.cookie)).status, 401);
+    const old = await fetch(`${baseURL}/v1/business`, {
+      method: 'POST',
+      headers: {
+        cookie: owner.cookie,
+        'x-csrf-token': owner.csrf,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        inventoryName: 'Empty',
+        currency: 'USD',
+        reportingTimeZone: 'UTC',
+      }),
+    });
+    assert.equal(old.status, 401);
   }
+  for (let i = 0; i < 5; i++)
+    assert.equal(
+      (
+        await post('/api/auth/sign-in/email', {
+          email: 'compiled-rate-missing@example.test',
+          password: 'fictional-password',
+        })
+      ).status,
+      401,
+    );
+  const throttled = await post('/api/auth/sign-in/email', {
+    email: 'compiled-rate-missing@example.test',
+    password: 'fictional-password',
+  });
+  assert.equal(throttled.status, 429);
+  assert.ok(Number(throttled.headers.get('x-retry-after')) > 0);
+  assert.equal(throttled.headers.get('cache-control'), 'no-store');
   assert.equal((await pool.query('SELECT id FROM businesses')).rowCount, 2);
   assert.equal((await pool.query('SELECT id FROM inventories')).rowCount, 2);
   for (const table of ['products', 'sales', 'purchases', 'session'])

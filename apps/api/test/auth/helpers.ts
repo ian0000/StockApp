@@ -20,6 +20,7 @@ export const authConfig = readAuthConfig({
 export async function authFixture(
   t: TestContext,
   overrides: Partial<AuthConfig> = {},
+  securityClock?: () => number,
 ) {
   const pool = await disposableDatabase(t);
   await migrateDatabase(pool);
@@ -32,9 +33,12 @@ export async function authFixture(
     },
   });
   const config = { ...authConfig, ...overrides };
+  // Legacy auth regression scenarios run in separate rate windows. Security tests inject a fixed clock.
+  let securityTime = Date.now();
   const runtime = createAuth({
     database: createDatabase(pool),
     config,
+    securityClock: securityClock ?? (() => securityTime),
     emailSender: {
       async send(email) {
         messages.push(email);
@@ -53,6 +57,7 @@ export async function authFixture(
     cookie?: string,
     extraHeaders: Record<string, string> = {},
   ) {
+    if (!securityClock) securityTime += 3600001;
     return app.inject({
       method: 'POST',
       url: `/api/auth/${path}`,

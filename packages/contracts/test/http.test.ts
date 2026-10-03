@@ -39,6 +39,11 @@ test('ownership errors extend the envelope without removing foundation codes', (
     'EMAIL_NOT_VERIFIED',
     'CLOUD_ACCESS_DISABLED',
     'BUSINESS_ALREADY_EXISTS',
+    'ORIGIN_NOT_ALLOWED',
+    'CSRF_TOKEN_INVALID',
+    'PAYLOAD_TOO_LARGE',
+    'UNSUPPORTED_MEDIA_TYPE',
+    'RATE_LIMITED',
   ]);
 });
 

@@ -67,7 +67,7 @@ jobs:
           test -z "$(git status --porcelain -- apps/api/src/infrastructure/postgres/auth-schema.ts)"
           pnpm --filter @stock-app/api auth:check
 
-      - name: Test PostgreSQL migrations, auth, ownership and compiled HTTP with local SMTP
+      - name: Test PostgreSQL migrations, auth, ownership, security and compiled HTTP with local SMTP
         env:
           TEST_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/stockapp_test
         run: pnpm test:db

@@ -50,3 +50,11 @@ ningún job opcional/skip ni secrets externos. Workers limitados a2, concurrency
 de suites preservada. Drizzle/auth generation/check siguen obligatorios. CI green + GitGuardian +
 reviews/reglas exigidas antes de merge, sin bypass. STOP main clean0/0; no CLOUD-05 automático.
 Reporte [CLOUD-04](CLOUD-04.md).
+
+## Gate CLOUD-05
+
+Quality checks ejecuta pnpm check, generadores reproducibles oficiales y pnpm test:db que ahora
+incluye test/security/*.test.ts junto a PostgreSQL18.6/auth/ownership/compiled HTTP/SMTP local.
+Security no es opcional ni un workflow aparte sin requisito. IP de harness/socket, no Railway fake.
+Workflow autorizado commit/push/PR→esperar CI/GitGuardian/reviews/checks/reglas reales→merge normal
+sin bypass→main fast-forward/clean0/0→STOP. No CLOUD-06/API-01/deploy automático. [CLOUD-05](CLOUD-05.md).

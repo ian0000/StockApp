@@ -29,6 +29,13 @@
       "when": 1791042806749,
       "tag": "0003_business_ownership",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791045670163,
+      "tag": "0004_security_hardening",
+      "breakpoints": true
     }
   ]
 }

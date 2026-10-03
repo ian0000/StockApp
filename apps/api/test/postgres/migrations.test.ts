@@ -43,6 +43,7 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
       'purchases',
       'sale_items',
       'sales',
+      'security_rate_limits',
       'session',
       'stock_adjustments',
       'sync_devices',
@@ -53,7 +54,7 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
   const journal = await pool.query(
     'SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id',
   );
-  assert.equal(journal.rowCount, 4);
+  assert.equal(journal.rowCount, 5);
   await migrateDatabase(pool);
   assert.deepEqual(
     (
@@ -170,7 +171,7 @@ test('upgrade from core revision preserves financial data and adds delivery sche
   assert.equal(
     (await pool.query('SELECT count(*) FROM drizzle.__drizzle_migrations'))
       .rows[0].count,
-    '4',
+    '5',
   );
   await assert.rejects(
     pool.query('UPDATE products SET metadata_revision=-1 WHERE id=$1', [

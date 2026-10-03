@@ -26,6 +26,25 @@ test('ownership composition with unreachable PostgreSQL/SMTP leaves /live 200 an
   t.after(() => app.close());
   assert.equal((await app.inject('/live')).statusCode, 200);
   assert.equal((await app.inject('/health')).statusCode, 404);
+  const preflight = await app.inject({
+    method: 'OPTIONS',
+    url: '/v1/business',
+    headers: {
+      origin: runtime.config.appOrigin,
+      'access-control-request-method': 'POST',
+    },
+  });
+  assert.equal(preflight.statusCode, 204);
+  assert.equal(
+    preflight.headers['access-control-allow-origin'],
+    runtime.config.appOrigin,
+  );
+  const hostile = await app.inject({
+    url: '/v1/me',
+    headers: { origin: 'https://evil.example' },
+  });
+  assert.equal(hostile.statusCode, 403);
+  assert.equal(hostile.json().error.code, 'ORIGIN_NOT_ALLOWED');
   const failure = await app.inject({
     method: 'POST',
     url: '/api/auth/sign-in/email',

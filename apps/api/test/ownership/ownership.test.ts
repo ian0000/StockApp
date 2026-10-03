@@ -33,11 +33,18 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
     cookie?: string,
     body?: unknown,
   ) => {
+    const csrf =
+      method === 'POST' && cookie
+        ? (
+            await f.app.inject({ url: '/v1/session/csrf', headers: { cookie } })
+          ).json().token
+        : undefined;
     const response = await f.app.inject({
       method,
       url,
       headers: {
         ...(cookie ? { cookie } : {}),
+        ...(csrf ? { 'x-csrf-token': csrf } : {}),
         ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
       },
       ...(body !== undefined ? { payload: JSON.stringify(body) } : {}),
@@ -172,7 +179,7 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
         headers: { cookie: cookieA, 'content-type': 'text/plain' },
         payload: JSON.stringify(input),
       });
-      assert.equal(text.statusCode, 400);
+      assert.equal(text.statusCode, 415);
       await zeroData();
     },
   );
@@ -471,7 +478,6 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
         '/v1/history',
         '/v1/sync',
         '/v1/imports',
-        '/v1/session/csrf',
         `/v1/inventories/${a.inventory.id}/products`,
       ])
         assert.equal(
