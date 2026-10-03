@@ -3,6 +3,8 @@
 Decisión: Better Auth alojado en la API Railway, adapter Drizzle PostgreSQL, email/password,
 sesiones opacas en DB, plugin Expo. No auth criptográfica casera, JWT ledger ni proveedor BaaS.
 SMTP estándar para verificación/reset; operador elige credenciales durante despliegue.
+Materializado local/CI por [CLOUD-03](CLOUD-03.md): Better Auth, adapter Drizzle y Expo 1.7.7.
+No hay servicio Railway ni cliente Web/Mobile todavía.
 
 Comparación: auth propio obliga a mantener hashing, reset, sesiones y defensas; proveedor gestionado
 reduce carga pero suma coste/lock-in y un sistema externo de identidad; librería especializada
@@ -82,4 +84,26 @@ Retención/backups/datos offline en OPERATIONS y PRIVACY_IMPACT.
 [Drizzle adapter/installation](https://better-auth.com/docs/installation),
 [deletion lifecycle](https://better-auth.com/docs/concepts/users-accounts).
 Compatibilidad concreta Fastify/Expo y SameSite en browsers se prueba en CLOUD-03/SYNC-06;
-no se declara verificada por esta revisión documental.
+Fastify/handler, atributos Set-Cookie y transporte nativo server con expo-origin/cookie están
+probados en CLOUD-03; browsers reales/CORS y cliente Expo/SecureStore físico siguen pendientes.
+
+## Contrato implementado CLOUD-03
+
+Sign-up no inicia sesión ni crea Business/Inventory. Email/password 8–128; hashing default de
+Better Auth, sin crypto propio. Duplicate signup devuelve identidad sintética con shape genérico;
+incorrect/missing login y existing/missing reset comparten contrato público en sus respectivos flujos.
+Verificación 86400s usando opción oficial: token firmado por la librería, no sesión JWT.
+Reuso de verificación válida es idempotente (sin cambiar User ni iniciar sesión), no token one-time.
+Reset 1800s DB verification, consume de un uso y revoca todas las sesiones. Login requiere verified.
+Sesión 604800s absoluta, disableSessionRefresh=true, freshAge=300, cookieCache.enabled=false;
+expiración DB antes/después del lookup y revocación inmediata están probadas.
+Cookie HttpOnly/Secure en HTTPS/Lax/Path=/, sin Domain ni crossSubDomainCookies.
+Config env explícita AUTH_BASE_URL/APP_ORIGIN/BETTER_AUTH_SECRET; localhost HTTP solo fuera de producción.
+Plugin Expo oficial con init delegado que elimina su exp:// implícito de desarrollo; trusted origins
+solo API origin, APP_ORIGIN y scheme actual inventory-app://. Origin y expo-origin presentes deben
+ser exactos; callback nativo inventory-app://reset validado por la librería. No habilitar Expo Go wildcard.
+Mantener defensas propias Origin/CSRF y defaults rate limit; sin endpoint CSRF ni política final /v1.
+Delete-user/callback, change-email/profile/password y proxy OAuth Expo deshabilitados por disabledPaths.
+Listado/revoke-session/revoke-other-sessions/revoke-sessions son endpoints oficiales, no aliases.
+Logout limpia credencial server; limpieza de queries/carrito y persistencia Mobile siguen en sus tickets.
+SMTP async con drain, fallo registrado solo como AUTH_EMAIL_FAILED, sin garantizar entrega/reintento durable.

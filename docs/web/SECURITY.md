@@ -1,6 +1,10 @@
 # Seguridad y threat model
 
 Activos: credenciales/sesiones, inventario/costos/rentabilidad, recibos y backups.
+CLOUD-03 implementa solo foundation auth: verified obligatorio, sesiones DB sin refresh/cache,
+cookies host-only, verify/reset TTL, revoke, redacción y defensas propias de Better Auth.
+Detalles/evidencia en [CLOUD-03](CLOUD-03.md). La tabla siguiente sigue como política V1 objetivo:
+ownership, CSRF de negocio, CORS, límites durables/por email y seguridad de clientes aún no implementados.
 Límites: dispositivo/browser no confiable → API autenticada → PostgreSQL privado;
 public site y previews no reciben autoridad sobre datos. Railway/SMTP/operador son superficies
 de infraestructura con acceso restringido, no actores comerciales.
@@ -34,6 +38,16 @@ content-type JSON y, cuando haya Origin browser, allowlist exacta. Native obtien
 sesión válida y transporte del plugin; no necesita simular navegador ni saltarse token por
 `X-Mobile: true`. Ausencia de Origin no sustituye cookie/token/ownership.
 El token de sesión nunca es 'secreto' que se pueda poner en VITE_*.
+
+Auth 1.7.7: disableOriginCheck=false y disableCSRFCheck=false explícitos, también en tests.
+Plugin Expo sin exp:// implícito; APP_ORIGIN/API origin/scheme exactos y redirect hostil rechazado.
+Rate limit built-in queda sin override: default activado por Better Auth en NODE_ENV=production,
+almacenamiento memory/defaults de librería; no equivale a los límites finales durables de CLOUD-05.
+Auth logger interno deshabilitado y onAPIError convierte excepciones inesperadas en APIError genérico
+para impedir console.error raw de better-call; bridge sanitiza 5xx. Logs Fastify sin URL/header/body.
+SMTP logger/debug/file/url access deshabilitados; TLS valida certificados, STARTTLS obligatorio cuando
+seleccionado, plaintext solo loopback fuera de producción. Ningún proveedor/credencial externo usado.
+No deleteUser bypass: rutas directas/perfil/OAuth fuera de scope deshabilitadas y comprobadas.
 
 CSP de SPA: default-src self; script-src self sin unsafe-inline/eval; connect-src self + API exacta;
 object-src none; frame-ancestors none; base-uri self. HSTS HTTPS después de verificar dominios,

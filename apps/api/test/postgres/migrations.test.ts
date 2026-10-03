@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFile, mkdtemp, copyFile, mkdir, rm } from 'node:fs/promises';
+import {
+  readFile,
+  mkdtemp,
+  copyFile,
+  mkdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -18,6 +25,7 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
   assert.deepEqual(
     tables.rows.map((row) => row.table_name),
     [
+      'account',
       'businesses',
       'deletion_requests',
       'import_sessions',
@@ -30,14 +38,17 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
       'purchases',
       'sale_items',
       'sales',
+      'session',
       'stock_adjustments',
       'sync_devices',
+      'user',
+      'verification',
     ],
   );
   const journal = await pool.query(
     'SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id',
   );
-  assert.equal(journal.rowCount, 2);
+  assert.equal(journal.rowCount, 3);
   await migrateDatabase(pool);
   assert.deepEqual(
     (
@@ -66,7 +77,6 @@ test('upgrade from core revision preserves financial data and adds delivery sche
     join(migrationsFolder, `${first.tag}.sql`),
     join(folder, `${first.tag}.sql`),
   );
-  const { writeFile } = await import('node:fs/promises');
   await writeFile(
     join(folder, 'meta', '_journal.json'),
     JSON.stringify({ ...journal, entries: [first] }),
@@ -151,7 +161,7 @@ test('upgrade from core revision preserves financial data and adds delivery sche
   assert.equal(
     (await pool.query('SELECT count(*) FROM drizzle.__drizzle_migrations'))
       .rows[0].count,
-    '2',
+    '3',
   );
   await assert.rejects(
     pool.query('UPDATE products SET metadata_revision=-1 WHERE id=$1', [
@@ -171,5 +181,76 @@ test('upgrade from core revision preserves financial data and adds delivery sche
     indexes.rows.some(
       (row) => row.indexname === 'import_sessions_business_status_idx',
     ),
+  );
+});
+
+test('CLOUD-02 latest upgrades to auth without rewriting business/financial fixtures', async (t) => {
+  const pool = await disposableDatabase(t);
+  const folder = await mkdtemp(join(tmpdir(), 'stockapp-cloud02-fixture-'));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  await mkdir(join(folder, 'meta'));
+  const journal: { entries: { tag: string }[] } = JSON.parse(
+    await readFile(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+  );
+  const entries = journal.entries.slice(0, 2);
+  assert.equal(entries.length, 2);
+  for (const entry of entries) {
+    await copyFile(
+      join(migrationsFolder, `${entry.tag}.sql`),
+      join(folder, `${entry.tag}.sql`),
+    );
+  }
+  await writeFile(
+    join(folder, 'meta', '_journal.json'),
+    JSON.stringify({ ...journal, entries }),
+  );
+  await migrateDatabase(pool, folder);
+  const business = id(),
+    inventory = id(),
+    product = id();
+  await pool.query('INSERT INTO businesses(id,owner_user_id) VALUES ($1,$2)', [
+    business,
+    'fictional-cloud02-owner',
+  ]);
+  await pool.query(
+    "INSERT INTO inventories(id,business_id,name,currency,reporting_time_zone,created_at,updated_at) VALUES ($1,$2,'Fictional','USD','America/Guayaquil',1,1)",
+    [inventory, business],
+  );
+  await pool.query(
+    "INSERT INTO products(id,inventory_id,name,regular_sale_price_units,is_archived,metadata_revision,created_at,updated_at) VALUES ($1,$2,'Fictional archived',9007199254740991,true,9007199254740992,1,1)",
+    [product, inventory],
+  );
+  await pool.query(
+    'INSERT INTO inventory_states(inventory_id,product_id,stock,unit_cost_units,state_revision) VALUES ($1,$2,-2,NULL,9007199254740992)',
+    [inventory, product],
+  );
+  const tables = ['businesses', 'inventories', 'products', 'inventory_states'];
+  const before = await Promise.all(
+    tables.map((table) => pool.query(`SELECT * FROM ${table}`)),
+  );
+  const oldJournal = (
+    await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id')
+  ).rows;
+  assert.equal(oldJournal.length, 2);
+  await migrateDatabase(pool);
+  for (let i = 0; i < tables.length; i++) {
+    assert.deepEqual(
+      (await pool.query(`SELECT * FROM ${tables[i]}`)).rows,
+      before[i].rows,
+    );
+  }
+  const newJournal = (
+    await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id')
+  ).rows;
+  assert.equal(newJournal.length, 3);
+  assert.deepEqual(newJournal.slice(0, 2), oldJournal);
+  for (const table of ['user', 'account', 'session', 'verification']) {
+    assert.equal((await pool.query(`SELECT id FROM "${table}"`)).rowCount, 0);
+  }
+  await migrateDatabase(pool);
+  assert.deepEqual(
+    (await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id'))
+      .rows,
+    newJournal,
   );
 });

@@ -6,6 +6,9 @@ Workspaces nuevos participan automáticamente en formato/lint/typecheck/tests. C
 mismo job quality un servicio postgres:18.6, verificación de generate sin diff y `pnpm test:db`.
 TEST_DATABASE_URL local disposable es explícita en ese paso, sin passwords ni secrets externos.
 Missing DB/config/constraints/migrations fallan el job; no tests skipped ni allow-failure.
+CLOUD-03 añade auth:generate reproducible/auth:check oficiales y extiende test:db con auth real
+y smoke HTTP compilado usando SMTP local efímero. check ya ejecuta SMTP adapter sin DB.
+No nuevo job opcional ni SMTP secrets/servicio externo; required quality mantiene estos gates.
 
 Objetivo: GitHub Actions **CI only**; Cloudflare Pages CD Web, Railway CD API.
 No workflow que haga merge/PR/deploy Mobile. Build EAS separado y explícito.

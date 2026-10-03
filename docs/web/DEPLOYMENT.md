@@ -87,12 +87,21 @@ Railway healthcheck de despliegue NO es monitor continuo; OBSERVABILITY exige se
 | Pages production/staging | VITE_API_BASE_URL, VITE_APP_ENV | No |
 | Railway API | NODE_ENV, PORT, APP_ORIGIN, AUTH_BASE_URL, LOG_LEVEL | No (config restringida) |
 | Railway API | DATABASE_URL, BETTER_AUTH_SECRET, SMTP_HOST/PORT/USER/PASSWORD, SMTP_FROM | Password/secret/URL credencial sí |
+| API auth config | AUTH_BASE_URL, APP_ORIGIN, SMTP_SECURITY, NODE_ENV=production en despliegue | Origins/modo públicos, no secretos |
 | Railway maintenance | BACKUP_ENCRYPTION_KEY, BACKUP_DESTINATION_CREDENTIALS | Sí |
 | Local .env ignorado | URLs DB de dev/secret auth ficticio/SMTP test | Sí; .env.example solo nombres/placeholders |
 
 No valores reales en docs/Git. Secrets por entorno en Railway, acceso mínimo, rotation con
 revocación cuando cambia auth secret. Variables VITE_* nunca passwords, token sesión, DB ni SMTP.
 Dependencias y env schema se validan al boot; default permisivo de auth/origins prohibido.
+
+CLOUD-03 implementa config server-side local, sin aplicar variables en Railway. AUTH_BASE_URL activa
+composición auth y exige DATABASE_URL/APP_ORIGIN/secret/SMTP completos. Sin AUTH_BASE_URL conserva
+foundation-only, /live 200 sin DB/SMTP, auth ausente y /health 404. No automigrations/ready ficticio.
+Producción exige HTTPS; cookie Secure también para HTTPS de QA. SMTP_SECURITY debe ser tls (TLS
+inmediato) o starttls (upgrade obligatorio); local solo loopback no-production. FROM bare email,
+USER/PASSWORD ambos o ninguno según relay. TLS remoto/delivery externo no validados aquí.
+Generación CLI usa config ficticia offline independiente; nunca desplegar schema-config.ts como runtime.
 
 ## CORS/DNS/TLS
 
@@ -105,7 +114,8 @@ verificado con certificados/origin. API privada no cacheable; no añadir CDN cac
 
 ## CI vs CD y rollback
 
-GitHub Actions valida, no despliega. Pages y Railway son CD; humano crea PR, revisa y mergea.
+GitHub Actions valida, no despliega. Pages y Railway son CD; PR/revisión/merge siguen la autorización
+vigente de CI_CD (agente autorizado, checks verdes obligatorios, sin bypass).
 Pages auto-build no reemplaza CI: activar production deploy solo de commit main cuya CI pasó.
 DEV-04 comprueba esa asociación; si integración no ofrece gate de CI efectivo, usar aprobación/deploy
 manual del artefacto de commit verde desde Pages hasta resolver, sin pasar CD a GitHub Actions.

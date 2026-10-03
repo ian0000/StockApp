@@ -5,6 +5,8 @@ Auditoría Mobile original sobre base `e2e76c6`, 2026-10-02. Actualización CLOU
 La validación de la baseline está en VALIDATION; la nueva en [CLOUD-01](CLOUD-01.md).
 Actualización CLOUD-02 (2026-10-03), base main `acf8fc5`: schema/migrations PostgreSQL y
 QA contra servidor PostgreSQL real local/CI, documentados en [CLOUD-02](CLOUD-02.md).
+Actualización CLOUD-03 (2026-10-03), base main `a43b327`: Better Auth 1.7.7, sesiones PostgreSQL,
+verify/reset/revoke y SMTP estándar local, documentados en [CLOUD-03](CLOUD-03.md).
 
 ## Estructura y ejecución
 
@@ -129,5 +131,21 @@ ni automigración HTTP. Money/stock/tiempo domain BIGINT safe, revisiones BIGINT
 Drizzle bigint/pg string, server timestamps timestamptz/sesión UTC. FK auth diferida.
 Constraints scoped, barcode/reversal uniques, transiciones y null/cero probados contra PostgreSQL 18.6
 portable en carpeta temporal local. CI añade servicio PostgreSQL y test:db obligatorio sin fallback.
-El schema existe; auth/authorization, sync ejecutable, Web, /health y Railway continúan pendientes.
+El schema existe; CLOUD-03 añade auth como se detalla abajo. Authorization, sync ejecutable,
+Web, /health y Railway continúan pendientes.
 SQLite/Domain/Application sin cambios funcionales. CLOUD-01 arriba describe su entrega histórica.
+
+## CLOUD-03: identidad local/test
+
+Better Auth/adapter Drizzle/plugin Expo 1.7.7, CLI oficial `auth` 1.7.7; auth-schema.ts generado,
+migration aditiva 0002_auth_identity y cuatro tablas user/session/account/verification.
+Email/password 8–128 caracteres; signup no verificado sin sesión/Business/Inventory, verify 24h,
+reset 30min de un uso con revocación completa. Sesiones opacas DB, 7d absolutos, sin refresh/cache.
+Cookie HTTPS Secure/HttpOnly/Lax/Path=/, host-only. Origin/CSRF propios activos; sin exp:// implícito.
+Nodemailer 10.0.14, SMTP configurable TLS/STARTTLS/local, sender inyectado, envío fuera del response,
+drain al cierre y logs sanitizados. Suite SMTPServer local 3.19.16 dev-only, sin correo externo.
+HTTP /api/auth conserva requestId/no-store y contrato normal Better Auth; fallos internos genéricos.
+buildApp() conserva foundation-only; start compone auth solo con AUTH_BASE_URL y env completa.
+Pruebas PostgreSQL real incluyen upgrade CLOUD-02 y HTTP compilado con SMTP efímero en CI.
+Mobile/Contracts/Domain/Application sin cambios. Sin ownership, cloudAccess enforcement, CSRF /v1,
+CORS completo, rate limits finales, login UI, SecureStore, account deletion, sync ni infraestructura.

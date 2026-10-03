@@ -3,8 +3,12 @@
 Normativa para la fase Cloud/Web; sistema actual en CURRENT_STATE. No hay servicios desplegados.
 
 CLOUD-01 (2026-10-03) implementa solo foundation HTTP local/contracts base. Roles de negocio,
-auth, ownership y sync continúan como objetivo. CLOUD-02 incorpora solo schema/migrations PostgreSQL
+ownership y sync continúan como objetivo. CLOUD-02 incorpora solo schema/migrations PostgreSQL
 y conexión explícita de mantenimiento/test, con servidor real local/CI; no DB desplegada.
+CLOUD-03 incorpora Better Auth 1.7.7 y SMTP provider-neutral dentro de apps/api, configuración
+y factories explícitas, bridge Fastify oficial y schema generado/migration Drizzle. Sin DI framework.
+HTTP no automigra; /live y buildApp() no necesitan auth/DB/SMTP. Sender se drena al shutdown;
+correo en memoria no es job durable. Ownership sigue separado de identidad y diferido a CLOUD-04.
 
 ## Sistemas y responsabilidades
 
@@ -47,7 +51,7 @@ Un solo `ian0000/StockApp` pnpm workspace, despliegues independientes por app:
 ```text
 apps/mobile/                  EXISTENTE, UI + SQLite
 apps/web/                     OBJETIVO, SPA + API client
-apps/api/                     EXISTENTE HTTP + PostgreSQL schema/migrations; auth/sync OBJETIVO
+apps/api/                     EXISTENTE HTTP + PostgreSQL + Better Auth/SMTP; ownership/sync OBJETIVO
 packages/domain/              EXISTENTE, reglas puras
 packages/application/         EXISTENTE, casos de uso/ports
 packages/shared/              EXISTENTE, aún vacío; no llenar por anticipación
