@@ -1,9 +1,21 @@
 # Contratos API V1
 
 REST JSON en `https://api-stockapp.ian-k.dev/v1`. Auth library bajo `/api/auth` con
-contrato separado fijado por versión. Health fuera de versionado. No controladores creados.
-DTOs/JSON Schema/types futuros en packages/contracts; API publica OpenAPI en CLOUD-01/06
-antes de permitir que features Web inventen rutas. Ejemplos son contratos objetivo.
+contrato separado fijado por versión. CLOUD-01 implementa solo GET /live y handlers de errores.
+El resto de la tabla sigue como objetivo, incluidos /health, negocio, auth y sync.
+JSON Schema/types/codecs base existen en packages/contracts. OpenAPI full contract generation
+deferred to CLOUD-06: sin plugin/spec en CLOUD-01. Antes de features Web se generará el contrato.
+
+## Foundation implementada — CLOUD-01
+
+GET /live → 200 application/json `{ "status": "ok" }`, sin DB/filesystem/red.
+genReqId crypto UUID; requestIdHeader=false, sin confiar en ID cliente. x-request-id también en errores.
+404 NOT_FOUND, JSON Schema/JSON inválido 400 VALIDATION_ERROR, inesperados 500 INTERNAL_ERROR:
+message público/requestId obligatorio; fieldErrors opcional. Details/catálogo completo en CLOUD-06.
+Sin excepción/AJV crudos. JSON Schema const con FromSchema, sin interfaces duplicadas ni coerción
+o eliminación silenciosa de campos adicionales. Money schema valida forma; codec exige rango safe.
+Revision conserva string sin Number; rango DB/protocolo específico en CLOUD-06. Primitives rechazan
+null/undefined; nullable/optional explícito por DTO futuro, sin sustituir cero. Sin rutas debug.
 
 ## Convenciones
 

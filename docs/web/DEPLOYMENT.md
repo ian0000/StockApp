@@ -54,9 +54,11 @@ pnpm 11.0.9. No copiar el Nixpacks bootstrap de otra app como garantía. DEV-01 
 instalación pnpm determinista y resolver cualquier fallo Corepack/Railpack con logs reales antes de
 llamarlo listo. Builds no llevan DB/secrets en frontend ni dependen de apps/mobile native.
 
-Scripts OBJETIVO en apps/api: build compila/bundles app+source domain/application/contracts a
-`apps/api/dist/server.js` (bundle server, external pg/auth deps compatibles); start
-`node apps/api/dist/server.js` desde root; migrate aplica SQL versionado con lock DB.
+Scripts implementados CLOUD-01: `pnpm build:api` compila contracts y API con tsc, sin bundler.
+Entry `apps/api/dist/server.js` consume `packages/contracts/dist` mediante workspace: ambos dist
+y node_modules deben conservarse. Start filtrado ejecuta `node dist/server.js` desde apps/api;
+`node apps/api/dist/server.js` desde raíz también funciona. Dev usa tsx/condition development.
+Domain/Application no se importan todavía. `migrate` sigue OBJETIVO, SQL versionado/lock DB.
 Comando build Railway `pnpm --filter @stock-app/api build`; predeploy
 `pnpm --filter @stock-app/api migrate`; start filtrado o node según script fijado en CLOUD-01.
 Migration es tarea única con advisory lock, falla y bloquea nuevo deploy si SQL falla;

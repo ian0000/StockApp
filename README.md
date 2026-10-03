@@ -42,6 +42,8 @@ React Native, Expo, Expo Router, TypeScript, SQLite y Drizzle ORM, organizados c
 | Ruta                                          | Responsabilidad                                |
 | --------------------------------------------- | ---------------------------------------------- |
 | [apps/mobile](apps/mobile/)                   | Interfaz, navegación y persistencia local      |
+| [apps/api](apps/api/)                         | Foundation HTTP local: liveness y errores      |
+| [packages/contracts](packages/contracts/)     | Schemas y codecs base de transporte            |
 | [packages/domain](packages/domain/)           | Reglas de negocio en TypeScript                |
 | [packages/application](packages/application/) | Casos de uso y contratos                       |
 | [packages/shared](packages/shared/)           | Código compartido                              |
@@ -65,13 +67,25 @@ pnpm --filter @stock-app/mobile ios
 
 La ejecución en simulador iOS requiere macOS y Xcode.
 
+Foundation API local de CLOUD-01:
+
+```sh
+pnpm --filter @stock-app/api dev
+pnpm build:api
+pnpm --filter @stock-app/api start
+```
+
+`GET http://localhost:3001/live` devuelve `{"status":"ok"}`. `HOST`/`PORT` configuran el bind.
+El build compila contracts y API; sin DB, auth, sync ni endpoints de negocio.
+Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
+
 ## Calidad
 
 ```sh
 pnpm check
 ```
 
-Ejecuta formato, lint, tipos y tests en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck` o `pnpm test`. `pnpm format` aplica el formato.
+Ejecuta formato, lint, tipos, tests y build de API en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` o `pnpm build:api`. `pnpm format` aplica el formato.
 
 GitHub Actions ejecuta `pnpm check` en pushes a `main` y pull requests hacia esa rama.
 
