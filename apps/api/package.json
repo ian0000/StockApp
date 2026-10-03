@@ -13,7 +13,9 @@
     "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
-    "test:db": "tsx --conditions=development --test test/postgres/*.test.ts test/auth/*.test.ts",
+    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts",
+    "test:ownership": "tsx --conditions=development --test test/ownership/*.test.ts",
+    "pilot:access": "tsx --conditions=development src/ownership/pilot-cli.ts",
     "test:auth": "tsx --conditions=development --test test/auth/*.test.ts",
     "auth:generate": "auth generate --config src/auth/schema-config.ts --output src/infrastructure/postgres/auth-schema.ts --adapter drizzle --dialect postgresql --yes && prettier src/infrastructure/postgres/auth-schema.ts --write",
     "auth:check": "auth check schema --config src/auth/schema-config.ts",
@@ -28,7 +30,8 @@
     "drizzle-orm": "0.45.2",
     "fastify": "5.12.5",
     "nodemailer": "10.0.14",
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "uuid": "14.0.1"
   },
   "devDependencies": {
     "@types/nodemailer": "8.0.2",

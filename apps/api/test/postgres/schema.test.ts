@@ -7,12 +7,14 @@ import {
   inventoryChangeSets,
 } from '../../src/infrastructure/postgres/schema.js';
 import { migrateDatabase } from '../../src/infrastructure/postgres/migrate.js';
-import { disposableDatabase, id } from './helpers.js';
+import { disposableDatabase, id, insertFixtureUser } from './helpers.js';
 
 test('PostgreSQL protects row integrity, scoped relationships and exact values', async (t) => {
   const pool = await disposableDatabase(t);
   await migrateDatabase(pool);
   assert.equal((await pool.query('SHOW timezone')).rows[0].TimeZone, 'UTC');
+  for (const owner of ['owner-a', 'owner-b', 'another-owner', 'rollback-owner'])
+    await insertFixtureUser(pool, owner);
   const businessA = id(),
     businessB = id(),
     inventoryA = id(),

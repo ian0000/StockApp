@@ -56,3 +56,12 @@ No promesas/SLA comerciales. Medir antes de índices extra; locks por tenant y q
 
 Un ticket no está DONE si solo compila o si su test financiero esperado se cambió para pasar.
 Un resultado NOT RUN lleva motivo y no se sustituye por PASS histórico.
+
+## CLOUD-04: ownership real
+
+test:db incluye test/ownership y nuevos tests FK/migration; workers=2 evita tormentas de conexiones,
+concurrencia funcional interna permanece real. test:ownership específico requiere build:api/DB local
+para smoke dist+SMTP+CLI compilado. Auth regression conserva TTL/cookies/password/reset.
+empty/latest, valid03 upgrade, orphan reject/journal unchanged, no-op; UUIDv7/rollback/concurrencia/
+no signup upload/A-B isolation/pilot requirements/revocation/access tested. 1539 resultados PASS,
+sin doble sumar suites específicas; conteos, comandos y gates en [CLOUD-04](CLOUD-04.md).

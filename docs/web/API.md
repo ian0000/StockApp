@@ -147,3 +147,16 @@ mensajes UI simples. requestId server-generated se retorna también en cabecera.
 Fuentes: [Fastify schemas](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/),
 [Drizzle transactions](https://orm.drizzle.team/docs/transactions). Rutas/limits son decisiones
 de esta baseline, no ejemplos copiados de otra app.
+
+## Contrato local CLOUD-04 implementado
+
+GET /v1/me (U verified): {user:{id,email,emailVerified},business:null|{id,status,cloudAccessEnabled},
+inventory:null|{id,name,currency,reportingTimeZone}}. POST /v1/business (U verified, no flag necesario):
+JSON {inventoryName,currency,reportingTimeZone}, inicio vacío únicamente; 201 creación y 200 retry
+normalizado coincidente, mismo DTO Business/Inventory sin user. 409 BUSINESS_ALREADY_EXISTS si
+payload distinto/reserva incompleta/DELETING. IDs UUIDv7 server-owned, sin aceptar campos extra/body/query.
+GET /v1/inventories/:inventoryId (S): {id,name,currency,reportingTimeZone}; foreign/missing404.
+Todos no-store/requestId; JSON Schema allowlist y errores enum usados. Sin /health ni financiera/sync.
+La tabla normativa sigue como objetivo: receipts/Idempotency-Key genérico API-01/CLOUD-06,
+import MIG-01, capabilities/OpenAPI freeze CLOUD-06, /v1/session/csrf/CORS/rate final CLOUD-05.
+No desplegar el endpoint de mutación antes de hardening. Detalle [CLOUD-04](CLOUD-04.md).

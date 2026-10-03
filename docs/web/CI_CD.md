@@ -42,3 +42,11 @@ con mocks que satisfacen el mismo schema, no endpoints ad hoc. CD paths/config d
 Cambios de contrato /v1 aditivos; incompatible se bloquea en CI y requiere /v2/coexistencia.
 API anterior disponible mientras la distribución Mobile instalada requiera su contrato;
 retiro de versión necesita plan/revisión, nunca deshabilitar Free local por update obligatorio.
+
+## Gate CLOUD-04
+
+El mismo required Quality checks test:db añade ownership, FK0003 y compiled HTTP con SMTP/CLI;
+ningún job opcional/skip ni secrets externos. Workers limitados a2, concurrency funcional dentro
+de suites preservada. Drizzle/auth generation/check siguen obligatorios. CI green + GitGuardian +
+reviews/reglas exigidas antes de merge, sin bypass. STOP main clean0/0; no CLOUD-05 automático.
+Reporte [CLOUD-04](CLOUD-04.md).

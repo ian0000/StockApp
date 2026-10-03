@@ -108,8 +108,8 @@ Backup/recovery y retención se definen exclusivamente en OPERATIONS.
 
 14 tablas, schemas catalog/ledger/state/delivery, dos migrations core inventory → delivery metadata.
 Business.ownerUserId es text NOT NULL UNIQUE SIN FK: ahora Better Auth existe, pero la relación
-FK/semántica Business.ownerUserId → User sigue DEFERRED TO CLOUD-04. DeletionRequest.userId
-es temporal nullable, sin auth FK; relación y purga/supresión definitiva dependen de CLOUD-04/API-10.
+FK/semántica Business.ownerUserId → User se materializa posteriormente en CLOUD-04 (abajo).
+DeletionRequest.userId es temporal nullable, sin auth FK; relación y purga/supresión definitiva dependen de API-10.
 No users/session/account/verification fake. Business timestamps son server timestamptz; Inventory
 y las entidades del dominio conservan epoch BIGINT. Todos los BIGINT se leen como bigint/string.
 Inventory tiene generation UUID técnico (default gen_random_uuid, no identidad comercial) y revision
@@ -142,3 +142,13 @@ Sign-up no crea Business/Inventory ni vincula owner/deletion; no orquestador de 
 El [ADR de DB](adr/ADR-WEB-004-database.md) y la
 [documentación PostgreSQL de tipos](https://www.postgresql.org/docs/current/datatype-numeric.html)
 sustentan el almacenamiento entero exacto, no una fórmula monetaria nueva.
+
+## Materialización CLOUD-04
+
+0003_business_ownership añade FK businesses.owner_user_id → user.id, NO ACTION delete/update;
+TEXT NOT NULL UNIQUE preservado. 18 tablas, cuatro migrations; historia0000..0002 intacta.
+Owners huérfanos fallan migration sin repair/fake identidad/borrado. Upgrade válido preserva fixtures.
+Business ACTIVE + cloudAccessEnabled=true exige Inventory existente mediante enable transaccional.
+Business sin Inventory permitido para futura reserva MIG-01. IDs Business/Inventory UUIDv7 server,
+generation técnico v4/revision0 intactos; Clock epoch ms inyectable para Inventory. DeletionRequest
+sin FK/lifecycle permanece API-10, no CLOUD-04. Evidencia [CLOUD-04](CLOUD-04.md).

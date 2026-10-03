@@ -4,7 +4,8 @@ Activos: credenciales/sesiones, inventario/costos/rentabilidad, recibos y backup
 CLOUD-03 implementa solo foundation auth: verified obligatorio, sesiones DB sin refresh/cache,
 cookies host-only, verify/reset TTL, revoke, redacción y defensas propias de Better Auth.
 Detalles/evidencia en [CLOUD-03](CLOUD-03.md). La tabla siguiente sigue como política V1 objetivo:
-ownership, CSRF de negocio, CORS, límites durables/por email y seguridad de clientes aún no implementados.
+CLOUD-04 implementa ownership en tres rutas y piloto por CLI. CSRF de negocio, CORS,
+límites durables/por email y seguridad de clientes aún no implementados.
 Límites: dispositivo/browser no confiable → API autenticada → PostgreSQL privado;
 public site y previews no reciben autoridad sobre datos. Railway/SMTP/operador son superficies
 de infraestructura con acceso restringido, no actores comerciales.
@@ -58,3 +59,14 @@ red privada Railway, operador verifica cifrado/controles antes de release y no l
 No claims de cumplimiento legal/certificación. [OWASP Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
 orienta deny-by-default y verificar cada acceso; [Better Auth security](https://better-auth.com/docs/reference/security)
 orienta auth/Origin/cookies. Controles son diseño que debe probarse, no auditoría de servicio desplegado.
+
+## Evidencia de ownership CLOUD-04
+
+Tres rutas locales con sesión oficial/verified, query owner+Inventory scoped y 404 ajeno;
+A own/B own200, A→B/B→A404, disable/DELETING403, inconsistent unverified403, expired/revoked401.
+Body/query mass assignment rechazado400; piloto solo CLI y enable precondiciones en transacción.
+Signup/verify crean cero datasets; bootstrap nunca enable. Error DB sanitizado/requestId/no-store.
+FK owner NO ACTION y delete-user disabled, sin cascade del negocio. Sin imports Mobile/backup.
+Los controles aplican a metadata/bootstrap implementados; aún no prueban futuras rutas financieras,
+import/export/sync. Full CSRF/Origin/CORS/rate /v1 sigue CLOUD-05; sin exposición externa.
+Reporte [CLOUD-04](CLOUD-04.md).

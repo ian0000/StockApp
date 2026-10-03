@@ -14,7 +14,12 @@ import {
   migrateDatabase,
   migrationsFolder,
 } from '../../src/infrastructure/postgres/migrate.js';
-import { disposableDatabase, id } from './helpers.js';
+import {
+  disposableDatabase,
+  id,
+  insertFixtureUser,
+  migrationPrefix,
+} from './helpers.js';
 
 test('real PostgreSQL migrates empty to latest and second run is a no-op', async (t) => {
   const pool = await disposableDatabase(t);
@@ -48,7 +53,7 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
   const journal = await pool.query(
     'SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id',
   );
-  assert.equal(journal.rowCount, 3);
+  assert.equal(journal.rowCount, 4);
   await migrateDatabase(pool);
   assert.deepEqual(
     (
@@ -122,6 +127,10 @@ test('upgrade from core revision preserves financial data and adds delivery sche
       .rows[0].count,
     '1',
   );
+  // Explicitly provision the valid auth fixture before the ownership migration.
+  // The production migration never invents missing owners.
+  await migrateDatabase(pool, await migrationPrefix(t, 3));
+  await insertFixtureUser(pool, 'fixture-owner');
   await migrateDatabase(pool);
   assert.deepEqual(
     (await pool.query('SELECT * FROM sale_items WHERE id = $1', [item])).rows,
@@ -161,7 +170,7 @@ test('upgrade from core revision preserves financial data and adds delivery sche
   assert.equal(
     (await pool.query('SELECT count(*) FROM drizzle.__drizzle_migrations'))
       .rows[0].count,
-    '3',
+    '4',
   );
   await assert.rejects(
     pool.query('UPDATE products SET metadata_revision=-1 WHERE id=$1', [
@@ -232,7 +241,9 @@ test('CLOUD-02 latest upgrades to auth without rewriting business/financial fixt
     await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id')
   ).rows;
   assert.equal(oldJournal.length, 2);
-  await migrateDatabase(pool);
+  // Preserve the original CLOUD-02 → CLOUD-03 regression independently of the new FK.
+  const authFolder = await migrationPrefix(t, 3);
+  await migrateDatabase(pool, authFolder);
   for (let i = 0; i < tables.length; i++) {
     assert.deepEqual(
       (await pool.query(`SELECT * FROM ${tables[i]}`)).rows,
@@ -247,7 +258,7 @@ test('CLOUD-02 latest upgrades to auth without rewriting business/financial fixt
   for (const table of ['user', 'account', 'session', 'verification']) {
     assert.equal((await pool.query(`SELECT id FROM "${table}"`)).rowCount, 0);
   }
-  await migrateDatabase(pool);
+  await migrateDatabase(pool, authFolder);
   assert.deepEqual(
     (await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id'))
       .rows,

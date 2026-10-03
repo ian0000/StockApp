@@ -122,3 +122,12 @@ manual del artefacto de commit verde desde Pages hasta resolver, sin pasar CD a 
 No prometer wait-for-CI nativo de Pages sin comprobarlo.
 Rollback frontend al artefacto anterior; API al build compatible con schema expand.
 Migración destructiva no se 'revierte' bajando código; plan restore aislado en OPERATIONS.
+
+## Composición local CLOUD-04
+
+Con AUTH_BASE_URL/env completas el mismo runtime monta auth + ownership /v1/me/business/Inventory.
+Sin configuración conserva foundation-only; /live200 sin DB y /health404. Migration0003 explícita
+antes de usar rutas; orphan owner rechaza deploy/migration, nunca reparar silenciosamente.
+Piloto es CLI operador con DATABASE_URL explícita y output genérico, no endpoint HTTP.
+Sin variables/proveedores externos. Mutación /v1 local JSON-only; CSRF/Origin/CORS completo/rate
+final CLOUD-05 antes de cualquier despliegue. [CLOUD-04](CLOUD-04.md).
