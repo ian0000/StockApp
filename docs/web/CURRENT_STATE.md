@@ -149,3 +149,15 @@ buildApp() conserva foundation-only; start compone auth solo con AUTH_BASE_URL y
 Pruebas PostgreSQL real incluyen upgrade CLOUD-02 y HTTP compilado con SMTP efímero en CI.
 Mobile/Contracts/Domain/Application sin cambios. Sin ownership, cloudAccess enforcement, CSRF /v1,
 CORS completo, rate limits finales, login UI, SecureStore, account deletion, sync ni infraestructura.
+
+## CLOUD-04: ownership local/test
+
+Base main4d9dd1a (PR78). FK0003 Business.owner→Better Auth User NO ACTION, tablas18/migrations4.
+GET /v1/me, POST /v1/business inicio vacío, GET Inventory metadata propio enabled; plugin/helpers
+scoped por sesión oficial, verified explícito, Business ACTIVE/flag, 404 ajeno. UUIDv7 server,
+Clock epoch ms inyectable y transacción Business+Inventory/lock owner. CLI piloto enable/disable
+transaccional e idempotente, no HTTP admin. Signup/verify no dataset ni acceso automático.
+PostgreSQL18.6, A-B/rollback/concurrency/orphan failure/valid upgrade, dist HTTP+SMTP+CLI reales.
+Contracts solo cuatro códigos adicionales; uuid14.0.1 única dependencia añadida. Mobile/Domain/
+Application intactos. CORS/CSRF/rate final, import/sync/Web/infra/deletion siguen pendientes.
+Estado actual supersede diferimientos históricos anteriores. [CLOUD-04](CLOUD-04.md).

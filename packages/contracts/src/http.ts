@@ -16,7 +16,15 @@ export const apiErrorSchema = {
       properties: {
         code: {
           type: 'string',
-          enum: ['NOT_FOUND', 'VALIDATION_ERROR', 'INTERNAL_ERROR'],
+          enum: [
+            'NOT_FOUND',
+            'VALIDATION_ERROR',
+            'INTERNAL_ERROR',
+            'UNAUTHENTICATED',
+            'EMAIL_NOT_VERIFIED',
+            'CLOUD_ACCESS_DISABLED',
+            'BUSINESS_ALREADY_EXISTS',
+          ],
         },
         message: { type: 'string', minLength: 1 },
         requestId: requestIdSchema,

@@ -107,3 +107,12 @@ Delete-user/callback, change-email/profile/password y proxy OAuth Expo deshabili
 Listado/revoke-session/revoke-other-sessions/revoke-sessions son endpoints oficiales, no aliases.
 Logout limpia credencial server; limpieza de queries/carrito y persistencia Mobile siguen en sus tickets.
 SMTP async con drain, fallo registrado solo como AUTH_EMAIL_FAILED, sin garantizar entrega/reintento durable.
+
+## Ownership implementado CLOUD-04
+
+Session oficial getSession → User verified → Business.ownerUserId → Inventory scoped.
+GET /v1/me permite no dataset/acceso disabled; POST /v1/business inicia vacío y disabled;
+GET Inventory exige ACTIVE + flag + ownership. Pilot CLI explícito, no admin HTTP ni habilitación
+signup/verify/bootstrap. FK owner NO ACTION impide borrar User con Business, sin cascada comercial.
+Delete-user sigue cerrado; API-10 orquestará cuenta/dataset. Evidencia y errores en [CLOUD-04](CLOUD-04.md).
+CORS/CSRF completo /v1 y políticas finales siguen CLOUD-05, sin despliegue externo.

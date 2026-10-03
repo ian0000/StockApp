@@ -8,7 +8,9 @@ y conexión explícita de mantenimiento/test, con servidor real local/CI; no DB 
 CLOUD-03 incorpora Better Auth 1.7.7 y SMTP provider-neutral dentro de apps/api, configuración
 y factories explícitas, bridge Fastify oficial y schema generado/migration Drizzle. Sin DI framework.
 HTTP no automigra; /live y buildApp() no necesitan auth/DB/SMTP. Sender se drena al shutdown;
-correo en memoria no es job durable. Ownership sigue separado de identidad y diferido a CLOUD-04.
+correo en memoria no es job durable. CLOUD-04 implementa ownership separado de identidad:
+session oficial → owner → Business → Inventory scoped, bootstrap vacío y piloto por CLI.
+Helpers pequeños en apps/api/src/ownership, sin framework DI ni duplicación de Application.
 
 ## Sistemas y responsabilidades
 
@@ -51,7 +53,7 @@ Un solo `ian0000/StockApp` pnpm workspace, despliegues independientes por app:
 ```text
 apps/mobile/                  EXISTENTE, UI + SQLite
 apps/web/                     OBJETIVO, SPA + API client
-apps/api/                     EXISTENTE HTTP + PostgreSQL + Better Auth/SMTP; ownership/sync OBJETIVO
+apps/api/                     EXISTENTE HTTP + PostgreSQL + Better Auth/SMTP + ownership; sync OBJETIVO
 packages/domain/              EXISTENTE, reglas puras
 packages/application/         EXISTENTE, casos de uso/ports
 packages/shared/              EXISTENTE, aún vacío; no llenar por anticipación

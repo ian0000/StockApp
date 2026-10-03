@@ -16,14 +16,16 @@ export function createAuthRuntime(
   const smtpConfig = readSmtpConfig(env);
   const pool = createPostgresPool(databaseURL);
   const emailSender = createSmtpSender(smtpConfig);
+  const database = createDatabase(pool);
   const runtime = createAuth({
-    database: createDatabase(pool),
+    database,
     emailSender,
     config,
     onEmailFailure,
   });
   return {
     auth: runtime.auth,
+    database,
     config,
     drainEmails: runtime.drainEmails,
     async close(): Promise<void> {

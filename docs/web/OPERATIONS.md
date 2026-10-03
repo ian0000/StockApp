@@ -64,3 +64,13 @@ y deberá aprobarse antes del lanzamiento Pro; piloto no implementa cobros/cance
 
 Mantenimiento durable usa jobs en PostgreSQL y scheduler del servicio, no en memoria únicamente.
 Las tareas de cuenta/backup no corren dentro de una transacción de venta.
+
+## Runbook local de acceso piloto — CLOUD-04
+
+DATABASE_URL explícita al entorno autorizado y schema latest. Usar Better Auth user ID, no email:
+`pnpm --filter @stock-app/api pilot:access -- --user-id <id> --enable` o `--disable`.
+Enable requiere user verified + Business ACTIVE + exactamente un Inventory, bajo transacción/locks;
+si falla no modifica flag. Disable bloquea rutas S sin borrar datos ni sesiones, permite DELETING.
+Repeticiones no-op, salida genérica/exit1 al fallar, Pool cerrado. Sin API admin/roles/eventos.
+No habilitación automática por cuenta ni bootstrap; pruebas solo fixtures locales. Sin proveedor
+configurado ni acceso a producción. Account deletion jobs siguen API-10. [CLOUD-04](CLOUD-04.md).

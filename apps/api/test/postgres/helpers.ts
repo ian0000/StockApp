@@ -1,10 +1,53 @@
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
+import type pg from 'pg';
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  copyFile,
+  writeFile,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { migrationsFolder } from '../../src/infrastructure/postgres/migrate.js';
 import { createPostgresPool } from '../../src/infrastructure/postgres/client.js';
 import { readTestDatabaseUrl } from '../../src/infrastructure/postgres/config.js';
 
 export function id(): string {
   return `019a0000-0000-7000-8000-${randomUUID().slice(-12)}`;
+}
+
+export async function insertFixtureUser(
+  pool: pg.Pool,
+  userId: string,
+  verified = true,
+) {
+  await pool.query(
+    'INSERT INTO "user" (id,name,email,email_verified) VALUES ($1,$1,$2,$3)',
+    [userId, `${userId}@example.test`, verified],
+  );
+}
+
+export async function migrationPrefix(t: TestContext, count: number) {
+  const folder = await mkdtemp(join(tmpdir(), 'stockapp-migration-prefix-'));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  await mkdir(join(folder, 'meta'));
+  const journal: { entries: { tag: string }[] } = JSON.parse(
+    await readFile(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+  );
+  const entries = journal.entries.slice(0, count);
+  for (const entry of entries)
+    await copyFile(
+      join(migrationsFolder, `${entry.tag}.sql`),
+      join(folder, `${entry.tag}.sql`),
+    );
+  await writeFile(
+    join(folder, 'meta', '_journal.json'),
+    JSON.stringify({ ...journal, entries }),
+  );
+  return folder;
 }
 
 export async function disposableDatabase(t: TestContext) {

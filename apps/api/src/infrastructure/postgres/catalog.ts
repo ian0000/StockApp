@@ -16,11 +16,15 @@ import {
   safeRange,
   timeChecks,
 } from './columns.js';
+import { user } from './auth-schema.js';
 export const businesses = pgTable(
   'businesses',
   {
     id: uuid('id').primaryKey(),
-    ownerUserId: text('owner_user_id').notNull().unique(),
+    ownerUserId: text('owner_user_id')
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: 'no action' }),
     status: text('status').notNull().default('ACTIVE'),
     cloudAccessEnabled: boolean('cloud_access_enabled')
       .notNull()

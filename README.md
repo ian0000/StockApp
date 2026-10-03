@@ -77,7 +77,9 @@ pnpm --filter @stock-app/api start
 
 `GET http://localhost:3001/live` devuelve `{"status":"ok"}`. `HOST`/`PORT` configuran el bind.
 El build compila contracts y API. Sin AUTH_BASE_URL, el start conserva el modo foundation;
-con configuración explícita registra Better Auth bajo /api/auth. Sin sync ni endpoints de negocio.
+con configuración explícita registra Better Auth bajo /api/auth y las tres rutas de ownership
+de CLOUD-04: /v1/me, POST /v1/business (inicio vacío) y metadata de Inventory propio habilitado.
+Sin sync ni comandos financieros; CSRF/CORS completo de negocio pendiente de CLOUD-05.
 Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
 
 ## Calidad
@@ -98,6 +100,10 @@ Persistencia API: `pnpm --filter @stock-app/api db:generate` genera SQL versiona
 El servidor HTTP no migra automáticamente; `/live` sigue independiente de DB.
 Persistencia: [CLOUD-02](docs/web/CLOUD-02.md). Identidad email/password, verify/reset, sesiones
 revocables y configuración SMTP: [CLOUD-03](docs/web/CLOUD-03.md). No hay DB Railway ni despliegue.
+Ownership, bootstrap transaccional y habilitación manual del piloto:
+[CLOUD-04](docs/web/CLOUD-04.md). Crear/verificar cuenta no crea ni sube inventario.
+El operador usa `pnpm --filter @stock-app/api pilot:access -- --user-id <id> --enable`
+o `--disable`, con DATABASE_URL explícita; no existe API administrativa.
 
 ## Documentación
 

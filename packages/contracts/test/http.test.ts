@@ -4,6 +4,7 @@ import {
   createApiError,
   type ApiErrorEnvelope,
   type LiveResponse,
+  apiErrorSchema,
 } from '../src/index.js';
 
 test('base envelopes always include code, public message and requestId', () => {
@@ -21,6 +22,24 @@ test('base envelopes always include code, public message and requestId', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(expected)), expected);
   assert.equal(Object.hasOwn(expected.error, 'fieldErrors'), false);
   assert.equal(Object.hasOwn(expected.error, 'details'), false);
+});
+
+test('ownership errors extend the envelope without removing foundation codes', () => {
+  for (const code of apiErrorSchema.properties.error.properties.code.enum) {
+    assert.equal(
+      createApiError(code, 'Mensaje público.', 'request-3').error.code,
+      code,
+    );
+  }
+  assert.deepEqual(apiErrorSchema.properties.error.properties.code.enum, [
+    'NOT_FOUND',
+    'VALIDATION_ERROR',
+    'INTERNAL_ERROR',
+    'UNAUTHENTICATED',
+    'EMAIL_NOT_VERIFIED',
+    'CLOUD_ACCESS_DISABLED',
+    'BUSINESS_ALREADY_EXISTS',
+  ]);
 });
 
 test('optional fieldErrors and the liveness response have schema-derived types', () => {
