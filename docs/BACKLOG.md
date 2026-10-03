@@ -3,6 +3,65 @@
 Registro acotado de store readiness; no sustituye el scope y las fases de
 [ROADMAP.md](ROADMAP.md) ni declara disponibilidad pública en stores.
 
+## STORE-AAB-001 — Google Play AAB Build Profile
+
+**Estado: STORE-AAB-001 READY FOR PR.** Configuración preparada y validada localmente;
+integración pendiente de PR y merge manuales.
+
+Base: `main` actualizado en `a164c8e`, con STORE-READINESS-001 (`60bc98d`)
+y MAINT-EXPO-001R (`97b6d2d`) integrados. Rama: `chore/google-play-aab-profile`.
+La auditoría `9221500` se consulta como referencia READ-ONLY; su documento
+no existe en esta base y no se copia ni se integra la rama de auditoría.
+
+`apps/mobile/eas.json` incorpora un perfil `production` explícito:
+`distribution: store`, `android.buildType: app-bundle`, Node `22.16.0` y
+pnpm `11.0.9`, sin `extends`. `alpha` conserva íntegramente distribución
+`internal`, artefacto `apk` y el mismo toolchain. CLI `24.3.0`, versiones
+locales y `requireCommit: true` se conservan. Sin `autoIncrement`, submit
+ni configuración de credenciales; versionCode pendiente de cotejar con el
+historial de Play antes del primer build autorizado.
+
+| Preparación | Estado |
+| --- | --- |
+| Production profile | READY — configuración para AAB |
+| Artifact intended | AAB |
+| PLAY_AAB_PROFILE | RESOLVED — CONFIGURED; artefacto aún no validado |
+| Build executed / AAB generated / APK generated | NO / NO / NO |
+| AAB artifact validated / signing validated | NO / NO |
+| PLAY_AAB_ARTIFACT_VALIDATION | PENDING |
+| Play upload / Play Console modified / EAS credits consumed | NO / NO / NO |
+| Credentials modified / keystore downloaded | NO / NO |
+| PRIVACY_POLICY_MISMATCH | RESOLVED EXTERNALLY — WEB-PRIVACY-MLKIT-001; contenido no duplicado aquí |
+| DATA_SAFETY_RESOLUTION | OPEN — no respuestas ni envío de formulario |
+
+Validación: JSON y semántica de campos contrastados con la
+[referencia oficial EAS](https://docs.expo.dev/eas/json/). EAS CLI config validation:
+**NOT RUN — no safe no-build validator available**; CLI no disponible en el
+proyecto ni en PATH, sin instalar herramientas adicionales.
+
+Quality gates ejecutados el 2026-10-02 (America/Guayaquil), con Node `22.16.0`
+y pnpm `11.0.9`:
+
+| Comando | Resultado |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | PASS; workspace y lockfile sin cambios |
+| `pnpm check` | PASS; format:check, lint, typecheck y suite completa |
+| Tests | 1402 PASS / 0 FAIL; Domain 428, Application 424, Mobile 550 |
+| `pnpm --filter @stock-app/mobile exec expo install --check` | PASS; dependencias actualizadas, sin mismatches |
+| `git diff --check` | PASS |
+
+JSON parseado y comparado con la base: `alpha` y `cli` intactos, perfil production
+igual al objeto requerido, sin overrides. No se añaden tests para un JSON trivial;
+`docs/` conserva su formato establecido y está excluido de Prettier.
+
+Identidad intacta: StockApp, `com.iankexpo.stockapp`, versión `0.1.0`, versionCode `1`.
+Expo `57.0.26`, React Native `0.86.3`, React `19.2.3` y baseline nativa `36/36/24`
+sin cambios. No se genera proyecto nativo, no se modifican permisos, app.json,
+dependencias, lockfile, código funcional ni `ian-k.dev`.
+Firma, manifest y artefacto se comprobarán en el primer build store autorizado.
+Configurar el perfil no declara preparación de release o publicación en Google Play.
+PR y merge permanecen manuales; no se ejecuta EAS Build ni Submit.
+
 ## STORE-READINESS-001 — In-app legal and support links
 
 **Estado: STORE-READINESS-001 READY FOR PR.** Implementado y revalidado mediante
