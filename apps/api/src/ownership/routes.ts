@@ -3,13 +3,13 @@ import { createApiError } from '@stock-app/contracts';
 import type { StockAppAuth } from '../auth/create-auth.js';
 import { bootstrapEmptyInventory, type BootstrapInput } from './bootstrap.js';
 import {
-  resolveAuthenticatedUser,
   resolveOwnDataset,
   resolveCloudInventory,
   type OwnershipDatabase,
 } from './context.js';
 import { OwnershipError } from './errors.js';
 import { businesses, inventories } from '../infrastructure/postgres/schema.js';
+import { authorizeBusinessRequest } from '../security/business.js';
 
 const noQuery = {
   type: 'object',
@@ -84,6 +84,26 @@ export function registerOwnershipRoutes(
       return foundationHandler.call(this, error, request, reply);
     });
     scoped.get(
+      '/v1/session/csrf',
+      {
+        schema: {
+          querystring: noQuery,
+          response: {
+            200: {
+              type: 'object',
+              properties: { token: { type: 'string' } },
+              required: ['token'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      async (request) => {
+        const authenticated = await authorizeBusinessRequest(auth, request);
+        return { token: auth.security.csrf(authenticated.session.id) };
+      },
+    );
+    scoped.get(
       '/v1/me',
       {
         schema: {
@@ -112,10 +132,7 @@ export function registerOwnershipRoutes(
         },
       },
       async (request) => {
-        const authenticated = await resolveAuthenticatedUser(
-          auth,
-          request.headers,
-        );
+        const authenticated = await authorizeBusinessRequest(auth, request);
         const { business, inventory } = await resolveOwnDataset(
           database,
           authenticated.user.id,
@@ -134,6 +151,7 @@ export function registerOwnershipRoutes(
     scoped.post<{ Body: BootstrapInput }>(
       '/v1/business',
       {
+        bodyLimit: 32 * 1024,
         schema: {
           body: bootstrapSchema,
           querystring: noQuery,
@@ -160,21 +178,7 @@ export function registerOwnershipRoutes(
         },
       },
       async (request, reply) => {
-        if (
-          request.headers['content-type']
-            ?.split(';')[0]
-            .trim()
-            .toLowerCase() !== 'application/json'
-        )
-          throw new OwnershipError(
-            400,
-            'VALIDATION_ERROR',
-            'Revisa los datos enviados.',
-          );
-        const authenticated = await resolveAuthenticatedUser(
-          auth,
-          request.headers,
-        );
+        const authenticated = await authorizeBusinessRequest(auth, request);
         const result = await bootstrapEmptyInventory(
           database,
           authenticated.user.id,
@@ -208,10 +212,7 @@ export function registerOwnershipRoutes(
         },
       },
       async (request) => {
-        const authenticated = await resolveAuthenticatedUser(
-          auth,
-          request.headers,
-        );
+        const authenticated = await authorizeBusinessRequest(auth, request);
         const context = await resolveCloudInventory(
           database,
           authenticated,

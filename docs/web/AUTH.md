@@ -102,7 +102,8 @@ Config env explícita AUTH_BASE_URL/APP_ORIGIN/BETTER_AUTH_SECRET; localhost HTT
 Plugin Expo oficial con init delegado que elimina su exp:// implícito de desarrollo; trusted origins
 solo API origin, APP_ORIGIN y scheme actual inventory-app://. Origin y expo-origin presentes deben
 ser exactos; callback nativo inventory-app://reset validado por la librería. No habilitar Expo Go wildcard.
-Mantener defensas propias Origin/CSRF y defaults rate limit; sin endpoint CSRF ni política final /v1.
+Mantener defensas propias Origin/CSRF de Better Auth. CLOUD-05 configura customStorage.consume
+durable PostgreSQL y límites email/IP; /v1/session/csrf pertenece al contrato de negocio separado.
 Delete-user/callback, change-email/profile/password y proxy OAuth Expo deshabilitados por disabledPaths.
 Listado/revoke-session/revoke-other-sessions/revoke-sessions son endpoints oficiales, no aliases.
 Logout limpia credencial server; limpieza de queries/carrito y persistencia Mobile siguen en sus tickets.
@@ -115,4 +116,18 @@ GET /v1/me permite no dataset/acceso disabled; POST /v1/business inicia vacío y
 GET Inventory exige ACTIVE + flag + ownership. Pilot CLI explícito, no admin HTTP ni habilitación
 signup/verify/bootstrap. FK owner NO ACTION impide borrar User con Business, sin cascada comercial.
 Delete-user sigue cerrado; API-10 orquestará cuenta/dataset. Evidencia y errores en [CLOUD-04](CLOUD-04.md).
-CORS/CSRF completo /v1 y políticas finales siguen CLOUD-05, sin despliegue externo.
+CORS/CSRF y límites /v1 implementados en CLOUD-05, sin despliegue externo. [Evidencia](CLOUD-05.md).
+
+## Protecciones implementadas CLOUD-05
+
+Better Auth 1.7.7 usa customStorage.consume oficial, enabled=true y límites IP/path30/min.
+El bridge limita endpoints sensibles a30/min/socket-IP agregado, login5/min/email y reset3/h/email.
+Email trim+lowercase; sin canonicalización Gmail. Misma respuesta429 pública para existente/ausente;
+éxito no borra contador. Header oficial X-Retry-After expuesto por CORS.
+Fastify sobrescribe x-stockapp-client-ip con request.ip y Better Auth solo lee ese header;
+trustProxy=false. X-Forwarded-For/CF-Connecting-IP/header interno del cliente no son autoridad.
+No cambios a User/Session/Account/Verification ni a TTL/cookies/verified/revoke/delete-user.
+GET /v1/session/csrf requiere sesión verified oficial; emite {token} opaco HMAC por session.id,
+no auth bearer. Reuso en misma sesión permitido; nueva sesión del mismo User obtiene otro token.
+Logout/expiración/reset invalidan acceso con cookie y token antiguos. Futuro cliente Web/Mobile
+enviará X-CSRF-Token en mutaciones /v1; no está implementado aquí. [Detalles](CLOUD-05.md).

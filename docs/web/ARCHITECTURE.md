@@ -12,6 +12,15 @@ correo en memoria no es job durable. CLOUD-04 implementa ownership separado de i
 session oficial → owner → Business → Inventory scoped, bootstrap vacío y piloto por CLI.
 Helpers pequeños en apps/api/src/ownership, sin framework DI ni duplicación de Application.
 
+CLOUD-05 añade boundary en apps/api/src/security: CORS oficial, Origin exacto antes de DB,
+HMAC-SHA256 con claves derivadas separadas CSRF/rate y sesión oficial antes del token CSRF.
+Tabla propia security_rate_limits, consume SQL ON CONFLICT atómico por PK(scope,key_hash),
+ventana fija desde primer intento; denegación no extiende ventana y count saturado.
+Auth/negocio comparten storage, tienen scopes distintos; no contador memory ni JWT propio.
+Schema Better Auth intacto. /live sigue independiente de DB; migration0004 explícita aparte.
+IP viene de socket Fastify trustProxy=false; header interno sobrescrito por servidor hacia Better Auth.
+Proxy real por verificar en DEV-01/DEV-04. [Evidencia y ventanas](CLOUD-05.md).
+
 ## Sistemas y responsabilidades
 
 | Sistema | Responsabilidad | Persistencia/autoridad |

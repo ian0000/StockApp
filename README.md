@@ -77,9 +77,9 @@ pnpm --filter @stock-app/api start
 
 `GET http://localhost:3001/live` devuelve `{"status":"ok"}`. `HOST`/`PORT` configuran el bind.
 El build compila contracts y API. Sin AUTH_BASE_URL, el start conserva el modo foundation;
-con configuración explícita registra Better Auth bajo /api/auth y las tres rutas de ownership
-de CLOUD-04: /v1/me, POST /v1/business (inicio vacío) y metadata de Inventory propio habilitado.
-Sin sync ni comandos financieros; CSRF/CORS completo de negocio pendiente de CLOUD-05.
+con configuración explícita registra Better Auth, ownership y GET /v1/session/csrf.
+CLOUD-05 añade CORS/Origin exactos, CSRF por sesión, límites JSON/body y contadores durables
+PostgreSQL. Sin sync ni comandos financieros. [Seguridad](docs/web/CLOUD-05.md).
 Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
 
 ## Calidad
@@ -91,7 +91,7 @@ pnpm check
 Ejecuta formato, lint, tipos, tests y build de API en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` o `pnpm build:api`. `pnpm format` aplica el formato.
 
 GitHub Actions ejecuta `pnpm check` en pushes a `main` y pull requests hacia esa rama.
-También ejecuta `pnpm test:db` contra PostgreSQL efímero, auth y HTTP compilado con SMTP local,
+También ejecuta `pnpm test:db` contra PostgreSQL efímero, auth, ownership, seguridad y HTTP compilado con SMTP local,
 y comprueba la generación oficial de auth/migrations. Localmente ese gate exige un build previo
 y `TEST_DATABASE_URL` de una DB disposable.
 

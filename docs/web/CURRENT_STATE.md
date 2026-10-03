@@ -159,5 +159,18 @@ Clock epoch ms inyectable y transacción Business+Inventory/lock owner. CLI pilo
 transaccional e idempotente, no HTTP admin. Signup/verify no dataset ni acceso automático.
 PostgreSQL18.6, A-B/rollback/concurrency/orphan failure/valid upgrade, dist HTTP+SMTP+CLI reales.
 Contracts solo cuatro códigos adicionales; uuid14.0.1 única dependencia añadida. Mobile/Domain/
-Application intactos. CORS/CSRF/rate final, import/sync/Web/infra/deletion siguen pendientes.
+Application intactos. CLOUD-05 supersede el diferimiento de CORS/CSRF/rate final;
+import/sync/Web/infra/deletion siguen pendientes.
 Estado actual supersede diferimientos históricos anteriores. [CLOUD-04](CLOUD-04.md).
+
+## CLOUD-05: seguridad local/CI
+
+Una ruta nueva GET /v1/session/csrf; token HMAC opaco por sesión oficial, reutilizable solo en
+esa sesión. POST /v1/business exige token y JSON, sin upload ni habilitación automática.
+CORS APP_ORIGIN exacto, credentials y preflight sin sesión/counters; Origin hostil/null rechazado.
+1 MiB global y 32 KiB bootstrap; no-store en auth y /v1 incluso errores.
+0004 añade security_rate_limits: HMAC por scope/key, consume SQL atómico, durabilidad y ventanas
+compartidas entre instancias. Auth customStorage.consume + email/IP, negocio por user.
+trustProxy=false, IP de socket entregada a Better Auth en header interno sobrescrito por servidor.
+Railway proxy/WAF/TLS/SMTP real siguen sin verificar ni configurar. Mobile/Web/Domain/Application
+sin cambios; sin APIs financieras, sync ni contracts freeze. [Reporte y gates](CLOUD-05.md).

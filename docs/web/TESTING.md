@@ -65,3 +65,17 @@ para smoke dist+SMTP+CLI compilado. Auth regression conserva TTL/cookies/passwor
 empty/latest, valid03 upgrade, orphan reject/journal unchanged, no-op; UUIDv7/rollback/concurrencia/
 no signup upload/A-B isolation/pilot requirements/revocation/access tested. 1539 resultados PASS,
 sin doble sumar suites específicas; conteos, comandos y gates en [CLOUD-04](CLOUD-04.md).
+
+## CLOUD-05: security requerido
+
+`pnpm --filter @stock-app/api test:security` es también parte de `pnpm test:db` y del required
+Quality checks con PostgreSQL18.6 real. No optional/continue-on-error/skips. CORS/preflight/Origin,
+CSRF same/cross/revoked sessions, JSON/body, no-store/requestId/redaction, auth email/IP, negocio
+user buckets, ventanas, reinicio real y dos pools/instancias/concurrencia.
+Migración CLOUD-04→latest conserva User/Session/Account/Verification y ownership; empty latest y
+no-op comprobados. Compiled HTTP con SMTP local incluye bootstrap sin/con CSRF, Origin hostil,
+token incorrecto, A/B404,429 auth y logout con token antiguo.
+Regresiones auth usan ventanas separadas con clock de rate fixture; security fija/avanza clock
+explícitamente para comprobar umbrales, sin cambiar TTL auth ni esperar horas.
+GET Inventory no requiere CSRF; orden CSRF→IDOR se prueba con mutación solo en app de test
+usando el mismo authorizeBusinessRequest, sin publicar endpoint futuro. [Conteos/gates](CLOUD-05.md).

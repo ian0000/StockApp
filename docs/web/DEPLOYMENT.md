@@ -129,5 +129,20 @@ Con AUTH_BASE_URL/env completas el mismo runtime monta auth + ownership /v1/me/b
 Sin configuración conserva foundation-only; /live200 sin DB y /health404. Migration0003 explícita
 antes de usar rutas; orphan owner rechaza deploy/migration, nunca reparar silenciosamente.
 Piloto es CLI operador con DATABASE_URL explícita y output genérico, no endpoint HTTP.
-Sin variables/proveedores externos. Mutación /v1 local JSON-only; CSRF/Origin/CORS completo/rate
-final CLOUD-05 antes de cualquier despliegue. [CLOUD-04](CLOUD-04.md).
+Sin variables/proveedores externos. CLOUD-05 implementa JSON/body, CSRF/Origin/CORS y límites
+durables locales. Aplicar también 0004 antes de habilitar tráfico autenticado. [CLOUD-05](CLOUD-05.md).
+
+## Requisitos operativos diferidos tras CLOUD-05
+
+No deploy/CD/proveedor configurado. APP_ORIGIN exacto y secret estable en servidor; no VITE_*
+ni git para secretos. Mismo secret/DB entre instancias conserva keys y CSRF; rotación requiere
+plan operativo porque cambia hashes/CSRF y reinicia identidad de buckets, no se hace aquí.
+trustProxy=false explícito. Fastify request.ip de socket sobrescribe header interno Better Auth,
+que ignora headers externos. DEV-01/DEV-04 deben verificar ingress/proxy real y logs antes de
+configurar CIDR/trust; detrás de proxy el límite actual puede agrupar clientes.
+Rate rows expiradas se reutilizan; keys que no vuelven quedan hasta mantenimiento. Index expiry
+permite purga periódica de expiradas con antigüedad >24h (ventana máxima actual1h).
+Ejemplo de operación futura, no ejecutada/configurada por este ticket:
+`DELETE FROM security_rate_limits WHERE expires_at < (extract(epoch FROM now()) * 1000)::bigint - 86400000;`
+Medir cardinalidad/retención y programar mantenimiento DEV-05 antes de producción; no job/scheduler nuevo.
+HSTS/WAF/CSP/proxy/TLS/SMTP real y monitoring siguen en sus tickets. [CLOUD-05](CLOUD-05.md).

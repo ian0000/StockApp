@@ -13,18 +13,20 @@
     "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
-    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts",
+    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts",
     "test:ownership": "tsx --conditions=development --test test/ownership/*.test.ts",
     "pilot:access": "tsx --conditions=development src/ownership/pilot-cli.ts",
     "test:auth": "tsx --conditions=development --test test/auth/*.test.ts",
     "auth:generate": "auth generate --config src/auth/schema-config.ts --output src/infrastructure/postgres/auth-schema.ts --adapter drizzle --dialect postgresql --yes && prettier src/infrastructure/postgres/auth-schema.ts --write",
     "auth:check": "auth check schema --config src/auth/schema-config.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --conditions=development src/infrastructure/postgres/migrate.ts"
+    "db:migrate": "tsx --conditions=development src/infrastructure/postgres/migrate.ts",
+    "test:security": "tsx --conditions=development --test test/security/*.test.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.7",
     "@better-auth/expo": "1.7.7",
+    "@fastify/cors": "11.3.0",
     "@stock-app/contracts": "workspace:*",
     "better-auth": "1.7.7",
     "drizzle-orm": "0.45.2",

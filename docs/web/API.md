@@ -43,7 +43,8 @@ x-request-id servidor/no-store pasan por Fastify. Fallos inesperados/5xx se sani
 genérico, sin raw SQL/stack; JSON inválido en parser Fastify usa su envelope foundation existente.
 Bridge deriva URL del AUTH_BASE_URL explícito, nunca del Host recibido; Set-Cookie múltiples preservados.
 No delete-user directo, perfil/change-email/password, social OAuth/proxy Expo ni endpoints /v1.
-Trusted origins no implementan CORS: preflight/credentials policy siguen CLOUD-05; no Web UI todavía.
+Trusted origins y CORS son controles separados: CLOUD-05 registra @fastify/cors con APP_ORIGIN
+exacto, credentials=true y preflight previo a sesión/ownership. No Web UI todavía.
 
 Convenciones siguientes corresponden a negocio futuro:
 
@@ -158,5 +159,21 @@ payload distinto/reserva incompleta/DELETING. IDs UUIDv7 server-owned, sin acept
 GET /v1/inventories/:inventoryId (S): {id,name,currency,reportingTimeZone}; foreign/missing404.
 Todos no-store/requestId; JSON Schema allowlist y errores enum usados. Sin /health ni financiera/sync.
 La tabla normativa sigue como objetivo: receipts/Idempotency-Key genérico API-01/CLOUD-06,
-import MIG-01, capabilities/OpenAPI freeze CLOUD-06, /v1/session/csrf/CORS/rate final CLOUD-05.
-No desplegar el endpoint de mutación antes de hardening. Detalle [CLOUD-04](CLOUD-04.md).
+import MIG-01 y capabilities/OpenAPI freeze CLOUD-06. /v1/session/csrf/CORS/rate ya implementados
+en CLOUD-05. Despliegue e infraestructura siguen fuera de alcance. Detalle [CLOUD-04](CLOUD-04.md).
+
+## Hardening local CLOUD-05
+
+GET /v1/session/csrf devuelve {token:string}, con sesión oficial verified y no-store.
+GET me/Inventory/csrf no exige CSRF; consume bucket120/min/user compartido.
+POST business conserva body/DTO de CLOUD-04, exige X-CSRF-Token ligado a sesión y consume60/min/user.
+Origin presente debe ser APP_ORIGIN exacto; ausente permite nativo sin saltarse sesión/CSRF.
+Orden: Origin/transport → parse/schema → sesión verified → rate user → CSRF mutación →
+bootstrap/ownership. Schema errors pueden preceder auth; no cambian stock/datos.
+CORS GET/POST/PATCH/PUT/DELETE/OPTIONS, solo Content-Type/X-CSRF-Token/Idempotency-Key;
+Idempotency-Key es header permitido, su comportamiento comercial sigue API-01.
+1 MiB global, business32KiB, application/json con charset permitido; no unknown body/query.
+Errores nuevos:403 ORIGIN_NOT_ALLOWED/CSRF_TOKEN_INVALID,413 PAYLOAD_TOO_LARGE,
+415 UNSUPPORTED_MEDIA_TYPE,429 RATE_LIMITED con Retry-After y envelope requestId.
+Auth mantiene respuestas oficiales (429 X-Retry-After); fallos inesperados sanitizados.
+No-store auth y /v1 incluso parser/security/404/500. [Pruebas](CLOUD-05.md).

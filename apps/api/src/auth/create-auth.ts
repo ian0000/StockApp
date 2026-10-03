@@ -6,14 +6,21 @@ import type { createDatabase } from '../infrastructure/postgres/client.js';
 import * as schema from '../infrastructure/postgres/schema.js';
 import { nativeOrigin, type AuthConfig } from './config.js';
 import type { EmailSender } from './email.js';
+import { createSecurity } from '../security/policy.js';
 
 export function createAuth(dependencies: {
   database: ReturnType<typeof createDatabase>;
   emailSender: EmailSender;
   config: AuthConfig;
   onEmailFailure?: () => void;
+  securityClock?: () => number;
 }) {
   const { database, emailSender, config } = dependencies;
+  const security = createSecurity(
+    database,
+    config.secret,
+    dependencies.securityClock,
+  );
   const officialExpo = expo();
   const mobilePlugin: ReturnType<typeof expo> = {
     ...officialExpo,
@@ -47,6 +54,23 @@ export function createAuth(dependencies: {
       transaction: true,
     }),
     trustedOrigins: [config.appOrigin, nativeOrigin],
+    rateLimit: {
+      enabled: true,
+      window: 60,
+      max: 30,
+      customRules: Object.fromEntries(
+        [
+          '/sign-in/email',
+          '/sign-up/email',
+          '/request-password-reset',
+          '/send-verification-email',
+          '/reset-password',
+        ].map((path) => [path, { window: 60, max: 30 }]),
+      ),
+      customStorage: {
+        consume: (key, rule) => security.consume('auth-path-ip', key, rule),
+      },
+    },
     plugins: [mobilePlugin],
     emailAndPassword: {
       enabled: true,
@@ -103,6 +127,7 @@ export function createAuth(dependencies: {
       '/expo-authorization-proxy',
     ],
     advanced: {
+      ipAddress: { ipAddressHeaders: ['x-stockapp-client-ip'] },
       useSecureCookies: config.secureCookies,
       defaultCookieAttributes: {
         httpOnly: true,
@@ -130,7 +155,7 @@ export function createAuth(dependencies: {
     telemetry: { enabled: false },
   });
   return {
-    auth,
+    auth: Object.assign(auth, { security }),
     async drainEmails(): Promise<void> {
       while (pendingEmails.size) await Promise.all(pendingEmails);
     },
