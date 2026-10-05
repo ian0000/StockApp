@@ -184,7 +184,7 @@ export function isCartReadyToRegister(cart: readonly SaleCartItem[]): boolean {
 
 export function createRegisterSaleLines(
   cart: readonly SaleCartItem[],
-): readonly RegisterSaleLineInput[] {
+): readonly Omit<RegisterSaleLineInput, 'saleItemId' | 'movementId'>[] {
   return cart.map(({ productId, quantity, unitSalePrice }) =>
     Object.freeze({ productId, quantity, unitSalePrice }),
   );

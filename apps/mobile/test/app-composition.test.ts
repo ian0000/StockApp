@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  AdjustStockUseCase,
   ArchiveProductUseCase,
   CreateBackupUseCase,
   CreateInventoryUseCase,
-  CreateProductUseCase,
   FindProductByBarcodeUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
@@ -16,12 +14,8 @@ import {
   GetTopSellingProductUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
-  RegisterPurchaseUseCase,
-  RegisterSaleUseCase,
   RestoreBackupUseCase,
   UpdateProductUseCase,
-  VoidSaleUseCase,
-  VoidPurchaseUseCase,
   type HistoryReader,
   type BackupRestoreTransaction,
   type BackupSnapshotReader,
@@ -211,11 +205,11 @@ test('composition exposes the application use cases and nothing else', () => {
     'voidPurchase',
     'voidSale',
   ]);
-  assert.ok(services.adjustStock instanceof AdjustStockUseCase);
+  assert.equal(typeof services.adjustStock.execute, 'function');
   assert.ok(services.archiveProduct instanceof ArchiveProductUseCase);
   assert.ok(services.createBackup instanceof CreateBackupUseCase);
   assert.ok(services.createInventory instanceof CreateInventoryUseCase);
-  assert.ok(services.createProduct instanceof CreateProductUseCase);
+  assert.equal(typeof services.createProduct.execute, 'function');
   assert.ok(
     services.findProductByBarcode instanceof FindProductByBarcodeUseCase,
   );
@@ -229,12 +223,12 @@ test('composition exposes the application use cases and nothing else', () => {
   );
   assert.ok(services.listHistory instanceof ListHistoryUseCase);
   assert.ok(services.listProducts instanceof ListProductsUseCase);
-  assert.ok(services.registerPurchase instanceof RegisterPurchaseUseCase);
-  assert.ok(services.registerSale instanceof RegisterSaleUseCase);
+  assert.equal(typeof services.registerPurchase.execute, 'function');
+  assert.equal(typeof services.registerSale.execute, 'function');
   assert.ok(services.restoreBackup instanceof RestoreBackupUseCase);
   assert.ok(services.updateProduct instanceof UpdateProductUseCase);
-  assert.ok(services.voidSale instanceof VoidSaleUseCase);
-  assert.ok(services.voidPurchase instanceof VoidPurchaseUseCase);
+  assert.equal(typeof services.voidSale.execute, 'function');
+  assert.equal(typeof services.voidPurchase.execute, 'function');
 });
 
 test('composition performs no persistence automatically', () => {

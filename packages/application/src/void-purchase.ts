@@ -1,18 +1,26 @@
 import {
   createInventoryMovement,
+  createPurchase,
   preparePurchaseReversal,
   type InventoryMovement,
   type InventoryState,
   type Purchase,
 } from '@stock-app/domain';
 
-import type { Clock, InventoryMovementIdGenerator } from './create-product';
+import type { Clock } from './create-product';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  authoritativeUpdatedAt,
+  type CommandTimes,
+} from './command-identity';
 import type { TransactionManager } from './ports';
 
 export type VoidPurchaseNotEligibleReason =
   'SUBSEQUENT_OR_AMBIGUOUS_MOVEMENT' | 'CURRENT_STATE_MISMATCH';
 
-export interface VoidPurchaseInput {
+export interface VoidPurchaseInput extends CommandTimes {
+  readonly reversalMovementId: string;
   readonly inventoryId: string;
   readonly purchaseId: string;
 }
@@ -35,7 +43,6 @@ export type VoidPurchaseResult =
     };
 
 interface VoidPurchaseDependencies {
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
   readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
@@ -92,6 +99,8 @@ export class VoidPurchaseUseCase {
   constructor(private readonly dependencies: VoidPurchaseDependencies) {}
 
   async execute(input: VoidPurchaseInput): Promise<VoidPurchaseResult> {
+    validateCommandTimes(input);
+    requireNewIdentities([input.reversalMovementId]);
     const inventoryId = normalizeRequiredIdentifier(
       input.inventoryId,
       'Inventory ID',
@@ -177,7 +186,7 @@ export class VoidPurchaseUseCase {
           });
         }
 
-        const timestamp = this.dependencies.clock.now();
+        const timestamp = input.createdAt;
         let plan;
 
         try {
@@ -185,7 +194,7 @@ export class VoidPurchaseUseCase {
             purchase,
             originalMovement: original,
             currentInventoryState: currentRecord.state,
-            voidedAt: timestamp,
+            voidedAt: input.occurredAt,
           });
         } catch (error) {
           throw new PurchaseVoidInconsistentDataError(error);
@@ -197,13 +206,25 @@ export class VoidPurchaseUseCase {
           );
         }
 
+        requireNewIdentities([
+          original.id,
+          input.reversalMovementId,
+          purchase.id,
+        ]);
+        const voidedPurchase = createPurchase({
+          ...plan.purchase,
+          updatedAt: authoritativeUpdatedAt(
+            purchase,
+            this.dependencies.clock.now(),
+          ),
+        });
         const reversalSpec = plan.reversals[0];
         const reversal = createInventoryMovement({
-          id: this.dependencies.inventoryMovementIdGenerator.generate(),
+          id: input.reversalMovementId,
           inventoryId,
           productId: reversalSpec.productId,
           ...reversalSpec.movement,
-          effectiveAt: timestamp,
+          effectiveAt: input.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
         });
@@ -214,11 +235,11 @@ export class VoidPurchaseUseCase {
           productId: plan.inventoryStateUpdates[0].productId,
           state: plan.inventoryStateUpdates[0].state,
         });
-        await purchaseVoidRepository.updatePurchase(plan.purchase);
+        await purchaseVoidRepository.updatePurchase(voidedPurchase);
 
         return Object.freeze({
           kind: 'VOIDED' as const,
-          purchase: plan.purchase,
+          purchase: voidedPurchase,
           reversals: Object.freeze([reversal]) as readonly [InventoryMovement],
         });
       },

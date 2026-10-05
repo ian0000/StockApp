@@ -1,5 +1,10 @@
 # Contratos API V1
 
+CLOUD-06 congela formas ejecutables en [CONTRACTS_V1](CONTRACTS_V1.md) y
+[OpenAPI 3.1.1](openapi/stockapp-v1.json), con disponibilidad implemented/planned por operación.
+Runtime usa ownership schemas compartidos; /v1/me añade capabilities de protocolo y dominio `[1]`.
+No se implementaron rutas planned ni /health. Auth permanece bajo Better Auth 1.7.7 separado.
+
 REST JSON en `https://api-stockapp.ian-k.dev/v1`. Auth library bajo `/api/auth` con
 contrato separado fijado por versión. CLOUD-01 implementa solo GET /live y handlers de errores.
 CLOUD-03 implementa el subconjunto auth documentado abajo. /health, negocio y sync siguen como objetivo.

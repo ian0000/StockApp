@@ -1,18 +1,29 @@
 import {
   createInventoryMovement,
+  createSale,
   prepareSaleReversal,
   type InventoryMovement,
   type InventoryState,
   type Sale,
 } from '@stock-app/domain';
 
-import type { Clock, InventoryMovementIdGenerator } from './create-product';
+import type { Clock } from './create-product';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  authoritativeUpdatedAt,
+  type CommandTimes,
+} from './command-identity';
 import type { InventoryStateRecord, TransactionManager } from './ports';
 
 export type VoidSaleNotEligibleReason =
   'SUBSEQUENT_OR_AMBIGUOUS_MOVEMENT' | 'CURRENT_STATE_MISMATCH';
 
-export interface VoidSaleInput {
+export interface VoidSaleInput extends CommandTimes {
+  readonly reversalMovements: readonly {
+    readonly productId: string;
+    readonly movementId: string;
+  }[];
   readonly inventoryId: string;
   readonly saleId: string;
 }
@@ -35,7 +46,6 @@ export type VoidSaleResult =
     };
 
 interface VoidSaleDependencies {
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
   readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
@@ -115,6 +125,10 @@ export class VoidSaleUseCase {
   constructor(private readonly dependencies: VoidSaleDependencies) {}
 
   async execute(input: VoidSaleInput): Promise<VoidSaleResult> {
+    validateCommandTimes(input);
+    requireNewIdentities([
+      ...input.reversalMovements.map((entry) => entry.movementId),
+    ]);
     const inventoryId = normalizeRequiredIdentifier(
       input.inventoryId,
       'Inventory ID',
@@ -196,7 +210,7 @@ export class VoidSaleUseCase {
           });
         }
 
-        const timestamp = this.dependencies.clock.now();
+        const timestamp = input.createdAt;
         let plan;
 
         try {
@@ -222,7 +236,7 @@ export class VoidSaleUseCase {
                 state: record.state,
               });
             }),
-            voidedAt: timestamp,
+            voidedAt: input.occurredAt,
           });
         } catch (error) {
           throw new SaleVoidInconsistentDataError(error);
@@ -234,14 +248,41 @@ export class VoidSaleUseCase {
           );
         }
 
+        const reversalIds = new Map(
+          input.reversalMovements.map((entry) => [
+            entry.productId,
+            entry.movementId,
+          ]),
+        );
+        requireNewIdentities([
+          ...originalIds,
+          ...reversalIds.values(),
+          sale.id,
+        ]);
+        if (
+          reversalIds.size !== input.reversalMovements.length ||
+          reversalIds.size !== plan.reversals.length ||
+          plan.reversals.some((entry) => !reversalIds.has(entry.productId))
+        )
+          throw new TypeError(
+            'Caller reversal identities must describe exactly the sale products.',
+          );
+        const voidedSale = createSale({
+          ...plan.sale,
+          updatedAt: authoritativeUpdatedAt(
+            sale,
+            this.dependencies.clock.now(),
+          ),
+        });
+
         const reversals = Object.freeze(
           plan.reversals.map(({ productId, movement }) =>
             createInventoryMovement({
-              id: this.dependencies.inventoryMovementIdGenerator.generate(),
+              id: reversalIds.get(productId)!,
               inventoryId,
               productId,
               ...movement,
-              effectiveAt: timestamp,
+              effectiveAt: input.occurredAt,
               createdAt: timestamp,
               updatedAt: timestamp,
             }),
@@ -260,11 +301,11 @@ export class VoidSaleUseCase {
           });
         }
 
-        await saleVoidRepository.updateSale(plan.sale);
+        await saleVoidRepository.updateSale(voidedSale);
 
         return Object.freeze({
           kind: 'VOIDED' as const,
-          sale: plan.sale,
+          sale: voidedSale,
           reversals,
         });
       },

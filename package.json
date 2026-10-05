@@ -14,7 +14,9 @@
     "test": "pnpm -r test",
     "build:api": "pnpm --filter @stock-app/api build",
     "test:db": "pnpm --filter @stock-app/api test:db",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api"
+    "contracts:openapi": "tsx packages/contracts/src/openapi-cli.ts",
+    "contracts:openapi:check": "tsx packages/contracts/src/openapi-cli.ts --check",
+    "check": "pnpm contracts:openapi:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

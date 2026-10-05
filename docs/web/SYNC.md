@@ -1,5 +1,11 @@
 # Sincronización Mobile ↔ Cloud
 
+CLOUD-06 congela envelope V1, devices, push/results, ChangeSet, pull/highWaterMark/cursors y snapshot
+en [CONTRACTS_V1](CONTRACTS_V1.md). /v1/me anuncia protocolVersions/domainVersions `[1]`.
+Los endpoints sync y proyecciones/outbox siguen planned; no se ejecutan comandos ni ChangeSets.
+Tombstones V1 es array vacío: no hay borrado financiero, archive/VOIDED son upserts. Tipos técnicos
+de lifecycle requieren definición concreta API-10 antes de ampliar ese campo.
+
 Fuente normativa del protocolo V1. Diseño, no código. API no recibe un CRUD del estado final.
 
 ## Autoridad y durabilidad

@@ -1,3 +1,7 @@
+import {
+  AdjustStockFixtureCaller as AdjustStockUseCase,
+  type AdjustStockFixtureInput as AdjustStockInput,
+} from './support/local-command-callers';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -11,13 +15,11 @@ import {
 } from '@stock-app/domain';
 
 import {
-  AdjustStockUseCase,
   AdjustmentCurrentCostRequiredError,
   AdjustmentProductUnavailableError,
   InvalidAdjustmentCostModeError,
   MissingAdjustmentInventoryStateError,
   NoStockAdjustmentNeededError,
-  type AdjustStockInput,
   type Clock,
   type InventoryStateRecord,
   type TransactionManager,
@@ -369,14 +371,14 @@ for (const [label, invalidInput, expected] of [
   });
 }
 
-test('rejects no-op without IDs or writes', async () => {
+test('rejects a caller-prepared no-op without writes', async () => {
   const harness = createHarness();
   await assert.rejects(
     () => harness.useCase.execute(input({ actualStock: 10 })),
     NoStockAdjustmentNeededError,
   );
-  assert.equal(harness.adjustmentIds.calls, 0);
-  assert.equal(harness.movementIds.calls, 0);
+  assert.equal(harness.adjustmentIds.calls, 1);
+  assert.equal(harness.movementIds.calls, 1);
   assert.deepEqual(harness.savedAdjustments, []);
   assert.deepEqual(harness.savedMovements, []);
   assert.deepEqual(harness.updatedStates, []);

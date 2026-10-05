@@ -1,5 +1,10 @@
 # Pruebas y DoD futura
 
+CLOUD-06 añade tests de contratos estrictos, versiones, null/zero, Percentage/rangos, UUID/v7,
+IDs duplicados, evidencia/dependencies, OpenAPI determinista/stale/refs y manifest contra runtime.
+Application prueba IDs/time exactos, venta multilínea, reversals por producto y metadata clock skew.
+Mobile conserva regresión y SQLite real (commit/retry/rollback). [Evidencia](CLOUD-06.md).
+
 Suite actual node:test/tsx y SQLite real donde corresponde, descrita en CURRENT_STATE.
 Esta tarea documental no agrega tests que reflejen texto ni altera tests existentes.
 Validación fresca en VALIDATION. Diseño de pruebas abajo pertenece a implementación futura.

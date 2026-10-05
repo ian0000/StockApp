@@ -41,7 +41,10 @@ export type EditableProductFormValues = Pick<
   'name' | 'variant' | 'barcode' | 'regularSalePrice' | 'minimumStock'
 >;
 
-type ParsedProductFormInput = Omit<CreateProductInput, 'inventoryId'>;
+type ParsedProductFormInput = Omit<
+  CreateProductInput,
+  'inventoryId' | 'productId' | 'initialMovementId' | 'occurredAt' | 'createdAt'
+>;
 
 export type ParseProductFormResult =
   | { readonly ok: true; readonly input: ParsedProductFormInput }

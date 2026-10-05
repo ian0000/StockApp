@@ -1,5 +1,10 @@
 # Modelo cloud conceptual
 
+CLOUD-06 congela la representación transport en [CONTRACTS_V1](CONTRACTS_V1.md), sin cambiar DB,
+schema, migration ni invariantes financieras. Money/Percentage son strings seguros escalados10^6;
+Revision permanece string sin límite JS-safe. Tiempos comerciales/originales preservados y updatedAt
+de metadata autoritativo quedan separados. Backup formatVersion1 conserva números locales seguros.
+
 Schema de aplicación IMPLEMENTADO por CLOUD-02; SQL/migrations versionados en apps/api/drizzle.
 Auth materializado por CLOUD-03; comandos comerciales/sync todavía no ejecutables. Drizzle PostgreSQL + driver pg;
 SQLite conserva su schema y migraciones propias. Server schema en `apps/api` será autoridad

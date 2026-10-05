@@ -464,7 +464,6 @@ function createRealSqliteHarness(database: DatabaseSync) {
   };
 
   return new VoidSaleUseCase({
-    inventoryMovementIdGenerator: { generate: () => 'reversal-real' },
     clock: { now: () => TIMESTAMP + 1 },
     transactionManager,
   });
@@ -477,10 +476,20 @@ test('real SQLite commits a void once and returns idempotently on retry', async 
     seedVoidableSale(database, 'success');
     const useCase = createRealSqliteHarness(database);
     const first = await useCase.execute({
+      occurredAt: TIMESTAMP + 1,
+      createdAt: TIMESTAMP + 1,
+      reversalMovements: [
+        { productId: 'product-success', movementId: 'reversal-real' },
+      ],
       inventoryId: 'inventory-success',
       saleId: 'sale-success',
     });
     const second = await useCase.execute({
+      occurredAt: TIMESTAMP + 1,
+      createdAt: TIMESTAMP + 1,
+      reversalMovements: [
+        { productId: 'product-success', movementId: 'reversal-real' },
+      ],
       inventoryId: 'inventory-success',
       saleId: 'sale-success',
     });
@@ -574,6 +583,11 @@ test('real SQLite rolls back reversals and stock when final Sale update fails', 
     await assert.rejects(
       () =>
         useCase.execute({
+          occurredAt: TIMESTAMP + 1,
+          createdAt: TIMESTAMP + 1,
+          reversalMovements: [
+            { productId: 'product-rollback', movementId: 'reversal-real' },
+          ],
           inventoryId: 'inventory-rollback',
           saleId: 'sale-rollback',
         }),
@@ -644,6 +658,11 @@ for (const failure of [
       await assert.rejects(
         () =>
           useCase.execute({
+            occurredAt: TIMESTAMP + 1,
+            createdAt: TIMESTAMP + 1,
+            reversalMovements: [
+              { productId: 'product-stage', movementId: 'reversal-real' },
+            ],
             inventoryId: 'inventory-stage',
             saleId: 'sale-stage',
           }),

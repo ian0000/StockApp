@@ -43,7 +43,7 @@ React Native, Expo, Expo Router, TypeScript, SQLite y Drizzle ORM, organizados c
 | --------------------------------------------- | ---------------------------------------------- |
 | [apps/mobile](apps/mobile/)                   | Interfaz, navegación y persistencia local      |
 | [apps/api](apps/api/)                         | API local y schema PostgreSQL versionado       |
-| [packages/contracts](packages/contracts/)     | Schemas y codecs base de transporte            |
+| [packages/contracts](packages/contracts/)     | Contracts V1, codecs y fuente del OpenAPI      |
 | [packages/domain](packages/domain/)           | Reglas de negocio en TypeScript                |
 | [packages/application](packages/application/) | Casos de uso y contratos                       |
 | [packages/shared](packages/shared/)           | Código compartido                              |
@@ -81,6 +81,11 @@ con configuración explícita registra Better Auth, ownership y GET /v1/session/
 CLOUD-05 añade CORS/Origin exactos, CSRF por sesión, límites JSON/body y contadores durables
 PostgreSQL. Sin sync ni comandos financieros. [Seguridad](docs/web/CLOUD-05.md).
 Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
+
+CLOUD-06 congela [contratos V1](docs/web/CONTRACTS_V1.md) y [OpenAPI](docs/web/openapi/README.md).
+`pnpm contracts:openapi` genera el JSON; `pnpm contracts:openapi:check` verifica vigencia y forma
+parte de `pnpm check`. Application preserva IDs y tiempos recibidos; la composición móvil los prepara
+offline. Los endpoints financieros/sync/import/lifecycle y Web siguen planned; /health permanece404.
 
 ## Calidad
 

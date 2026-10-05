@@ -1,3 +1,7 @@
+import {
+  RegisterPurchaseFixtureCaller as RegisterPurchaseUseCase,
+  type RegisterPurchaseFixtureInput as RegisterPurchaseInput,
+} from './support/local-command-callers';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -13,7 +17,6 @@ import {
 import {
   MissingPurchaseInventoryStateError,
   PurchaseProductUnavailableError,
-  RegisterPurchaseUseCase,
   type Clock,
   type InventoryMovementIdGenerator,
   type InventoryMovementRepository,
@@ -22,7 +25,6 @@ import {
   type ProductRepository,
   type PurchaseIdGenerator,
   type PurchaseRepository,
-  type RegisterPurchaseInput,
   type SaleItemRepository,
   type SaleRepository,
   type TransactionManager,

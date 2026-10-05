@@ -1,9 +1,8 @@
+import type { AppServices } from '../../composition/app-services';
 import { createContext, useContext } from 'react';
 
 import type {
-  AdjustStockUseCase,
   ArchiveProductUseCase,
-  CreateProductUseCase,
   CreateBackupUseCase,
   FindProductByBarcodeUseCase,
   GetProductDetailsUseCase,
@@ -13,12 +12,8 @@ import type {
   GetTopSellingProductUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
-  RegisterPurchaseUseCase,
-  RegisterSaleUseCase,
   RestoreBackupUseCase,
   UpdateProductUseCase,
-  VoidPurchaseUseCase,
-  VoidSaleUseCase,
 } from '@stock-app/application';
 import type { Inventory } from '@stock-app/domain';
 import type { BackupFileExporter } from '@/infrastructure/backup/backup-file-exporter';
@@ -33,7 +28,7 @@ export interface BackupRuntimeServices {
 
 export interface ProductRuntimeServices {
   readonly archiveProduct: ArchiveProductUseCase;
-  readonly createProduct: CreateProductUseCase;
+  readonly createProduct: AppServices['createProduct'];
   readonly findProductByBarcode: FindProductByBarcodeUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
   readonly listProducts: ListProductsUseCase;
@@ -44,18 +39,18 @@ export interface SaleRuntimeServices {
   readonly getSaleDetails: GetSaleDetailsUseCase;
   readonly getSalesSummary: GetSalesSummaryUseCase;
   readonly getTopSellingProduct: GetTopSellingProductUseCase;
-  readonly registerSale: RegisterSaleUseCase;
-  readonly voidSale: VoidSaleUseCase;
+  readonly registerSale: AppServices['registerSale'];
+  readonly voidSale: AppServices['voidSale'];
 }
 
 export interface PurchaseRuntimeServices {
   readonly getPurchaseDetails: GetPurchaseDetailsUseCase;
-  readonly registerPurchase: RegisterPurchaseUseCase;
-  readonly voidPurchase: VoidPurchaseUseCase;
+  readonly registerPurchase: AppServices['registerPurchase'];
+  readonly voidPurchase: AppServices['voidPurchase'];
 }
 
 export interface AdjustmentRuntimeServices {
-  readonly adjustStock: AdjustStockUseCase;
+  readonly adjustStock: AppServices['adjustStock'];
 }
 
 export interface HistoryRuntimeServices {

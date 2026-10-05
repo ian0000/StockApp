@@ -29,6 +29,72 @@ import { unusedPurchaseVoidRepository } from './support/unused-sale-void-reposit
 const SALE_AT = 1_776_444_000_000;
 const VOIDED_AT = SALE_AT + 1_000;
 
+test('explicit reversal IDs follow product identity even when caller order differs; times stay separate', async () => {
+  const originals = [
+    movement('original-a', 'product-a'),
+    movement('original-b', 'product-b'),
+  ];
+  const harness = createHarness({
+    items: [item('product-a'), item('product-b')],
+    originals,
+  });
+  const result = await harness.applicationCase.execute({
+    inventoryId: 'inventory-1',
+    saleId: 'sale-1',
+    occurredAt: VOIDED_AT + 250,
+    createdAt: VOIDED_AT + 500,
+    reversalMovements: [
+      { productId: 'product-b', movementId: 'caller-reversal-b' },
+      { productId: 'product-a', movementId: 'caller-reversal-a' },
+    ],
+  });
+  assert.equal(result.kind, 'VOIDED');
+  assert.deepEqual(
+    harness.savedReversals.map((entry) => [
+      entry.productId,
+      entry.id,
+      entry.effectiveAt,
+      entry.createdAt,
+    ]),
+    [
+      ['product-a', 'caller-reversal-a', VOIDED_AT + 250, VOIDED_AT + 500],
+      ['product-b', 'caller-reversal-b', VOIDED_AT + 250, VOIDED_AT + 500],
+    ],
+  );
+  assert.equal(result.sale.updatedAt, VOIDED_AT);
+  assert.equal(result.sale.createdAt, SALE_AT);
+  assert.equal(harness.ids.calls, 0);
+});
+
+test('incomplete or duplicate explicit reversal identity sets cannot persist', async () => {
+  const harness = createHarness();
+  await assert.rejects(
+    harness.applicationCase.execute({
+      inventoryId: 'inventory-1',
+      saleId: 'sale-1',
+      occurredAt: VOIDED_AT,
+      createdAt: VOIDED_AT,
+      reversalMovements: [],
+    }),
+    /identit/i,
+  );
+  assert.deepEqual(harness.savedReversals, []);
+  await assert.rejects(
+    harness.applicationCase.execute({
+      inventoryId: 'inventory-1',
+      saleId: 'sale-1',
+      occurredAt: VOIDED_AT,
+      createdAt: VOIDED_AT,
+      reversalMovements: [
+        { productId: 'product-a', movementId: 'same' },
+        { productId: 'product-b', movementId: 'same' },
+      ],
+    }),
+    /duplicate/i,
+  );
+  assert.deepEqual(harness.savedReversals, []);
+});
+
 function sale(status: Sale['status'] = 'CONFIRMED'): Sale {
   return createSale({
     id: 'sale-1',
@@ -249,13 +315,24 @@ function createHarness(options: HarnessOptions = {}) {
     },
   };
   const useCase = new VoidSaleUseCase({
-    inventoryMovementIdGenerator: ids,
     clock,
     transactionManager,
   });
 
   return {
-    useCase,
+    applicationCase: useCase,
+    useCase: {
+      execute: (input: { inventoryId: string; saleId: string }) =>
+        useCase.execute({
+          ...input,
+          occurredAt: VOIDED_AT,
+          createdAt: VOIDED_AT,
+          reversalMovements: items.map((entry, index) => ({
+            productId: entry.productId,
+            movementId: `reversal-${index + 1}`,
+          })),
+        }),
+    },
     events,
     ids,
     clock,
@@ -582,7 +659,7 @@ test('REVERSAL IDs and the shared operation timestamp come from central dependen
     inventoryId: 'inventory-1',
     saleId: 'sale-1',
   });
-  assert.equal(harness.ids.calls, 1);
+  assert.equal(harness.ids.calls, 0);
   assert.equal(harness.clock.calls, 1);
   assert.equal(harness.savedReversals[0]?.id, 'reversal-1');
   assert.equal(harness.savedReversals[0]?.createdAt, VOIDED_AT);

@@ -101,10 +101,11 @@ async function setup({
   let purchaseCalls = 0;
   const result = await new RegisterPurchaseUseCase({
     transactionManager,
-    clock: { now: () => 100 },
-    purchaseIdGenerator: { generate: () => `purchase-${++purchaseCalls}` },
-    inventoryMovementIdGenerator: { generate: () => 'movement' },
   }).execute({
+    purchaseId: `purchase-${++purchaseCalls}`,
+    movementId: 'movement',
+    occurredAt: 100,
+    createdAt: 100,
     inventoryId: 'inv',
     productId: 'product',
     quantity: 10,

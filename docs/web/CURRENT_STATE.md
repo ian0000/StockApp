@@ -1,5 +1,10 @@
 # Auditoría del estado actual
 
+Actualización CLOUD-06, 2026-10-05, base main `ce73381`: contracts V1/OpenAPI generados y
+reproducibles, capabilities de /v1/me, schemas runtime compartidos y Application con IDs/tiempo
+explícitos. Mobile prepara esas entradas en composición; Domain y schemas/migrations SQLite/Postgres
+no cambian. Cinco rutas API implemented; demás planned, incluido /health404. [Evidencia](CLOUD-06.md).
+
 Auditoría Mobile original sobre base `e2e76c6`, 2026-10-02. Actualización CLOUD-01 del
 2026-10-03 desde main `1a803a8` (PR #75): API HTTP local y contracts base ahora existen.
 La validación de la baseline está en VALIDATION; la nueva en [CLOUD-01](CLOUD-01.md).

@@ -7,6 +7,7 @@ import {
 
 import type { Clock } from './create-product';
 import type { ProductManagementRepository } from './ports';
+import { authoritativeUpdatedAt } from './command-identity';
 
 export class ProductManagementUnavailableError extends Error {
   constructor() {
@@ -73,7 +74,7 @@ export class UpdateProductUseCase {
       barcode: input.barcode,
       regularSalePrice: input.regularSalePrice,
       minimumStock: input.minimumStock,
-      updatedAt: this.dependencies.clock.now(),
+      updatedAt: authoritativeUpdatedAt(product, this.dependencies.clock.now()),
     });
 
     await this.dependencies.productRepository.update(updated);
@@ -96,7 +97,10 @@ export class ArchiveProductUseCase {
 
     if (product.isArchived) return product;
 
-    const archived = archiveProduct(product, this.dependencies.clock.now());
+    const archived = archiveProduct(
+      product,
+      authoritativeUpdatedAt(product, this.dependencies.clock.now()),
+    );
     await this.dependencies.productRepository.update(archived);
     return archived;
   }

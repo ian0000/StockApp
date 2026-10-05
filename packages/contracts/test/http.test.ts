@@ -44,6 +44,17 @@ test('ownership errors extend the envelope without removing foundation codes', (
     'PAYLOAD_TOO_LARGE',
     'UNSUPPORTED_MEDIA_TYPE',
     'RATE_LIMITED',
+    'UNSUPPORTED_PROTOCOL',
+    'REVISION_CONFLICT',
+    'COST_SNAPSHOT_CONFLICT',
+    'IDEMPOTENCY_KEY_REUSED',
+    'IMPORT_NOT_EMPTY',
+    'SYNC_RESET_REQUIRED',
+    'SNAPSHOT_EXPIRED',
+    'DOMAIN_RULE',
+    'VOID_NOT_ELIGIBLE',
+    'MONEY_OVERFLOW',
+    'TEMPORARILY_UNAVAILABLE',
   ]);
 });
 

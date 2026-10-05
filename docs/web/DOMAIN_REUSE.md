@@ -20,13 +20,15 @@ La fuente de reglas es `docs/BUSINESS_RULES.md` y su implementación probada en
 | Expo clock/crypto/SecureStore/camera/files/SQLite | mobile-only (client-only) | Conservar módulos nativos; generador server usa crypto Node |
 | Router/TanStack Query/DOM/download | web-only (client-only) | Forms y query client; ninguna autoridad contable |
 
-## Ajustes requeridos por los tickets, no realizados aquí
+## Adaptación CLOUD-06 realizada
 
-Hoy RegisterSale/Purchase generan IDs/timestamp internamente; inputs no incluyen operationId,
-occurredAt, expectedRevision ni client entity IDs. API/sync necesita preservar IDs creados offline
-y distinguir tiempo comercial de recibido. CLOUD-06 definirá input de comando en contracts y
-adaptará Application mediante IDs/clock inyectados y factories compartidas, con regresión de todos
-los casos existentes. No crear `registerSaleOnServer` con matemática duplicada.
+CreateProduct/RegisterSale/RegisterPurchase/AdjustStock reciben IDs, occurredAt y createdAt explícitos;
+no generan identidad/tiempo internamente. VoidSale/VoidPurchase preservan IDs de compensaciones por
+producto y tiempo comercial, conservando clock para updatedAt autoritativo. UpdateProduct/ArchiveProduct
+mantienen reloj del ejecutor y max(createdAt, updatedAt previo, reloj). La composición Mobile prepara
+IDs/tiempo sin cambiar UI ni requerir red. Domain no cambió; no existe `registerSaleOnServer` ni
+matemática duplicada. [CONTRACTS_V1](CONTRACTS_V1.md) separa envelope transport de inputs Application.
+operationId, versiones, expected revisions, receipts, sesión y headers pertenecen al boundary API futuro.
 
 La prevalidación de sync compara resultado derivado con snapshots locales antes de aceptar;
 los valores enviados son evidencia/precondiciones, nunca permiso para escribir stock arbitrario.

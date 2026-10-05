@@ -28,6 +28,24 @@ import { unusedSaleVoidRepository } from './support/unused-sale-void-repository'
 const PURCHASE_AT = 1_776_444_000_000;
 const VOIDED_AT = PURCHASE_AT + 1_000;
 
+test('explicit purchase reversal preserves caller ID/time and uses authoritative metadata time', async () => {
+  const harness = createHarness();
+  const result = await harness.applicationCase.execute({
+    inventoryId: 'inventory-1',
+    purchaseId: 'purchase-1',
+    reversalMovementId: 'caller-purchase-reversal',
+    occurredAt: VOIDED_AT + 250,
+    createdAt: VOIDED_AT + 500,
+  });
+  assert.equal(result.kind, 'VOIDED');
+  assert.equal(harness.savedReversals[0]?.id, 'caller-purchase-reversal');
+  assert.equal(harness.savedReversals[0]?.effectiveAt, VOIDED_AT + 250);
+  assert.equal(harness.savedReversals[0]?.createdAt, VOIDED_AT + 500);
+  assert.equal(result.purchase.updatedAt, VOIDED_AT);
+  assert.equal(result.purchase.effectiveAt, PURCHASE_AT);
+  assert.equal(harness.ids.calls, 0);
+});
+
 function purchaseFixture(
   overrides: Partial<Parameters<typeof createPurchase>[0]> = {},
 ): Purchase {
@@ -207,13 +225,21 @@ function createHarness(options: HarnessOptions = {}) {
     },
   };
   const useCase = new VoidPurchaseUseCase({
-    inventoryMovementIdGenerator: ids,
     clock,
     transactionManager,
   });
 
   return {
-    useCase,
+    applicationCase: useCase,
+    useCase: {
+      execute: (input: { inventoryId: string; purchaseId: string }) =>
+        useCase.execute({
+          ...input,
+          occurredAt: VOIDED_AT,
+          createdAt: VOIDED_AT,
+          reversalMovementId: 'reversal-1',
+        }),
+    },
     events,
     ids,
     clock,
@@ -570,7 +596,7 @@ test('REVERSAL ID and shared timestamp come from central dependencies', async ()
     inventoryId: 'inventory-1',
     purchaseId: 'purchase-1',
   });
-  assert.equal(harness.ids.calls, 1);
+  assert.equal(harness.ids.calls, 0);
   assert.equal(harness.clock.calls, 1);
   assert.equal(harness.savedReversals[0]?.id, 'reversal-1');
   assert.equal(harness.savedReversals[0]?.createdAt, VOIDED_AT);

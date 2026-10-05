@@ -1,9 +1,9 @@
+import { CreateProductFixtureCaller as CreateProductUseCase } from './support/local-command-callers';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { Money, type InventoryMovement } from '@stock-app/domain';
 import {
-  CreateProductUseCase,
   type Clock,
   type InventoryMovementIdGenerator,
   type InventoryMovementRepository,
