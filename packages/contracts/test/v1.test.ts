@@ -209,6 +209,17 @@ test('initial stock, evidence correspondence and null/zero stay explicit', () =>
   assert.throws(
     () =>
       decodeCommandEnvelope({
+        ...command('PURCHASE_REGISTER'),
+        preconditions: {
+          ...statePreconditions,
+          expectedState: { ...expectedState, unitCost: '-1' },
+        },
+      }),
+    TypeError,
+  );
+  assert.throws(
+    () =>
+      decodeCommandEnvelope({
         ...command('PRODUCT_CREATE'),
         payload: { ...payloads.PRODUCT_CREATE, initialMovementId: null },
       }),

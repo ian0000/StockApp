@@ -12026,7 +12026,7 @@
                     "unitCostSnapshot": {
                       "anyOf": [
                         {
-                          "$ref": "#/components/schemas/Money"
+                          "$ref": "#/components/schemas/NonnegativeMoney"
                         },
                         {
                           "type": "null"
@@ -12036,7 +12036,7 @@
                     "estimatedCost": {
                       "anyOf": [
                         {
-                          "$ref": "#/components/schemas/Money"
+                          "$ref": "#/components/schemas/NonnegativeMoney"
                         },
                         {
                           "type": "null"
@@ -12196,7 +12196,7 @@
                   "unitCost": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/Money"
+                        "$ref": "#/components/schemas/NonnegativeMoney"
                       },
                       {
                         "type": "null"
@@ -12376,7 +12376,7 @@
                   "unitCost": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/Money"
+                        "$ref": "#/components/schemas/NonnegativeMoney"
                       },
                       {
                         "type": "null"
@@ -12536,7 +12536,7 @@
                         "unitCost": {
                           "anyOf": [
                             {
-                              "$ref": "#/components/schemas/Money"
+                              "$ref": "#/components/schemas/NonnegativeMoney"
                             },
                             {
                               "type": "null"
@@ -12680,7 +12680,7 @@
                   "unitCost": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/Money"
+                        "$ref": "#/components/schemas/NonnegativeMoney"
                       },
                       {
                         "type": "null"

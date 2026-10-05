@@ -40,7 +40,7 @@ export const revisionExpectationSchema = {
 } as const;
 export const stateEvidenceSchema = objectSchema({
   stock: stockSchema,
-  unitCost: nullable(moneySchema),
+  unitCost: nullable(nonnegativeMoneySchema),
   lastMovementId: nullable(uuidV7Schema),
 });
 export const statePreconditionsSchema = objectSchema({
@@ -49,8 +49,8 @@ export const statePreconditionsSchema = objectSchema({
 });
 export const saleCostEvidenceSchema = objectSchema({
   productId: uuidV7Schema,
-  unitCostSnapshot: nullable(moneySchema),
-  estimatedCost: nullable(moneySchema),
+  unitCostSnapshot: nullable(nonnegativeMoneySchema),
+  estimatedCost: nullable(nonnegativeMoneySchema),
   estimatedProfit: nullable(moneySchema),
 });
 export const salePreconditionsSchema = objectSchema({

@@ -52,12 +52,12 @@ Tests nuevos entran directamente a Application para probar ausencia de regenerac
 | Domain tests | PASS; 428 tests; cero cambios en source Domain |
 | API foundation/SMTP tests | PASS; 19 tests, incluye manifest vs runtime sin DB |
 | PostgreSQL/auth/ownership/security/HTTP compilado | PASS; 148 tests, sin skipped |
-| pnpm check | PASS antes de los últimos dos tests contract; repetición final pendiente |
+| pnpm check | PASS; 1452 tests, formato/lint/types/build |
 | Build API/contratos | PASS |
 | Git diff --check | PASS |
-| Checkout limpio sin dist | Pendiente verificación final |
+| Checkout limpio sin dist | PASS; install frozen, generación/check y pnpm check con LF, sin diff |
 
-PG18.6 local efímero escucha127.0.0.1:65432, datos ficticios. SMTP local, no proveedor.
+PG18.6 local efímero en127.0.0.1:65432, datos ficticios. SMTP local, no proveedor; servidor detenido al finalizar.
 DBs disposable restantes:0 tras la suite. Total actual de suites:1600 tests.
 No nuevas migraciones, tablas ni SQL financiero; schemas PostgreSQL/SQLite intactos.
 
@@ -82,6 +82,10 @@ al responsable; no se cambia silenciosamente la frontera de compatibilidad.
 
 ## Cierre y frontera posterior
 
-PR, CI remota/GitGuardian, revisiones, merge y main actualizado: pendientes de cierre verificable.
+[PR#81](https://github.com/ian0000/StockApp/pull/81) creado y rama publicada. GitGuardian pasó en
+el head inicial; Quality checks sigue en ejecución. Revisiones/hilos observados: ninguno pendiente.
+El checkout limpio se clonó con core.autocrlf=false para conservar LF, igual que el repo original.
+Un primer clone con conversión CRLF activada falló formato; no se reformateó la baseline por eso.
+CI final, decisión UUID import, merge y main actualizado: pendientes de cierre verificable.
 No bypass, auto-merge, force push, deploy ni provider actions. No ian-k.dev/legal/pricing/Alpha/AAB.
 API-01 y WEB-01 siguen PLANNED y requieren un ticket explícito nuevo; no se comienzan como continuación.
