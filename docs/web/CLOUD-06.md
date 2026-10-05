@@ -1,7 +1,8 @@
 # CLOUD-06 — Freeze V1 Contracts + OpenAPI + Application ID/Time Adaptation
 
 2026-10-05 · Rama `feat/cloud-06-contracts-v1` · Base main `ce73381d97543ea8cc94987de15f085eeb7dbde2`.
-Estado: implementación local validada; cierre Git/CI y aclaración de compatibilidad de IDs de import pendientes.
+Estado: **CLOUD-06 NOT READY**. Ingeniería/validación local y CI verificadas; decisión de
+compatibilidad de IDs de import pendiente. PR abierto; merge y main actualizado no realizados.
 
 ## Alcance implementado
 
@@ -56,6 +57,8 @@ Tests nuevos entran directamente a Application para probar ausencia de regenerac
 | Build API/contratos | PASS |
 | Git diff --check | PASS |
 | Checkout limpio sin dist | PASS; install frozen, generación/check y pnpm check con LF, sin diff |
+| db:generate | PASS, sin cambios de schema ni migraciones nuevas |
+| auth:generate / auth:check | PASS, schema oficial sin diff |
 
 PG18.6 local efímero en127.0.0.1:65432, datos ficticios. SMTP local, no proveedor; servidor detenido al finalizar.
 DBs disposable restantes:0 tras la suite. Total actual de suites:1600 tests.
@@ -82,10 +85,23 @@ al responsable; no se cambia silenciosamente la frontera de compatibilidad.
 
 ## Cierre y frontera posterior
 
-[PR#81](https://github.com/ian0000/StockApp/pull/81) creado y rama publicada. GitGuardian pasó en
-el head inicial; Quality checks sigue en ejecución. Revisiones/hilos observados: ninguno pendiente.
+[PR#81](https://github.com/ian0000/StockApp/pull/81) creado y rama publicada. Head de implementación
+verificado: `d1e784db29d62bf335ad5f4cebe67b5b114027ea` (commit inicial `5e9f100688eb0b328081e7dec337a510b1f3deb5`).
+[CI37381094317](https://github.com/ian0000/StockApp/actions/runs/37381094317), job112002986345:
+Quality checks **SUCCESS**, incluidos frozen install, check, migrate generation, auth schema y PG/SMTP.
+[GitGuardian112002964134](https://github.com/ian0000/StockApp/runs/112002964134): **SUCCESS**.
+Revisiones/hilos/requested reviewers/teams observados: ninguno pendiente. Ruleset20942932 exige
+Quality checks (integration15368) y permite merge normal; no se utilizó bypass ni auto-merge.
 El checkout limpio se clonó con core.autocrlf=false para conservar LF, igual que el repo original.
 Un primer clone con conversión CRLF activada falló formato; no se reformateó la baseline por eso.
-CI final, decisión UUID import, merge y main actualizado: pendientes de cierre verificable.
+Un commit posterior de documentación registra esta evidencia; sus checks deben volver a estar verdes
+antes del merge. Estado actual/revisiones se verifican en el PR, nunca se extrapolan a otro head.
+
+La decisión detenida es concreta: DATA_MODEL permite importar UUID representables sin remapearlos;
+CLOUD-06 exige UUIDv7 comercial. Los DTOs/referencias actuales son estrictos v7. Un backup legacy con
+UUIDv4 sería representable en PostgreSQL pero incompatible con esos DTOs. Se pidió elegir entre
+permitir UUID legacy en lecturas/referencias (IDs nuevos siguen v7) o restringir import a v7 actualizando
+la norma. AGENTS §2/64 exige reportar la contradicción y detener solo esa decisión; no se decide silenciosamente.
+Merge/main siguen pendientes de esa respuesta y de checks verdes del head final; API-01 no inicia.
 No bypass, auto-merge, force push, deploy ni provider actions. No ian-k.dev/legal/pricing/Alpha/AAB.
 API-01 y WEB-01 siguen PLANNED y requieren un ticket explícito nuevo; no se comienzan como continuación.
