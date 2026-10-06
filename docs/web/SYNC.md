@@ -1,18 +1,21 @@
 # Sincronización Mobile ↔ Cloud
 
-API-01 materializa infraestructura receipt/hash/lock/revision/ChangeSet y GET operation durable,
-sin endpoints sync ni ejecución comercial. Misma key/hash reproduce resultado tras restart;
+API-03 materializa la política Sale de esta baseline mediante POST sales, sin implementar endpoints sync: cambios de stock/revision con mismo costo aceptan otro delta; cambio de costo o estimates produce conflicto durable. Las respuestas replay preservan la revisión/snapshots originales, sin leer costo/stock actual. Mobile/Sync siguen diferidos hasta API + Web. [Detalle](API-03.md).
+
+API-01 materializó infraestructura receipt/hash/lock/revision/ChangeSet y GET operation durable,
+sin ejecución comercial en esa etapa; API-02/03 añaden Product/Sale, sin endpoints sync.
+Misma key/hash reproduce resultado tras restart;
 hash distinto409, conflict/rejected sin revisión, transient sin receipt. Resolución dependsOn/parent
 receipt/expectedStateRevision.operationId y DEPENDENCY_BLOCKED queda en adapters/SYNC-02.
 [Motor y pruebas](API-01.md). El resto del protocolo sigue como diseño futuro.
 
 CLOUD-06 congela envelope V1, devices, push/results, ChangeSet, pull/highWaterMark/cursors y snapshot
 en [CONTRACTS_V1](CONTRACTS_V1.md). /v1/me anuncia protocolVersions/domainVersions `[1]`.
-Los endpoints sync y proyecciones/outbox siguen planned; no se ejecutan comandos ni ChangeSets.
+Los endpoints sync y proyecciones/outbox siguen planned; no ejecutan comandos ni ChangeSets vía sync.
 Tombstones V1 es array vacío: no hay borrado financiero, archive/VOIDED son upserts. Tipos técnicos
 de lifecycle requieren definición concreta API-10 antes de ampliar ese campo.
 
-Fuente normativa del protocolo V1. Diseño, no código. API no recibe un CRUD del estado final.
+Fuente normativa del protocolo sync V1, aún planned. API no recibe un CRUD del estado final.
 
 ## Autoridad y durabilidad
 

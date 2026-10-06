@@ -49,6 +49,7 @@ export function stateDto(
   productId: string,
   state: InventoryState,
   lastMovementId: string | null,
+  stateRevision: bigint = 0n,
 ): InventoryStateDto {
   return {
     inventoryId,
@@ -56,7 +57,7 @@ export function stateDto(
     stock: state.stock,
     unitCost:
       state.unitCost === null ? null : encodeMoney(state.unitCost.scaledUnits),
-    stateRevision: '0',
+    stateRevision: stateRevision.toString(),
     lastMovementId,
   };
 }

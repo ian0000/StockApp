@@ -57,9 +57,12 @@ test('getOperation is implemented with both parameters, OperationReceipt 200 and
   for (const candidate of routeContracts.filter(
     (entry) =>
       (entry.command &&
-        !['createProduct', 'updateProduct', 'archiveProduct'].includes(
-          entry.operationId,
-        )) ||
+        ![
+          'createProduct',
+          'updateProduct',
+          'archiveProduct',
+          'registerSale',
+        ].includes(entry.operationId)) ||
       entry.operationId.startsWith('sync') ||
       entry.operationId === 'health',
   ))

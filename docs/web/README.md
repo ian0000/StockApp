@@ -1,6 +1,8 @@
 # StockApp Cloud + Web — baseline de arquitectura
 
-API-02 implementa create/update/archive Product y stock inicial con los mismos casos de uso Application/Domain, adaptadores ligados al tx API-01 y replay durable. Nueve rutas implemented; lecturas Product API-08 y demás comandos/sync/Web siguen planned. [Detalle y validación](API-02.md).
+API-03 implementa [RegisterSale multiproducto](API-03.md): snapshots de costo exactos/null, stock negativo, evidencia verificada antes de writes, stateRevision/lastMovementId y replay histórico durable. Diez rutas implemented; detalles/void/lecturas y otros comandos/sync/Web siguen planned, sin deployment.
+
+En API-02 se implementaron create/update/archive Product y stock inicial con los mismos casos de uso Application/Domain, adaptadores ligados al tx API-01 y replay durable. Esa etapa alcanzó nueve rutas implemented; API-03 añade la décima. Lecturas Product API-08 y demás comandos/sync/Web siguen planned. [Detalle y validación](API-02.md).
 
 API-01 materializa [motor transaccional y receipts](API-01.md): Inventory FOR UPDATE, fingerprint,
 idempotencia, revisiones/ChangeSets atómicos y GET operation. API-02 añade tres comandos Product;
@@ -14,8 +16,8 @@ ARCH-STOCKAPP-WEB-001 · 2026-10-02 (America/Guayaquil).
 Estado: baseline aprobada humanamente y mergeada mediante PR #75. CLOUD-01 incorpora
 foundation API local y contracts base; CLOUD-02 añade schema/migrations PostgreSQL y QA real local/CI.
 CLOUD-03 añade identidad Better Auth/SMTP y sesiones PostgreSQL probadas local/CI.
-CLOUD-04 añade ownership, bootstrap vacío y acceso piloto local/CI; comandos financieros,
-sync, Web y despliegue siguen pendientes.
+CLOUD-04 añadió ownership, bootstrap vacío y acceso piloto local/CI. API-02/03 materializan Product
+y Sale; los demás comandos financieros, sync, Web y despliegue siguen pendientes.
 Base auditada: `e2e76c623d5c1043fdd15d2710200ad5891c8ec0` de `main`.
 
 ## Lectura y autoridad
@@ -40,6 +42,7 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [CLOUD-06](CLOUD-06.md) | Freeze V1, OpenAPI y regresión Application/Mobile |
 | [API-01](API-01.md) | Motor transaccional, locking, idempotencia, receipts y GET operation |
 | [API-02](API-02.md) | Product commands, stock inicial, metadata revisions y replay durable |
+| [API-03](API-03.md) | Sale multiproducto, evidencia/costos históricos, concurrencia y replay |
 | [CONTRACTS_V1](CONTRACTS_V1.md) | Fuente ejecutable, catálogo, IDs/tiempo y límites congelados |
 | [OpenAPI](openapi/README.md) | Artefacto machine-readable y generación/check |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |

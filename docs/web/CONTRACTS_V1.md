@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-03 marca implemented solo registerSale (POST sales200), con InventoryParams existente explícito; Diez rutas runtime. Payload/expectedCosts/Money/UUID/error catalog intactos; OpenAPI regenerado. Sale tiene min1 línea y límite global1MiB, sin máximo comercial nuevo. [Evidencia](API-03.md).
+
 API-02 añade ProductParams (inventoryId/productId UUID genéricos, incluido legacyv4) y marca implementadas solo createProduct/updateProduct/archiveProduct. Status200, bodies y UUID policy permanecen congelados. OpenAPI generado y guard del registry ahora permiten command implemented con body/cloud-inventory. [Evidencia](API-02.md).
 
 Adición compatible API-01: OperationParams requiere inventoryId UUID genérico y operationId UUIDv7;

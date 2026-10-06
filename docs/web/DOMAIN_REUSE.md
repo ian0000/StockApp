@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+API-03 usa RegisterSaleUseCase sin modificar Application/Domain: listByInventory completo y scoped, captura writes exactas; compara evidencia de costo y estimates antes de SQL. Persistencia respeta Sale → Items → Movements → States en CommandTransaction existente, sin nested transaction ni segunda fórmula. Reutiliza productFromRow/movementValues/movementDto/stateDto; StateDto admite revision con default0 intacto para Product. [Detalle](API-03.md).
+
 API-02 reutiliza CreateProductUseCase, UpdateProductUseCase y ArchiveProductUseCase sin modificar Application/Domain. Ports mínimos PostgreSQL ligados a la transacción API-01; runInTransaction invoca el callback y difiere únicamente State hasta después de Movement, sin BEGIN adicional. Update/Archive conservan authoritativeUpdatedAt del reloj servidor. Cloud revisions/receipts/scope quedan en API. [Detalle](API-02.md).
 
 La fuente de reglas es `docs/BUSINESS_RULES.md` y su implementación probada en
