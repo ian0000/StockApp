@@ -263,10 +263,7 @@ export function validateContractRegistry(): void {
       Object.keys(route.responses).length === 0
     )
       throw new Error('Invalid route contract.');
-    if (
-      route.command &&
-      (!route.body || route.implementationStatus !== 'planned')
-    )
+    if (route.command && (!route.body || route.auth !== 'cloud-inventory'))
       throw new Error('Invalid command route boundary.');
   }
   for (const schema of Object.values(contractSchemas))

@@ -38,9 +38,15 @@ importers:
       '@fastify/cors':
         specifier: 11.3.0
         version: 11.3.0
+      '@stock-app/application':
+        specifier: workspace:*
+        version: link:../../packages/application
       '@stock-app/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@stock-app/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       better-auth:
         specifier: 1.7.7
         version: 1.7.7(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.23.1)(expo-sqlite@57.0.3(expo@57.0.26)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.86.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3))(kysely@0.29.6)(pg@8.23.1))(pg@8.23.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -75,6 +81,9 @@ importers:
       drizzle-kit:
         specifier: 0.31.10
         version: 0.31.10
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
       smtp-server:
         specifier: 3.19.16
         version: 3.19.16

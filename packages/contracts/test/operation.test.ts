@@ -23,7 +23,7 @@ test('OperationParams explicitly requires generic Inventory UUID and v7 operatio
   ])
     assert.throws(() => validate(params), TypeError);
 });
-test('getOperation is implemented with both parameters, OperationReceipt 200 and ApiError 404; commercial routes stay planned', () => {
+test('getOperation is implemented with both parameters, OperationReceipt 200 and ApiError 404; remaining commands stay planned', () => {
   const route = routeContracts.find(
     (candidate) => candidate.operationId === 'getOperation',
   );
@@ -56,7 +56,10 @@ test('getOperation is implemented with both parameters, OperationReceipt 200 and
   );
   for (const candidate of routeContracts.filter(
     (entry) =>
-      entry.command ||
+      (entry.command &&
+        !['createProduct', 'updateProduct', 'archiveProduct'].includes(
+          entry.operationId,
+        )) ||
       entry.operationId.startsWith('sync') ||
       entry.operationId === 'health',
   ))

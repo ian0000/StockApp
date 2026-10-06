@@ -1,5 +1,7 @@
 # StockApp Cloud + Web — baseline de arquitectura
 
+API-02 implementa create/update/archive Product y stock inicial con los mismos casos de uso Application/Domain, adaptadores ligados al tx API-01 y replay durable. Nueve rutas implemented; lecturas Product API-08 y demás comandos/sync/Web siguen planned. [Detalle y validación](API-02.md).
+
 API-01 materializa [motor transaccional y receipts](API-01.md): Inventory FOR UPDATE, fingerprint,
 idempotencia, revisiones/ChangeSets atómicos y GET operation. Seis rutas implemented; comandos
 comerciales, sync/import/lifecycle y Web siguen planned. No deployment.
@@ -37,6 +39,7 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [CLOUD-05](CLOUD-05.md) | CORS/CSRF/rate limits durables y transporte |
 | [CLOUD-06](CLOUD-06.md) | Freeze V1, OpenAPI y regresión Application/Mobile |
 | [API-01](API-01.md) | Motor transaccional, locking, idempotencia, receipts y GET operation |
+| [API-02](API-02.md) | Product commands, stock inicial, metadata revisions y replay durable |
 | [CONTRACTS_V1](CONTRACTS_V1.md) | Fuente ejecutable, catálogo, IDs/tiempo y límites congelados |
 | [OpenAPI](openapi/README.md) | Artefacto machine-readable y generación/check |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |

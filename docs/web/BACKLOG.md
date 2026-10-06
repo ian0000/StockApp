@@ -1,5 +1,9 @@
 # Backlog de implementación Cloud/Web
 
+## Prioridad de ejecución humana — 2026-10-06
+
+Completar API F1 (API-02..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Tras API-02 detenerse, sin comenzar otro ticket.
+
 47 tickets: CLOUD-01..06 y API-01 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md)); 40 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
@@ -28,7 +32,7 @@ siguen planned; no comenzarlos por completar sus dependencias.
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
 | API-01 | IMPLEMENTED — Receipt/idempotencia/lock/revisión/ChangeSet transaccional + GET operation | CLOUD-05, CLOUD-06 | PostgreSQL real, retry/ACK perdido/hash mismatch, commit ordering sin gaps/rollback, A/B, OpenAPI |
-| API-02 | Product create/edit/archive y stock inicial | API-01 | Metadata version, barcode unique scoped, movement/state inicial atómicos |
+| API-02 | IMPLEMENTED — Product create/edit/archive y stock inicial; [evidencia](API-02.md) | API-01 | Metadata version, barcode unique scoped, movement/state inicial atómicos |
 | API-03 | RegisterSale multiproducto | API-02 | All-or-nothing, costos históricos/null, negativo permitido, same cost delta concurrency |
 | API-04 | RegisterPurchase un producto | API-02 | Expected state, promedio exacto, snapshots y analysis; test-first críticos |
 | API-05 | AdjustStock conteo físico | API-02 | Motivo/costo válido, stateRevision, movimiento; no ajuste cero |

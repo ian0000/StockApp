@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-02 añade ProductParams (inventoryId/productId UUID genéricos, incluido legacyv4) y marca implementadas solo createProduct/updateProduct/archiveProduct. Status200, bodies y UUID policy permanecen congelados. OpenAPI generado y guard del registry ahora permiten command implemented con body/cloud-inventory. [Evidencia](API-02.md).
+
 Adición compatible API-01: OperationParams requiere inventoryId UUID genérico y operationId UUIDv7;
 GET operation pasa implemented y mantiene OperationReceipt/ApiError congelados. Seis rutas actuales.
 Motor transaccional y schemas internos de receipt permanecen server-only. [API-01](API-01.md).
