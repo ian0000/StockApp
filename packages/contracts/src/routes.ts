@@ -310,15 +310,19 @@ export const routeContracts: readonly RouteContract[] = [
     'ProductPage',
     { query: 'PaginationQuery' },
   ),
-  planned(
-    'post',
-    `${inventoryPath}/sales`,
-    'registerSale',
-    'Atomically register all sale lines; negative stock remains allowed',
-    'cloud-inventory',
-    'RegisterSaleResult',
-    { body: 'RegisterSaleCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/sales`,
+      'registerSale',
+      'Atomically register all sale lines; negative stock remains allowed',
+      'cloud-inventory',
+      'RegisterSaleResult',
+      { body: 'RegisterSaleCommand', command: true },
+    ),
+    implementationStatus: 'implemented',
+    params: 'InventoryParams',
+  },
   planned(
     'get',
     `${inventoryPath}/sales/{saleId}`,

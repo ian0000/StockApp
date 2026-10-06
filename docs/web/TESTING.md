@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+API-03 añade test/sales/*.test.ts al test:db obligatorio y focused test:sales. PostgreSQL18.6 real: test-first financiero, mixed unknown/zero, deltas negativos, evidence/overflow, late rollback en seis etapas, dos pools/DB-observed locks, archive/metadata races, A/B, legacy IDs, corrupción, Node compiled/auth/SMTP/restart y replay histórico. Regresiones API-01/API-02/auth/ownership/security/Mobile conservadas. [Conteos y gates](API-03.md).
+
 API-02 añade test/products/*.test.ts al test:db obligatorio y focused test:products. PostgreSQL18.6 real: stock0/positivo/costo0, FKs/rollback tardío, barcode, metadata revisions/BIGINT, dos pools con lock observado, aislamiento A/B, legacy UUID y replay. HTTP compilado usa auth real/SMTP local y reinicia runtime para recuperar CreateResult y MutationResult. ProductParams/manifest/OpenAPI participan en pnpm check. [Conteos y gates](API-02.md).
 
 API-01 añade test:commands a test:db obligatorio: PostgreSQL18.6, dos pools/barriers/DB-observed locks,

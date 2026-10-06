@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+API-03 integra tests/sales en test:db del required Quality checks existente; sin skip/optional/continue-on-error ni cambios de workflow/deploy. Frozen install, pnpm check/build/OpenAPI y generación DB/auth sin drift son gates. STOP después de API-03/main limpio0/0, sin API-04/WEB-01/SYNC-01 automático. [Evidencia](API-03.md).
+
 API-02 integra test/products/*.test.ts en test:db required existente, sin skip/optional/continue-on-error. Build API mantiene typecheck y empaqueta Application/Domain puros con esbuild0.28.2, preservando módulos API y entry points Node. Frozen lockfile incorpora dos workspace links y esbuild dev; schema/auth generation sigue sin drift. STOP después de API-02, main limpio0/0; sin API-03/SYNC-01/WEB-01 ni deploy. [Evidencia](API-02.md).
 
 API-01 integra test/commands/*.test.ts en pnpm test:db y required Quality checks existente,

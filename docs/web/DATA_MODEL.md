@@ -1,5 +1,7 @@
 # Modelo cloud conceptual
 
+API-03 materializa Sale/Items/SALE Movements/States en tablas existentes: una transacción y ChangeSet por venta completa. Estado conserva unitCost, avanza stateRevision +1n por producto y lastMovementId de su línea. KNOWN/UNKNOWN, costo0 y profit negativo exactos; ningún Product update ni cambio de schema/migration. [Evidencia](API-03.md).
+
 API-02 materializa Product/InventoryState/INITIAL_STOCK en las tablas existentes, sin migración. Metadata revision inicial0, incremento exclusivo en update/archive; state revision inicial0. lastMovementId null sin stock o movimiento inicial con stock positivo. Escritura Product → Movement → State para respetar FK inmediata, mismo tx. Barcode activo unique por Inventory, reusable al archivar. [Evidencia](API-02.md).
 
 API-01 usa inventories.revision, operation_receipts e inventory_change_sets existentes; sin schema

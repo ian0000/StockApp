@@ -4,6 +4,7 @@ import { buildApp } from './app.js';
 import { readServerConfig } from './config.js';
 import { createAuthRuntime } from './auth/runtime.js';
 import { registerAuthRoutes } from './auth/routes.js';
+import { registerSaleRoutes } from './sales/routes.js';
 import { registerProductRoutes } from './products/routes.js';
 import { registerOwnershipRoutes } from './ownership/routes.js';
 
@@ -37,6 +38,7 @@ export async function startServer(): Promise<void> {
       registerAuthRoutes(app, runtime.auth, runtime.config);
       registerOwnershipRoutes(app, runtime.auth, runtime.database);
       registerProductRoutes(app, runtime.auth, runtime.database);
+      registerSaleRoutes(app, runtime.auth, runtime.database);
     }
     await app.listen(readServerConfig(process.env));
   } catch {
