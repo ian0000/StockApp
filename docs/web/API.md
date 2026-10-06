@@ -1,5 +1,7 @@
 # Contratos API V1
 
+API-04 materializa POST purchases200/RegisterPurchaseResult con Purchase un Product, estado completo y revision literal exacta. Referencia `{operationId}` en revisión directa se rechaza400 antes del executor; el envelope global Sync sigue congelado. PriceAnalysis informativo y replay histórico desde Product snapshot/ChangeSet, sin auto-price update. [Detalle](API-04.md).
+
 API-03 implementa POST /v1/inventories/:inventoryId/sales: RegisterSaleCommand → 200 RegisterSaleResult congelado. InventoryParams genérico, IDs nuevos v7, Product legacyv4; seguridad CLOUD-05 y engine API-01. Cost mismatch409 COST_SNAPSHOT_CONFLICT sin details extra; missing/archived/foreign404; Money overflow422; corrupción500 sin receipt. [Detalle](API-03.md).
 
 API-02 implementa POST products, PATCH product y POST archive con 200 y resultados comerciales congelados. ProductParams valida inventoryId/productId UUID genéricos; IDs nuevos v7. CSRF/Origin/JSON/rate/ownership existentes; errores de transporte antes del executor, terminales durables 404/409/422. Product create replay reconstruye Product/state/movement desde ChangeSet; mutation replay Product. [Detalles](API-02.md).

@@ -11,6 +11,7 @@ import { createAuth } from '../src/auth/create-auth.js';
 import { readAuthConfig } from '../src/auth/config.js';
 import { createDatabase } from '../src/infrastructure/postgres/client.js';
 import { registerSaleRoutes } from '../src/sales/routes.js';
+import { registerPurchaseRoutes } from '../src/purchases/routes.js';
 import { registerProductRoutes } from '../src/products/routes.js';
 import { registerOwnershipRoutes } from '../src/ownership/routes.js';
 
@@ -75,6 +76,7 @@ test('implemented route schemas match the manifest and future routes remain abse
   registerOwnershipRoutes(app, runtime.auth, database);
   registerProductRoutes(app, runtime.auth, database);
   registerSaleRoutes(app, runtime.auth, database);
+  registerPurchaseRoutes(app, runtime.auth, database);
   await app.ready();
   assert.deepEqual(
     [...registered].sort(),

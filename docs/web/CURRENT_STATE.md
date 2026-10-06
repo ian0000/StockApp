@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+Actualización API-04 (2026-10-06), base main `e5b55fa`: POST purchases200 real con RegisterPurchaseUseCase, precondiciones exactas bajo lock, snapshot Product de aceptación y reconstrucción durable de estados/priceAnalysis. Once rutas implemented; sin cambios Domain/Application/Mobile/schema/migrations/dependencias. [Evidencia](API-04.md).
+
 Actualización API-03 (2026-10-06), base main `3e5f5e3`: POST sales200 real con RegisterSaleUseCase existente, adaptador tx-bound/capture, evidencia de costos, deltas combinables con mismo costo, ChangeSet completo y replay tras reinicio. Diez rutas implemented; Domain/Application/Mobile/schema/migrations/dependencias intactos. [Evidencia](API-03.md).
 
 Actualización API-02 (2026-10-06), base main `6b1fee7`: tres comandos Product implementados; nueve rutas implemented y /health404. Initial Product/state/movement atómicos, metadataRevision, barcode scoped, replay tras reinicio y aislamiento A/B. Application/Domain/Mobile y schema/migrations intactos. API enlaza los paquetes existentes y compila sus módulos puros con esbuild0.28.2 (dev dependency ya presente transitivamente). [Evidencia](API-02.md).

@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-04 marca registerPurchase implemented y añade InventoryParams reutilizado, sin cambiar schemas/envelope V1. En POST purchases directo solo expectedStateRevision literal string; `{operationId}` se rechaza400/sin receipt antes del executor. Resolución de dependencia sigue SYNC-02; el contrato global conserva ambos modos. [Detalle](API-04.md).
+
 API-03 marca implemented solo registerSale (POST sales200), con InventoryParams existente explícito; Diez rutas runtime. Payload/expectedCosts/Money/UUID/error catalog intactos; OpenAPI regenerado. Sale tiene min1 línea y límite global1MiB, sin máximo comercial nuevo. [Evidencia](API-03.md).
 
 API-02 añade ProductParams (inventoryId/productId UUID genéricos, incluido legacyv4) y marca implementadas solo createProduct/updateProduct/archiveProduct. Status200, bodies y UUID policy permanecen congelados. OpenAPI generado y guard del registry ahora permiten command implemented con body/cloud-inventory. [Evidencia](API-02.md).

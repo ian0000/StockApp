@@ -340,15 +340,19 @@ export const routeContracts: readonly RouteContract[] = [
     'VoidSaleResult',
     { body: 'VoidSaleCommand', command: true },
   ),
-  planned(
-    'post',
-    `${inventoryPath}/purchases`,
-    'registerPurchase',
-    'Register a single-product purchase and derived costs',
-    'cloud-inventory',
-    'RegisterPurchaseResult',
-    { body: 'RegisterPurchaseCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/purchases`,
+      'registerPurchase',
+      'Register a single-product purchase and derived costs',
+      'cloud-inventory',
+      'RegisterPurchaseResult',
+      { body: 'RegisterPurchaseCommand', command: true },
+    ),
+    implementationStatus: 'implemented',
+    params: 'InventoryParams',
+  },
   planned(
     'get',
     `${inventoryPath}/purchases/{purchaseId}`,

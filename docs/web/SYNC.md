@@ -1,5 +1,7 @@
 # Sincronización Mobile ↔ Cloud
 
+API-04 materializa Purchase con revision literal y snapshot stock/costo/lastMovement exactos: cambio de stock incluso con mismo costo produce REVISION_CONFLICT durable, sin recompute silencioso. Product metadata-only puede aceptar y analysis usa precio visible bajo lock. Direct operation-ref mode400; dependency resolution sigue SYNC-02. Sin endpoints sync ni cambios Mobile. [Detalle](API-04.md).
+
 API-03 materializa la política Sale de esta baseline mediante POST sales, sin implementar endpoints sync: cambios de stock/revision con mismo costo aceptan otro delta; cambio de costo o estimates produce conflicto durable. Las respuestas replay preservan la revisión/snapshots originales, sin leer costo/stock actual. Mobile/Sync siguen diferidos hasta API + Web. [Detalle](API-03.md).
 
 API-01 materializó infraestructura receipt/hash/lock/revision/ChangeSet y GET operation durable,

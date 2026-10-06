@@ -1,5 +1,7 @@
 # Modelo cloud conceptual
 
+API-04 usa Purchase/Movement/State existentes: promedio/snapshots Domain, Movement con costo de compra, State con costo promedio/revision+1/lastMovement. ChangeSet incluye Product snapshot de aceptación aunque no hay Product SQL mutation/metadataRevision change. Sin schema/migration. [Evidencia](API-04.md).
+
 API-03 materializa Sale/Items/SALE Movements/States en tablas existentes: una transacción y ChangeSet por venta completa. Estado conserva unitCost, avanza stateRevision +1n por producto y lastMovementId de su línea. KNOWN/UNKNOWN, costo0 y profit negativo exactos; ningún Product update ni cambio de schema/migration. [Evidencia](API-03.md).
 
 API-02 materializa Product/InventoryState/INITIAL_STOCK en las tablas existentes, sin migración. Metadata revision inicial0, incremento exclusivo en update/archive; state revision inicial0. lastMovementId null sin stock o movimiento inicial con stock positivo. Escritura Product → Movement → State para respetar FK inmediata, mismo tx. Barcode activo unique por Inventory, reusable al archivar. [Evidencia](API-02.md).
