@@ -54,7 +54,7 @@ totales, costo promedio, lucro y movimientos son outputs verificados por server.
 | Sale | retry o costo concurrente/archive | Delta de stock combinable SOLO si costo vigente equivale al snapshot local y producto activo; precio explícito del comando se conserva | Si costo difiere, conflicto; no recalcular ganancia antigua |
 | Purchase | Sí, stock/costo concurrentes | Expected stateRevision exacta; derive average y compare snapshots | Revisión de estado/resultados, no recompute automático |
 | Adjustment | Sí, conteo quedó viejo | Expected stateRevision exacta; conteo observado no LWW | Nuevo conteo/costo aceptado por usuario |
-| VoidSale/VoidPurchase | Operación ya voided/movimiento posterior | Ya VOIDED → éxito; si no, última inequívoca + estado exacto, toda la operación | Bloqueo comprensible sin void parcial |
+| VoidSale/VoidPurchase | Operación ya voided/movimiento posterior | Cloud: misma operationId/hash → replay; distinta → estado exacto primero, stale409; ya VOIDED/current422. CONFIRMED exige última inequívoca y reversión completa. ALREADY_VOIDED permanece local | Bloqueo comprensible sin void parcial |
 
 Sale puede aceptar stock distinto por otras ventas con mismo costo: servidor aplica su delta al
 estado actual y genera stockBefore/After canónicos, conserva precio/costo/profit exactos de la
@@ -79,6 +79,11 @@ UNIQUE `(businessId,operationId)` y IDs de entidad; fingerprint diferente con mi
 409 `IDEMPOTENCY_KEY_REUSED`. Receipt con resultado/referencias se conserva durante vida del dataset.
 Repetir key devuelve el resultado original y referencias, aunque entidad sea luego VOIDED;
 consulta actual refresca el estado. Repetir void ya aplicado con otra key no crea reversal adicional.
+
+Decisión humana API-06: otra key con evidencia obsoleta →CONFLICT REVISION_CONFLICT409; con evidencia
+vigente de una Sale ya VOIDED →REJECTED VOID_NOT_ELIGIBLE422. No hay ACCEPTED no-op, revisión vacía
+ni ChangeSet vacío. La misma key/hash sí devuelve el VOIDED original. API-01 no cambia.
+Aplicar esta misma política en API-07 VoidPurchase; su implementación permanece fuera del batch.
 
 Registrar y consumir receipt usa mismo lock. Timeout después del commit: consultar receipt o reenviar
 misma key; jamás generar UUID nuevo porque no llegó respuesta. Web conserva command/operationId

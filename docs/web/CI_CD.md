@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+API-06 incorpora void-sales al required test:db existente y focused test:void-sales; sin skips/opcional/continue-on-error ni cambios de workflow/deploy. Validar frozen install/check/build/OpenAPI/DB/Auth sin drift y CI/GitGuardian del head final antes de merge normal/main clean0/0. Decisión humana Cloud documentada; STOP final API-06, sin API-07+ automático. [Evidencia](API-06.md).
+
 Batch humano API-04→API-05→API-06 vigente: cada ticket tiene rama/commit/PR/checks/merge independientes. API-05 añade tests de ajustes al required existente. Avanzar solo con todos los gates PASS, CI/GitGuardian del head final, merge normal y main limpio0/0; cualquier STOP condition detiene el batch. STOP final API-06, sin deploy. Las notas inferiores describen autorizaciones históricas ya sustituidas por este batch. [API-05](API-05.md).
 
 API-04 integra test/purchases en test:db required existente, sin skip/optional/continue-on-error. Frozen install/check/build/OpenAPI y generate DB/Auth sin drift; CI/GitGuardian del head final antes de merge normal. STOP después de API-04/main limpio0/0, sin API-05/WEB-01/SYNC-01 automático. [Evidencia](API-04.md).

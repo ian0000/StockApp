@@ -64,6 +64,7 @@ test('getOperation is implemented with both parameters, OperationReceipt 200 and
           'registerSale',
           'registerPurchase',
           'adjustStock',
+          'voidSale',
         ].includes(entry.operationId)) ||
       entry.operationId.startsWith('sync') ||
       entry.operationId === 'health',

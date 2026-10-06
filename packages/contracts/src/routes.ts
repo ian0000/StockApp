@@ -32,6 +32,7 @@ export const contractSchemas = {
   InventoryParams: ownership.inventoryParamsSchema,
   OperationParams: ownership.operationParamsSchema,
   ProductParams: ownership.productParamsSchema,
+  SaleParams: ownership.saleParamsSchema,
   Inventory: ownership.inventoryMetadataSchema,
   Business: ownership.businessSchema,
   Me: ownership.meResponseSchema,
@@ -113,7 +114,8 @@ export interface RouteContract {
   readonly summary: string;
   readonly auth: AuthLevel;
   readonly implementationStatus: 'implemented' | 'planned';
-  readonly params?: 'InventoryParams' | 'OperationParams' | 'ProductParams';
+  readonly params?:
+    'InventoryParams' | 'OperationParams' | 'ProductParams' | 'SaleParams';
   readonly query?: ContractSchemaName;
   readonly body?: ContractSchemaName;
   readonly responses: Readonly<Record<number, ContractSchemaName>>;
@@ -331,15 +333,19 @@ export const routeContracts: readonly RouteContract[] = [
     'cloud-inventory',
     'SaleDetail',
   ),
-  planned(
-    'post',
-    `${inventoryPath}/sales/{saleId}/void`,
-    'voidSale',
-    'Void the complete eligible sale, or return already voided',
-    'cloud-inventory',
-    'VoidSaleResult',
-    { body: 'VoidSaleCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/sales/{saleId}/void`,
+      'voidSale',
+      'Void eligible sale; same operation replays, distinct stale void conflicts',
+      'cloud-inventory',
+      'VoidSaleResult',
+      { body: 'VoidSaleCommand', command: true },
+    ),
+    params: 'SaleParams',
+    implementationStatus: 'implemented',
+  },
   {
     ...planned(
       'post',

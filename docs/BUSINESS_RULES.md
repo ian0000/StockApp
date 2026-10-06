@@ -1149,10 +1149,18 @@ que existen movimientos posteriores.
 
 ### Idempotencia y consistencia
 
-Una solicitud repetida sobre una operación ya `VOIDED` devuelve éxito idempotente con el estado ya
+En Domain/Application y la aplicación local, una solicitud repetida sobre una operación ya `VOIDED` devuelve éxito idempotente con el estado ya
 anulado y no crea movimientos ni modifica stock otra vez. Si una operación todavía figura
 `CONFIRMED` pero ya existe algún `REVERSAL` de sus movimientos, se trata como inconsistencia de datos:
 no se escriben cambios adicionales.
+
+Para Cloud API V1 (decisión humana de API-06), la idempotencia corresponde a `operationId` + hash,
+no al identificador de Sale/Purchase. La misma operación hace replay durable de su resultado original,
+sin otra reversión, estado, revisión o ChangeSet. Un comando distinto valida primero sus precondiciones
+de estado: si quedaron obsoletas devuelve `409 REVISION_CONFLICT`, aunque la operación ya esté `VOIDED`.
+Con evidencia vigente y operación ya `VOIDED`, devuelve `422 VOID_NOT_ELIGIBLE`; no crea un nuevo
+commit Cloud no-op. `ALREADY_VOIDED` permanece en Domain/Application/local y en el contrato compartido.
+Esta política aplica también a API-07 VoidPurchase cuando se implemente, sin adelantar ese ticket.
 
 Un producto archivado no bloquea por sí solo la anulación de una operación histórica elegible. La
 anulación no desarchiva el producto ni restaura nombre, variante, barcode, stock mínimo o precio

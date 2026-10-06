@@ -10,6 +10,23 @@ import { bootstrapEmptyInventory } from '../../src/ownership/bootstrap.js';
 import { createCommand, updateCommand, archiveCommand } from './helpers.js';
 import { id } from '../postgres/helpers.js';
 
+const PRIVATE_BARCODE_LOG_CANARY = 'PRODUCT_BARCODE_PRIVATE_CANARY_Q7X9K2';
+
+function assertPrivateBarcodeAbsent(logs: string) {
+  assert.ok(!logs.includes(PRIVATE_BARCODE_LOG_CANARY));
+}
+
+test('barcode log canary detects leaks without colliding with numeric telemetry', () => {
+  assertPrivateBarcodeAbsent('{"responseTime":22.138200000001234}');
+  assert.throws(
+    () =>
+      assertPrivateBarcodeAbsent(
+        JSON.stringify({ barcode: PRIVATE_BARCODE_LOG_CANARY }),
+      ),
+    assert.AssertionError,
+  );
+});
+
 test('Product HTTP commands retain shared security, transport boundary, ownership, durable receipts and sanitized responses', async (t) => {
   let now = Date.now();
   const f = await authFixture(t, {}, () => now),
@@ -48,7 +65,7 @@ test('Product HTTP commands retain shared security, transport boundary, ownershi
   const a = await owner('a'),
     b = await owner('b');
   const base = (scope = a) => `/v1/inventories/${scope.inventoryId}/products`;
-  const create = createCommand({ barcode: '001234' });
+  const create = createCommand({ barcode: PRIVATE_BARCODE_LOG_CANARY });
   const mutations = [
     { method: 'POST' as const, url: base(), command: create },
     {
@@ -224,6 +241,7 @@ test('Product HTTP commands retain shared security, transport boundary, ownershi
       });
       assert.equal(first.statusCode, 200);
       createSchemaValidator(contractSchemas.CreateProductResult)(first.json());
+      assert.equal(first.json().product.barcode, PRIVATE_BARCODE_LOG_CANARY);
       const replay = await send('POST', base(), create, headers());
       assert.deepEqual(replay.json(), first.json());
       const mismatch = await send(
@@ -314,7 +332,7 @@ test('Product HTTP commands retain shared security, transport boundary, ownershi
     'PATCH increments metadata; stale terminal conflict and archive results/receipts use frozen shapes',
     async () => {
       const update = updateCommand(create.payload.productId, '0', {
-        barcode: '001234',
+        barcode: PRIVATE_BARCODE_LOG_CANARY,
       });
       const updated = await send(
         'PATCH',
@@ -433,8 +451,11 @@ test('Product HTTP commands retain shared security, transport boundary, ownershi
       assert.equal(rows.rows[0].count, '1');
     },
   );
+  const logs = f.logs.join('');
+  assertPrivateBarcodeAbsent(logs);
+  assert.match(logs, /"responseTime":\d/);
   assert.doesNotMatch(
-    f.logs.join(''),
-    /001234|FOREIGN_NAME_CANARY|FOREIGN_BARCODE_CANARY|Fictional Product|Updated Product/,
+    logs,
+    /FOREIGN_NAME_CANARY|FOREIGN_BARCODE_CANARY|Fictional Product|Updated Product/,
   );
 });
