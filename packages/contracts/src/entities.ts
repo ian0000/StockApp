@@ -17,7 +17,7 @@ import {
   revisionSchema,
   stockSchema,
   timestampSchema,
-  uuidV7Schema,
+  uuidSchema,
 } from './transport.js';
 
 export const entityTimes = {
@@ -41,8 +41,8 @@ export const adjustmentCostModeSchema = {
   enum: ['USE_CURRENT_COST', 'CUSTOM_COST'],
 } as const;
 export const productSchema = objectSchema({
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
   name: textSchema,
   variant: optionalTextSchema,
   barcode: optionalTextSchema,
@@ -53,12 +53,12 @@ export const productSchema = objectSchema({
   ...entityTimes,
 });
 export const inventoryStateSchema = objectSchema({
-  inventoryId: uuidV7Schema,
-  productId: uuidV7Schema,
+  inventoryId: uuidSchema,
+  productId: uuidSchema,
   stock: stockSchema,
   unitCost: nullable(nonnegativeMoneySchema),
   stateRevision: revisionSchema,
-  lastMovementId: nullable(uuidV7Schema),
+  lastMovementId: nullable(uuidSchema),
 });
 export const productReadSchema = objectSchema({
   product: productSchema,
@@ -68,8 +68,8 @@ export const productReadSchema = objectSchema({
   markup: nullable(percentageSchema),
 });
 export const saleSchema = objectSchema({
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
   status: operationStatusSchema,
   totalAmount: nonnegativeMoneySchema,
   estimatedCost: nullable(nonnegativeMoneySchema),
@@ -78,10 +78,10 @@ export const saleSchema = objectSchema({
   ...operationTimes,
 });
 const saleItemFields = {
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
-  saleId: uuidV7Schema,
-  productId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
+  saleId: uuidSchema,
+  productId: uuidSchema,
   quantity: quantitySchema,
   unitSalePrice: positiveMoneySchema,
   subtotal: nonnegativeMoneySchema,
@@ -106,9 +106,9 @@ export const saleItemSchema = {
   ],
 } as const;
 export const purchaseSchema = objectSchema({
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
-  productId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
+  productId: uuidSchema,
   quantity: quantitySchema,
   unitCost: nonnegativeMoneySchema,
   totalAmount: nonnegativeMoneySchema,
@@ -130,9 +130,9 @@ export const priceAnalysisSchema = objectSchema({
   costChanged: booleanSchema,
 });
 export const adjustmentSchema = objectSchema({
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
-  productId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
+  productId: uuidSchema,
   stockBefore: stockSchema,
   actualStock: nonnegativeStockSchema,
   difference: stockSchema,
@@ -142,9 +142,9 @@ export const adjustmentSchema = objectSchema({
   ...operationTimes,
 });
 export const movementSchema = objectSchema({
-  id: uuidV7Schema,
-  inventoryId: uuidV7Schema,
-  productId: uuidV7Schema,
+  id: uuidSchema,
+  inventoryId: uuidSchema,
+  productId: uuidSchema,
   type: {
     type: 'string',
     enum: [
@@ -161,8 +161,8 @@ export const movementSchema = objectSchema({
   stockAfter: stockSchema,
   unitCostSnapshot: nullable(nonnegativeMoneySchema),
   sourceType: optionalTextSchema,
-  sourceId: nullable(uuidV7Schema),
-  reversalOfMovementId: nullable(uuidV7Schema),
+  sourceId: nullable(uuidSchema),
+  reversalOfMovementId: nullable(uuidSchema),
   metadata: optionalTextSchema,
   ...operationTimes,
 });

@@ -8,6 +8,7 @@ import {
   emptyObjectSchema,
 } from './schema.js';
 import {
+  uuidSchema,
   uuidV7Schema,
   protocolVersionSchema,
   domainVersionSchema,
@@ -15,7 +16,7 @@ import {
 
 export const noQuerySchema = emptyObjectSchema;
 export const inventoryMetadataSchema = objectSchema({
-  id: uuidV7Schema,
+  id: uuidSchema,
   name: textSchema,
   currency: { type: 'string', pattern: '^[A-Z]{3}(?![\\s\\S])' },
   reportingTimeZone: textSchema,
@@ -58,13 +59,9 @@ export const bootstrapResponseSchema = objectSchema({
   inventory: inventoryMetadataSchema,
 });
 export const csrfResponseSchema = objectSchema({ token: textSchema });
-// Keep the existing UUID route validation: an unknown v4 inventory still reaches scoped 404.
+// Stored inventory IDs may be legacy UUIDs; unknown valid IDs reach scoped 404.
 export const inventoryParamsSchema = objectSchema({
-  inventoryId: {
-    type: 'string',
-    pattern:
-      '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?![\\s\\S])',
-  },
+  inventoryId: uuidSchema,
 });
 export type MeResponse = FromSchema<typeof meResponseSchema>;
 export type BootstrapRequest = FromSchema<typeof bootstrapRequestSchema>;

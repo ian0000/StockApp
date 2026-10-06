@@ -12,6 +12,7 @@ import {
   protocolVersionSchema,
   revisionSchema,
   timestampSchema,
+  uuidSchema,
   uuidV7Schema,
 } from './transport.js';
 import { commandEnvelopeSchema } from './commands.js';
@@ -37,7 +38,7 @@ export const deviceRegistrationSchema = objectSchema({
 });
 export const deviceRegistrationResultSchema = objectSchema({
   deviceId: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
 });
 export const changeUpsertsSchema = objectSchema({
   products: arrayOf(productSchema),
@@ -57,7 +58,7 @@ export const tombstonesSchema = {
     'Empty in V1: archived products and voided operations are upserts. No financial deletion semantics.',
 } as const;
 export const changeSetSchema = objectSchema({
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   revision: revisionSchema,
   serverRecordedAt: timestampSchema,
   upserts: changeUpsertsSchema,
@@ -105,7 +106,7 @@ export const changesQuerySchema = objectSchema({
   cursor: cursorSchema,
 });
 export const changesResponseSchema = objectSchema({
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   highWaterMark: revisionSchema,
   changeSets: { ...arrayOf(changeSetSchema), maxItems: MAX_CHANGESETS },
   nextCursor: nullable(cursorSchema),
@@ -114,7 +115,7 @@ export const changesResponseSchema = objectSchema({
 export const snapshotRequestSchema = objectSchema({ deviceId: uuidV7Schema });
 export const snapshotDescriptorSchema = objectSchema({
   snapshotId: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   highWaterMark: revisionSchema,
   expiresAt: timestampSchema,
   cursor: cursorSchema,
@@ -125,7 +126,7 @@ export const snapshotPageQuerySchema = objectSchema({
 });
 export const snapshotPageSchema = objectSchema({
   snapshotId: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   highWaterMark: revisionSchema,
   upserts: changeUpsertsSchema,
   nextCursor: nullable(cursorSchema),

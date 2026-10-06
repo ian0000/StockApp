@@ -1,6 +1,6 @@
 # Backlog de implementación Cloud/Web
 
-47 tickets: CLOUD-01/CLOUD-02/CLOUD-03/CLOUD-04/CLOUD-05 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md)); CLOUD-06 **IN PROGRESS / CIERRE PENDIENTE** ([evidencia](CLOUD-06.md)); 41 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01/CLOUD-02/CLOUD-03/CLOUD-04/CLOUD-05/CLOUD-06 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y compatibilidad UUID](CLOUD-06.md)); 41 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -14,11 +14,11 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 | CLOUD-03 | IMPLEMENTED — Better Auth email/password/sesiones/SMTP | CLOUD-02 | Verify/reset/revoke, cookie/Expo contract server, secrets locales ficticios; PostgreSQL/SMTP/HTTP tests |
 | CLOUD-04 | IMPLEMENTED — Ownership Business/Inventory y habilitación piloto | CLOUD-03 | Owner FK NO ACTION, contexto scoped, bootstrap vacío atómico, piloto CLI, signup no upload, A/B isolation |
 | CLOUD-05 | IMPLEMENTED — Seguridad transport/secrets/CSRF/rate limits | CLOUD-04 | Allowlist/size/redaction, CSRF/Origin, brute force durable; SECURITY tests |
-| CLOUD-06 | IN PROGRESS — Contracts V1 congelados y adaptación Application IDs/tiempo | CLOUD-02, CLOUD-04 | OpenAPI/schema/DTO, ID/timestamps offline, regression consumers, ninguna fórmula duplicada |
+| CLOUD-06 | IMPLEMENTED — Contracts V1, compatibilidad UUID legacy y Application IDs/tiempo | CLOUD-02, CLOUD-04 | OpenAPI/schema/DTO, nuevos IDs v7/referencias UUID, tiempos offline, regresión, ninguna fórmula duplicada |
 
 Siguiente ticket planificado tras CLOUD-06: **API-01**, requiere solicitud explícita independiente.
 
-CLOUD-06 fue solicitado explícitamente y tiene implementación local validada; falta cierre documentado.
+CLOUD-06 y CLOUD-06-FIX fueron solicitados explícitamente y tienen implementación/validación documentadas.
 OpenAPI/DTO/envelopes V1 existen. API-01/WEB-01 y todos los runtime financieros/sync/import/lifecycle
 siguen planned; no comenzarlos por completar sus dependencias.
 

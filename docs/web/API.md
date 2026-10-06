@@ -53,7 +53,8 @@ exacto, credentials=true y preflight previo a sesión/ownership. No Web UI todav
 
 Convenciones siguientes corresponden a negocio futuro:
 
-IDs comerciales UUIDv7; Money/Percentage enteros escalados como strings (sin decimales ni exponentes),
+IDs comerciales nuevos UUIDv7; IDs almacenados/históricos y referencias son UUID válidos genéricos,
+incluido UUIDv4 preservado sin remapeo. Money/Percentage enteros escalados como strings (sin decimales ni exponentes),
 epoch ms seguros como números, revisiones como strings. Payload `null` distinto de campo ausente.
 Cada comando de negocio lleva operationId, protocolVersion/domainVersion, occurredAt,
 preconditions, payload; entity IDs deterministas del command. Web usa UUIDv7 nuevo solo para nueva

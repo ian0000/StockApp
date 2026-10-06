@@ -34,6 +34,22 @@ estar reservados. Web/API no permiten escribir en Inventory reservado mientras i
 Cancelar libera reserva y elimina staging; usuario puede seguir trabajando local-only. Import de
 backup desde Web ofrece selección/preview y el mismo protocolo; no cambia restore Mobile existente.
 
+## Compatibilidad de identidad aprobada — CLOUD-06-FIX
+
+La futura frontera cloud acepta IDs históricos que sean UUID válidos representables por PostgreSQL,
+incluidos UUIDv4 y otras versiones admitidas por el schema UUID genérico. Preserva exactamente cada
+Inventory/Product/Sale/SaleItem/Purchase/StockAdjustment/InventoryMovement ID y sus relaciones;
+no regenera, remapea ni reejecuta operaciones. DTOs/read models/ChangeSets y referencias a esas
+entidades aceptan el mismo UUID. Una venta nueva sobre un producto UUIDv4 conserva ese productId
+y crea saleId, saleItemId y movementId UUIDv7; anular una venta/compra UUIDv4 conserva su ID y
+crea movimientos de reversión UUIDv7. Business, deviceId, snapshotId, importId y operationId nuevos
+siguen v7; Inventory.generation es UUID técnico genérico.
+
+Backup local formatVersion 1 sigue aceptando strings locales y Restore conserva su semántica.
+Si contiene IDs no UUID, el futuro import cloud debe rechazarlos con explicación y sin escrituras,
+sin alterar el archivo, los IDs ni la posibilidad de restaurarlo localmente. CLOUD-06-FIX congela
+estos contratos; MIG-01 implementará validación profunda, staging y activación.
+
 ## Duplicados y fallos
 
 UNIQUE owner/business, entity IDs y import hash/operationId; repeat commit devuelve receipt.

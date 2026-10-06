@@ -820,7 +820,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -1169,7 +1169,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -1373,7 +1373,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -1608,7 +1608,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -1952,7 +1952,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -2165,7 +2165,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -2174,7 +2174,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -2379,7 +2379,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -2388,7 +2388,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -2735,7 +2735,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -2744,7 +2744,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -3088,7 +3088,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -3316,7 +3316,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -3660,7 +3660,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -3669,7 +3669,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -3876,7 +3876,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -3885,7 +3885,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -4232,7 +4232,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -4576,7 +4576,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -4585,7 +4585,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -4792,7 +4792,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -4801,7 +4801,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -5148,7 +5148,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -5492,7 +5492,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -5717,7 +5717,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -5932,7 +5932,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -6268,7 +6268,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -6602,7 +6602,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -6851,7 +6851,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -7195,7 +7195,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           },
           {
@@ -9009,7 +9009,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}(?![\\s\\S])"
+              "pattern": "^(?:00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})(?![\\s\\S])"
             }
           }
         ],
@@ -9946,8 +9946,7 @@
         "type": "object",
         "properties": {
           "inventoryId": {
-            "type": "string",
-            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?![\\s\\S])"
+            "$ref": "#/components/schemas/UUID"
           }
         },
         "required": [
@@ -9959,7 +9958,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "name": {
             "type": "string",
@@ -10144,10 +10143,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "name": {
             "type": "string",
@@ -10218,10 +10217,10 @@
         "type": "object",
         "properties": {
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "productId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "stock": {
             "$ref": "#/components/schemas/Stock"
@@ -10242,7 +10241,7 @@
           "lastMovementId": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               {
                 "type": "null"
@@ -10306,10 +10305,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "status": {
             "type": "string",
@@ -10381,16 +10380,16 @@
             "type": "object",
             "properties": {
               "id": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "inventoryId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "saleId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "quantity": {
                 "$ref": "#/components/schemas/Quantity"
@@ -10442,16 +10441,16 @@
             "type": "object",
             "properties": {
               "id": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "inventoryId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "saleId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "quantity": {
                 "$ref": "#/components/schemas/Quantity"
@@ -10505,13 +10504,13 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "productId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "quantity": {
             "$ref": "#/components/schemas/Quantity"
@@ -10591,13 +10590,13 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "productId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "stockBefore": {
             "$ref": "#/components/schemas/Stock"
@@ -10665,13 +10664,13 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "productId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "type": {
             "type": "string",
@@ -10716,7 +10715,7 @@
           "sourceId": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               {
                 "type": "null"
@@ -10726,7 +10725,7 @@
           "reversalOfMovementId": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               {
                 "type": "null"
@@ -11204,7 +11203,7 @@
                 "const": "SALE"
               },
               "id": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "totalAmount": {
                 "$ref": "#/components/schemas/Money"
@@ -11245,10 +11244,10 @@
                 "const": "PURCHASE"
               },
               "id": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productName": {
                 "type": "string",
@@ -11310,10 +11309,10 @@
                 "const": "ADJUSTMENT"
               },
               "id": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "productName": {
                 "type": "string",
@@ -11440,7 +11439,7 @@
                 "type": "object",
                 "properties": {
                   "productId": {
-                    "$ref": "#/components/schemas/UUIDv7"
+                    "$ref": "#/components/schemas/UUID"
                   },
                   "name": {
                     "type": "string",
@@ -11762,7 +11761,7 @@
             "type": "object",
             "properties": {
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "name": {
                 "type": "string",
@@ -11880,7 +11879,7 @@
             "type": "object",
             "properties": {
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               }
             },
             "required": [
@@ -11967,7 +11966,7 @@
                   "type": "object",
                   "properties": {
                     "productId": {
-                      "$ref": "#/components/schemas/UUIDv7"
+                      "$ref": "#/components/schemas/UUID"
                     },
                     "saleItemId": {
                       "$ref": "#/components/schemas/UUIDv7"
@@ -12021,7 +12020,7 @@
                   "type": "object",
                   "properties": {
                     "productId": {
-                      "$ref": "#/components/schemas/UUIDv7"
+                      "$ref": "#/components/schemas/UUID"
                     },
                     "unitCostSnapshot": {
                       "anyOf": [
@@ -12135,7 +12134,7 @@
                 "$ref": "#/components/schemas/Timestamp"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "quantity": {
                 "$ref": "#/components/schemas/Quantity"
@@ -12206,7 +12205,7 @@
                   "lastMovementId": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/UUIDv7"
+                        "$ref": "#/components/schemas/UUID"
                       },
                       {
                         "type": "null"
@@ -12293,7 +12292,7 @@
                 "$ref": "#/components/schemas/Timestamp"
               },
               "productId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "actualStock": {
                 "$ref": "#/components/schemas/NonnegativeStock"
@@ -12386,7 +12385,7 @@
                   "lastMovementId": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/UUIDv7"
+                        "$ref": "#/components/schemas/UUID"
                       },
                       {
                         "type": "null"
@@ -12464,7 +12463,7 @@
             "type": "object",
             "properties": {
               "saleId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "createdAt": {
                 "$ref": "#/components/schemas/Timestamp"
@@ -12475,7 +12474,7 @@
                   "type": "object",
                   "properties": {
                     "productId": {
-                      "$ref": "#/components/schemas/UUIDv7"
+                      "$ref": "#/components/schemas/UUID"
                     },
                     "movementId": {
                       "$ref": "#/components/schemas/UUIDv7"
@@ -12506,7 +12505,7 @@
                   "type": "object",
                   "properties": {
                     "productId": {
-                      "$ref": "#/components/schemas/UUIDv7"
+                      "$ref": "#/components/schemas/UUID"
                     },
                     "expectedStateRevision": {
                       "oneOf": [
@@ -12546,7 +12545,7 @@
                         "lastMovementId": {
                           "anyOf": [
                             {
-                              "$ref": "#/components/schemas/UUIDv7"
+                              "$ref": "#/components/schemas/UUID"
                             },
                             {
                               "type": "null"
@@ -12633,7 +12632,7 @@
             "type": "object",
             "properties": {
               "purchaseId": {
-                "$ref": "#/components/schemas/UUIDv7"
+                "$ref": "#/components/schemas/UUID"
               },
               "createdAt": {
                 "$ref": "#/components/schemas/Timestamp"
@@ -12690,7 +12689,7 @@
                   "lastMovementId": {
                     "anyOf": [
                       {
-                        "$ref": "#/components/schemas/UUIDv7"
+                        "$ref": "#/components/schemas/UUID"
                       },
                       {
                         "type": "null"
@@ -12752,7 +12751,7 @@
             "$ref": "#/components/schemas/UUIDv7"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           }
         },
         "required": [
@@ -13067,7 +13066,7 @@
         "type": "object",
         "properties": {
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "revision": {
             "$ref": "#/components/schemas/Revision"
@@ -13168,7 +13167,7 @@
         "type": "object",
         "properties": {
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "highWaterMark": {
             "$ref": "#/components/schemas/Revision"
@@ -13222,7 +13221,7 @@
             "$ref": "#/components/schemas/UUIDv7"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "highWaterMark": {
             "$ref": "#/components/schemas/Revision"
@@ -13266,7 +13265,7 @@
             "$ref": "#/components/schemas/UUIDv7"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "highWaterMark": {
             "$ref": "#/components/schemas/Revision"
@@ -14121,7 +14120,7 @@
         "type": "object",
         "properties": {
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "backup": {
             "type": "object",
@@ -14259,7 +14258,7 @@
             "$ref": "#/components/schemas/UUIDv7"
           },
           "inventoryId": {
-            "$ref": "#/components/schemas/UUIDv7"
+            "$ref": "#/components/schemas/UUID"
           },
           "generation": {
             "$ref": "#/components/schemas/UUID"

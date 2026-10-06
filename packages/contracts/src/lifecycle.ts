@@ -22,7 +22,7 @@ export const backupFormatReferenceSchema = objectSchema({
   formatVersion: { type: 'integer', const: 1 },
 });
 export const importReservationSchema = objectSchema({
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   backup: backupFormatReferenceSchema,
   sha256: sha256Schema,
   totalBytes: { ...stockSchema, minimum: 1, maximum: 50 * 1024 * 1024 },
@@ -59,7 +59,7 @@ export const importProgressSchema = objectSchema({
 export const importCommitSchema = objectSchema({ sha256: sha256Schema });
 export const importCommitResultSchema = objectSchema({
   importId: uuidV7Schema,
-  inventoryId: uuidV7Schema,
+  inventoryId: uuidSchema,
   generation: uuidSchema,
   cursor: cursorSchema,
   status: { type: 'string', const: 'COMMITTED' },

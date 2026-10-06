@@ -5,7 +5,7 @@ import {
   type ContractSchemaName,
   type RouteContract,
 } from './routes.js';
-import { timestampSchema, uuidV7Schema } from './transport.js';
+import { timestampSchema, uuidSchema, uuidV7Schema } from './transport.js';
 import { createSchemaValidator } from './decode.js';
 
 type Parameter = {
@@ -79,6 +79,15 @@ function componentSchemas(): Readonly<Record<string, JSONSchema>> {
     ]),
   );
 }
+const pathIdentitySchemas: Readonly<Record<string, JSONSchema>> = {
+  inventoryId: uuidSchema,
+  productId: uuidSchema,
+  saleId: uuidSchema,
+  purchaseId: uuidSchema,
+  operationId: uuidV7Schema,
+  importId: uuidV7Schema,
+  snapshotId: uuidV7Schema,
+};
 function parameters(route: RouteContract): Parameter[] {
   const result: Parameter[] = [];
   for (const match of route.path.matchAll(/\{([^}]+)\}/g)) {
@@ -93,7 +102,8 @@ function parameters(route: RouteContract): Parameter[] {
               minimum: 0,
               maximum: Number.MAX_SAFE_INTEGER,
             } as const)
-          : uuidV7Schema;
+          : pathIdentitySchemas[name];
+    if (!schema) throw new Error(`Unclassified path parameter: ${name}`);
     result.push({ name, in: 'path', required: true, schema });
   }
   if (route.query)

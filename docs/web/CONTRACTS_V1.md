@@ -27,6 +27,44 @@ la semántica de comandos: CLOUD-06 establece `DOMAIN_VERSION=1`. No equivale a 
 package, migración SQL ni `/v1`; un cambio financiero incompatible requerirá otra domainVersion.
 Auth conserva IDs opacos de Better Auth; `Inventory.generation` usa UUID técnico, sin exigir v7.
 
+## Compatibilidad de UUID — CLOUD-06-FIX
+
+Decisión humana aprobada: los IDs históricos/importados UUID válidos representables en PostgreSQL
+se preservan exactamente, incluido UUIDv4. No se regeneran ni remapean. UUID genérico valida forma,
+versión/variante admitida (versiones 1–8, NIL/MAX); no acepta strings arbitrarios. UUIDv7 valida
+además versión 7. Esta distinción se aplica por responsabilidad del campo, no por nombre repetido.
+
+| Campo / responsabilidad auditada | Schema V1 |
+| --- | --- |
+| Inventory.id en metadata, Me y BootstrapResponse; InventoryParams.inventoryId y paths inventoryId | UUID genérico almacenado; bootstrap sigue generando v7 server-owned |
+| Product/Sale/SaleItem/Purchase/StockAdjustment/InventoryMovement.id en DTOs/resultados | UUID genérico |
+| inventoryId/productId/saleId en DTOs y InventoryState, lastMovementId, sourceId, reversalOfMovementId | UUID genérico, nullable según modelo |
+| ProductRead, detalles, price analysis, páginas, HistoryEntry.id/productId, Dashboard.topSelling.productId | UUID genérico mediante DTOs compartidos o referencia explícita |
+| PRODUCT_UPDATE/PRODUCT_ARCHIVE.productId | UUID genérico de entidad existente |
+| SALE_REGISTER.items.productId; PURCHASE_REGISTER/STOCK_ADJUST.productId | UUID genérico de entidad existente |
+| SALE_VOID.saleId/reversalMovements.productId; PURCHASE_VOID.purchaseId | UUID genérico de entidad existente |
+| expectedCosts.productId, states.productId, expectedState.lastMovementId | UUID genérico de evidencia existente |
+| PRODUCT_CREATE.productId/initialMovementId; SALE_REGISTER.saleId/items.saleItemId/items.movementId | UUIDv7 nuevo; initialMovementId nullable según stock inicial |
+| PURCHASE_REGISTER.purchaseId/movementId; STOCK_ADJUST.stockAdjustmentId/movementId | UUIDv7 nuevo |
+| SALE_VOID.reversalMovements.movementId; PURCHASE_VOID.reversalMovementId | UUIDv7 nuevo, aunque la operación anulada sea legacy |
+| Path productId/saleId/purchaseId | UUID genérico de entidad existente |
+| ChangeSet/upserts, ChangesResponse, SnapshotDescriptor/Page, DeviceRegistrationResult.inventoryId | UUID genérico comercial; mismo schema DTO, sin transformar valores |
+| ImportReservation/ImportCommitResult.inventoryId | UUID genérico histórico preservado |
+| Business.id | UUIDv7; solo se crea en cloud, nunca se importa |
+| operationId en envelope/result/receipt, dependsOn, supersedesOperationId, expectedStateRevision.operationId | UUIDv7 de protocolo, incluso al referenciar una operación existente |
+| deviceId, snapshotId, importId en requests/responses/query/path y Idempotency-Key | UUIDv7 de protocolo |
+| Inventory.generation | UUID técnico genérico; sin cambio |
+| IDs de BackupV1 / Auth | Strings locales existentes / IDs opacos oficiales; sin forzar UUID |
+
+Ejemplo verificable: Product.id `550e8400-e29b-41d4-a716-446655440000` es válido en lectura,
+FK y evidencia. SALE_REGISTER conserva ese productId y exige saleId, saleItemId y movementId v7.
+SALE_VOID/PURCHASE_VOID aceptan el ID v4 histórico y exigen nuevos IDs de reversión v7. Archive y
+VOIDED se transportan como upserts, sin cambiar el ID ni introducir borrado financiero.
+
+Backup formatVersion 1 conserva sus strings locales. El futuro import cloud rechaza IDs no UUID
+con explicación, sin remapearlos y sin modificar Restore local. Esta tarea no implementa import ni
+sync runtime. Las nueve pruebas de `uuid-compatibility.test.ts` cubren ambas fronteras y OpenAPI.
+
 ## Comandos
 
 El envelope requiere `protocolVersion`, `domainVersion`, `commandKind`, `operationId`, `occurredAt`,

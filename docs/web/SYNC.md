@@ -22,6 +22,12 @@ entity IDs generados offline, occurredAt, payload, base revisions por producto/m
 dependsOn operationIds y resultado financiero local esperado. Fingerprint SHA-256 de JSON
 canónico versionado calculado por server; retries conservan bytes semánticos/IDs.
 
+Las entidades nuevas del comando exigen UUIDv7, pero sus referencias a Inventory/Product o
+ventas/compras históricas admiten UUID legacy válidos, incluido UUIDv4, preservados exactamente.
+ChangeSets, upserts, pull y snapshots transportan IDs/FKs comerciales genéricos: importar no cambia
+identidades ni obliga a convertirlas a v7. operationId, dependsOn, supersedesOperationId, referencias
+de receipt, deviceId y snapshotId siguen UUIDv7. Revision/cursor deciden progreso; UUID no decide orden.
+
 Domain preserva valores financieros históricos. El servidor deriva resultado con el MISMO Domain
 y compara snapshots monetarios recibidos. Una expectativa del cliente no se vuelve fuente de stock.
 ID, precio de venta explícito, cantidades, costo de compra aceptado y conteo físico son inputs;

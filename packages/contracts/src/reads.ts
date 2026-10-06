@@ -12,7 +12,7 @@ import {
   quantitySchema,
   stockSchema,
   timestampSchema,
-  uuidV7Schema,
+  uuidSchema,
 } from './transport.js';
 import {
   adjustmentReasonSchema,
@@ -56,7 +56,7 @@ const historyTimes = {
   createdAt: timestampSchema,
 } as const;
 const historyProduct = {
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   productName: textSchema,
   productVariant: optionalTextSchema,
 } as const;
@@ -64,7 +64,7 @@ export const historyEntrySchema = {
   oneOf: [
     objectSchema({
       type: { type: 'string', const: 'SALE' },
-      id: uuidV7Schema,
+      id: uuidSchema,
       totalAmount: moneySchema,
       units: quantitySchema,
       status: operationStatusSchema,
@@ -72,7 +72,7 @@ export const historyEntrySchema = {
     }),
     objectSchema({
       type: { type: 'string', const: 'PURCHASE' },
-      id: uuidV7Schema,
+      id: uuidSchema,
       ...historyProduct,
       quantity: quantitySchema,
       unitCost: moneySchema,
@@ -82,7 +82,7 @@ export const historyEntrySchema = {
     }),
     objectSchema({
       type: { type: 'string', const: 'ADJUSTMENT' },
-      id: uuidV7Schema,
+      id: uuidSchema,
       ...historyProduct,
       difference: stockSchema,
       reason: adjustmentReasonSchema,
@@ -110,7 +110,7 @@ export const dashboardSchema = objectSchema({
   lowStock: arrayOf(productReadSchema),
   topSelling: nullable(
     objectSchema({
-      productId: uuidV7Schema,
+      productId: uuidSchema,
       name: textSchema,
       variant: optionalTextSchema,
       unitsSold: quantitySchema,

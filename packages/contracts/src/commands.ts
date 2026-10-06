@@ -22,6 +22,7 @@ import {
   revisionSchema,
   stockSchema,
   timestampSchema,
+  uuidSchema,
   uuidV7Schema,
 } from './transport.js';
 
@@ -41,14 +42,14 @@ export const revisionExpectationSchema = {
 export const stateEvidenceSchema = objectSchema({
   stock: stockSchema,
   unitCost: nullable(nonnegativeMoneySchema),
-  lastMovementId: nullable(uuidV7Schema),
+  lastMovementId: nullable(uuidSchema),
 });
 export const statePreconditionsSchema = objectSchema({
   expectedStateRevision: revisionExpectationSchema,
   expectedState: stateEvidenceSchema,
 });
 export const saleCostEvidenceSchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   unitCostSnapshot: nullable(nonnegativeMoneySchema),
   estimatedCost: nullable(nonnegativeMoneySchema),
   estimatedProfit: nullable(moneySchema),
@@ -57,7 +58,7 @@ export const salePreconditionsSchema = objectSchema({
   expectedCosts: { ...arrayOf(saleCostEvidenceSchema), minItems: 1 },
 });
 export const voidStateEvidenceSchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   expectedStateRevision: revisionExpectationSchema,
   expectedState: stateEvidenceSchema,
 });
@@ -80,17 +81,17 @@ export const createProductPayloadSchema = objectSchema({
   initialUnitCost: nullable(nonnegativeMoneySchema),
 });
 export const updateProductPayloadSchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   ...metadataFields,
 });
 export const archiveProductPayloadSchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
 });
 export const metadataPreconditionsSchema = objectSchema({
   expectedMetadataRevision: revisionSchema,
 });
 export const saleLineSchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   saleItemId: uuidV7Schema,
   movementId: uuidV7Schema,
   quantity: quantitySchema,
@@ -106,7 +107,7 @@ export const registerPurchasePayloadSchema = objectSchema({
   purchaseId: uuidV7Schema,
   movementId: uuidV7Schema,
   createdAt: timestampSchema,
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   quantity: quantitySchema,
   unitCost: nonnegativeMoneySchema,
   notes: optionalTextSchema,
@@ -115,23 +116,23 @@ export const adjustStockPayloadSchema = objectSchema({
   stockAdjustmentId: uuidV7Schema,
   movementId: uuidV7Schema,
   createdAt: timestampSchema,
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   actualStock: nonnegativeStockSchema,
   reason: adjustmentReasonSchema,
   costMode: nullable(adjustmentCostModeSchema),
   customUnitCost: nullable(nonnegativeMoneySchema),
 });
 export const reversalIdentitySchema = objectSchema({
-  productId: uuidV7Schema,
+  productId: uuidSchema,
   movementId: uuidV7Schema,
 });
 export const voidSalePayloadSchema = objectSchema({
-  saleId: uuidV7Schema,
+  saleId: uuidSchema,
   createdAt: timestampSchema,
   reversalMovements: { ...arrayOf(reversalIdentitySchema), minItems: 1 },
 });
 export const voidPurchasePayloadSchema = objectSchema({
-  purchaseId: uuidV7Schema,
+  purchaseId: uuidSchema,
   createdAt: timestampSchema,
   reversalMovementId: uuidV7Schema,
 });
