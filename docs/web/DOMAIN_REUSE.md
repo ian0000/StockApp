@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+API-05 reutiliza AdjustStockUseCase/applyStockAdjustment, motivos/modos y promedio existentes, sin cambios financieros ni fórmula API alternativa. Ports completos/scoped ligados al tx API-01 capturan Adjustment/Movement/State; Movement guarda costo resuelto y State el costo final Domain. Receipt/ChangeSet verifican y reconstruyen evidencia histórica sin consultar estado actual. [Detalle](API-05.md).
+
 API-04 reutiliza RegisterPurchaseUseCase y createPurchasePriceAnalysis sin modificar Application/Domain. Ports listByInventory completos/scoped y captura exacta en tx API-01; precondiciones antes de Application, SQL Purchase → Movement → State. Reconstrucción histórica con createPurchase y helper Application; sin fórmulas alternas ni precio automático. Mappers Product/State/Movement/Money existentes reutilizados. [Detalle](API-04.md).
 
 API-03 usa RegisterSaleUseCase sin modificar Application/Domain: listByInventory completo y scoped, captura writes exactas; compara evidencia de costo y estimates antes de SQL. Persistencia respeta Sale → Items → Movements → States en CommandTransaction existente, sin nested transaction ni segunda fórmula. Reutiliza productFromRow/movementValues/movementDto/stateDto; StateDto admite revision con default0 intacto para Product. [Detalle](API-03.md).

@@ -370,15 +370,19 @@ export const routeContracts: readonly RouteContract[] = [
     'VoidPurchaseResult',
     { body: 'VoidPurchaseCommand', command: true },
   ),
-  planned(
-    'post',
-    `${inventoryPath}/adjustments`,
-    'adjustStock',
-    'Record actual stock with accepted cost; server derives difference',
-    'cloud-inventory',
-    'AdjustStockResult',
-    { body: 'AdjustStockCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/adjustments`,
+      'adjustStock',
+      'Record actual stock with accepted cost; server derives difference',
+      'cloud-inventory',
+      'AdjustStockResult',
+      { body: 'AdjustStockCommand', command: true },
+    ),
+    params: 'InventoryParams',
+    implementationStatus: 'implemented',
+  },
   planned(
     'get',
     `${inventoryPath}/history`,
