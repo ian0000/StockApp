@@ -13,7 +13,7 @@
     "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
-    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts test/commands/*.test.ts test/products/*.test.ts test/sales/*.test.ts test/purchases/*.test.ts test/adjustments/*.test.ts test/void-sales/*.test.ts",
+    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts test/commands/*.test.ts test/products/*.test.ts test/sales/*.test.ts test/purchases/*.test.ts test/adjustments/*.test.ts test/void-sales/*.test.ts test/void-purchases/*.test.ts",
     "test:commands": "tsx --conditions=development --test --test-concurrency=2 test/commands/*.test.ts",
     "test:ownership": "tsx --conditions=development --test test/ownership/*.test.ts",
     "pilot:access": "tsx --conditions=development src/ownership/pilot-cli.ts",
@@ -27,7 +27,8 @@
     "test:purchases": "tsx --conditions=development --test --test-concurrency=2 test/purchases/*.test.ts",
     "test:sales": "tsx --conditions=development --test --test-concurrency=2 test/sales/*.test.ts",
     "test:adjustments": "tsx --conditions=development --test --test-concurrency=2 test/adjustments/*.test.ts",
-    "test:void-sales": "tsx --conditions=development --test --test-concurrency=2 test/void-sales/*.test.ts"
+    "test:void-sales": "tsx --conditions=development --test --test-concurrency=2 test/void-sales/*.test.ts",
+    "test:void-purchases": "tsx --conditions=development --test --test-concurrency=2 test/void-purchases/*.test.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.7",

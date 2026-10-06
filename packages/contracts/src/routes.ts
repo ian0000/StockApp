@@ -33,6 +33,7 @@ export const contractSchemas = {
   OperationParams: ownership.operationParamsSchema,
   ProductParams: ownership.productParamsSchema,
   SaleParams: ownership.saleParamsSchema,
+  PurchaseParams: ownership.purchaseParamsSchema,
   Inventory: ownership.inventoryMetadataSchema,
   Business: ownership.businessSchema,
   Me: ownership.meResponseSchema,
@@ -115,7 +116,11 @@ export interface RouteContract {
   readonly auth: AuthLevel;
   readonly implementationStatus: 'implemented' | 'planned';
   readonly params?:
-    'InventoryParams' | 'OperationParams' | 'ProductParams' | 'SaleParams';
+    | 'InventoryParams'
+    | 'OperationParams'
+    | 'ProductParams'
+    | 'SaleParams'
+    | 'PurchaseParams';
   readonly query?: ContractSchemaName;
   readonly body?: ContractSchemaName;
   readonly responses: Readonly<Record<number, ContractSchemaName>>;
@@ -367,15 +372,19 @@ export const routeContracts: readonly RouteContract[] = [
     'cloud-inventory',
     'PurchaseDetail',
   ),
-  planned(
-    'post',
-    `${inventoryPath}/purchases/{purchaseId}/void`,
-    'voidPurchase',
-    'Void the eligible purchase, or return already voided',
-    'cloud-inventory',
-    'VoidPurchaseResult',
-    { body: 'VoidPurchaseCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/purchases/{purchaseId}/void`,
+      'voidPurchase',
+      'Void eligible purchase; restore prior average, same operation replays, distinct stale void conflicts',
+      'cloud-inventory',
+      'VoidPurchaseResult',
+      { body: 'VoidPurchaseCommand', command: true },
+    ),
+    params: 'PurchaseParams',
+    implementationStatus: 'implemented',
+  },
   {
     ...planned(
       'post',

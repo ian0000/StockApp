@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+Actualización API-07 (2026-10-06), base main `ad5bbe5`: POST VoidPurchase y adaptador ligado al tx API-01; snapshots históricos inmutables, restauración exacta del estado anterior, seguridad existente y replay durable. Catorce rutas implemented. Batch vigente API-07→API-08→API-09; cada gate/PR/merge independiente, STOP final API-09, sin API-10/Web/Sync/Mobile/deploy. [Evidencia](API-07.md).
+
 Actualización API-06 (2026-10-06), base main `2cd2baf`: POST VoidSale con adaptador tx-bound de VoidSaleUseCase existente; reversión completa de todas las líneas, snapshots inmutables, state preconditions exactas y replay durable. Trece rutas implemented; decisión humana Cloud distingue retry por operationId del nuevo comando stale409 o already-voided/current422. ALREADY_VOIDED local/shared y API-01 intactos. [Evidencia](API-06.md).
 
 Actualización API-05 (2026-10-06), base main `433b68f`: POST adjustments200 con AdjustStockUseCase existente, conteo físico/costo válido, estado exacto bajo lock y Adjustment/Movement/State/receipt/ChangeSet atómicos. Doce rutas implemented;128 focused PASS y sin cambios Domain/Application/Mobile/schema/migraciones/dependencias. Batch API-04→API-05→API-06 con gates independientes y STOP final API-06. [Evidencia](API-05.md).

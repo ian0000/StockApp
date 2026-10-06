@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-07 conecta PurchaseParams UUID genéricos a registro/RouteContract.params y OpenAPI, y marca VoidPurchase implemented. Command/result compartidos intactos; nuevas Operation/REVERSAL UUIDv7, referencias legacyv4 permitidas. [Evidencia](API-07.md).
+
 API-04 marca registerPurchase implemented y añade InventoryParams reutilizado, sin cambiar schemas/envelope V1. En POST purchases directo solo expectedStateRevision literal string; `{operationId}` se rechaza400/sin receipt antes del executor. Resolución de dependencia sigue SYNC-02; el contrato global conserva ambos modos. [Detalle](API-04.md).
 
 API-03 marca implemented solo registerSale (POST sales200), con InventoryParams existente explícito; Diez rutas runtime. Payload/expectedCosts/Money/UUID/error catalog intactos; OpenAPI regenerado. Sale tiene min1 línea y límite global1MiB, sin máximo comercial nuevo. [Evidencia](API-03.md).

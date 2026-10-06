@@ -14,6 +14,7 @@ import { registerSaleRoutes } from '../src/sales/routes.js';
 import { registerPurchaseRoutes } from '../src/purchases/routes.js';
 import { registerAdjustmentRoutes } from '../src/adjustments/routes.js';
 import { registerVoidSaleRoutes } from '../src/void-sales/routes.js';
+import { registerVoidPurchaseRoutes } from '../src/void-purchases/routes.js';
 import { registerProductRoutes } from '../src/products/routes.js';
 import { registerOwnershipRoutes } from '../src/ownership/routes.js';
 
@@ -81,6 +82,7 @@ test('implemented route schemas match the manifest and future routes remain abse
   registerPurchaseRoutes(app, runtime.auth, database);
   registerAdjustmentRoutes(app, runtime.auth, database);
   registerVoidSaleRoutes(app, runtime.auth, database);
+  registerVoidPurchaseRoutes(app, runtime.auth, database);
   await app.ready();
   assert.deepEqual(
     [...registered].sort(),
