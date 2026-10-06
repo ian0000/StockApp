@@ -83,3 +83,9 @@ export const saleParamsSchema = objectSchema({
   saleId: uuidSchema,
 });
 export type SaleParams = FromSchema<typeof saleParamsSchema>;
+
+export const purchaseParamsSchema = objectSchema({
+  inventoryId: uuidSchema,
+  purchaseId: uuidSchema,
+});
+export type PurchaseParams = FromSchema<typeof purchaseParamsSchema>;

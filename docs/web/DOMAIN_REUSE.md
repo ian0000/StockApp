@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+API-07 reutiliza VoidPurchaseUseCase/preparePurchaseReversal intactos. PurchaseVoidRepository mínimo/scoped/mismo tx captura REVERSAL con costo entrante y State con promedio anterior. Cloud valida State antes de Application y conserva política API-06; no active-Product gate ni nueva regla financiera. [Evidencia](API-07.md).
+
 API-06 reutiliza VoidSaleUseCase/prepareSaleReversal sin cambiar Domain/Application ni sus tests locales. SaleVoidRepository mínimo/scoped/mismo tx captura outputs completos y persiste reversalOfMovementId explícito con constraints existentes. Cloud compara State primero y mapea NOT_ELIGIBLE/ALREADY_VOIDED a422 después de esa comparación; misma key usa API-01 replay. No nueva elegibilidad, promedio, costo histórico ni active-Product gate. [Decisión y evidencia](API-06.md).
 
 API-05 reutiliza AdjustStockUseCase/applyStockAdjustment, motivos/modos y promedio existentes, sin cambios financieros ni fórmula API alternativa. Ports completos/scoped ligados al tx API-01 capturan Adjustment/Movement/State; Movement guarda costo resuelto y State el costo final Domain. Receipt/ChangeSet verifican y reconstruyen evidencia histórica sin consultar estado actual. [Detalle](API-05.md).

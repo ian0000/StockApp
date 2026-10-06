@@ -1,5 +1,7 @@
 # Contratos API V1
 
+API-07 implementa POST `/v1/inventories/:inventoryId/purchases/:purchaseId/void`200/VOIDED, PurchaseParams UUID genéricos y estado exacto antes de VoidPurchaseUseCase. REVERSAL conserva costo entrante; State restaura stock/costo promedio previos. Same-key replay, distinta stale409 y distinta vigente contra VOIDED422, sin no-op. Catorce rutas implemented. [Detalle](API-07.md).
+
 API-06 implementa POST `/v1/inventories/:inventoryId/sales/:saleId/void`200/VOIDED: SaleParams UUID genéricos, reversión completa bajo lock y state evidence exacta antes de Application. Misma key/hash replay; distinta stale409 REVISION_CONFLICT; distinta vigente contra VOIDED422 VOID_NOT_ELIGIBLE. Shared VoidSaleResult conserva ALREADY_VOIDED, sin accepted Cloud no-op. Misma política para API-07 futuro, sin implementarlo. [Detalle](API-06.md).
 
 API-05 materializa POST adjustments200/AdjustStockResult con estado exacto y revision literal, diferencia derivada por AdjustStockUseCase, costo de movimiento separado del promedio y receipt/ChangeSet histórico. [Detalle](API-05.md).

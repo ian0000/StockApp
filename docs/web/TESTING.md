@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+API-07 integra void-purchases en required test:db y focused test:void-purchases: promedio previo/null/cero/negativo, snapshots y archivo, estado exacto/elegibilidad, locks entre dos pools, replay/409/422, rollback en cada write, corrupción, legacyv4, HTTP/A-B y compiled SMTP/restart. Gates pesados secuenciales; configuración PG intacta. [Evidencia](API-07.md).
+
 API-06 integra test/void-sales en test:db required: multi-product all-or-nothing, costos históricos/null/cero/negativo, archived, precondiciones y cobertura, elegibilidad, dos pools/lock observado, distinct concurrent void→VOIDED+CONFLICT y same-operation→una ejecución/replay, rollback por write, A/B/seguridad/corrupción/legacy y compiled HTTP/SMTP/restart. Domain/Application/local ALREADY_VOIDED tests intactos. [Evidencia](API-06.md).
 
 API-05 integra test/adjustments en test:db required:128 focused PASS, PostgreSQL18.6 real, conteo/costos, exact-state, concurrencia con Sale/Purchase/archive, rollback por write, A/B/CLOUD-05/corrupción y compiled HTTP/SMTP/restart. [Evidencia](API-05.md).
