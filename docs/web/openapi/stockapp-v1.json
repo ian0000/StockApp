@@ -3855,8 +3855,8 @@
     "/v1/inventories/{inventoryId}/sales/{saleId}/void": {
       "post": {
         "operationId": "voidSale",
-        "summary": "Void the complete eligible sale, or return already voided",
-        "x-stockapp-implementation-status": "planned",
+        "summary": "Void eligible sale; same operation replays, distinct stale void conflicts",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "x-stockapp-command-contract": "Path identifiers must match payload identifiers. Preconditions and expected results are evidence; Domain derives authoritative financial state.",
         "security": [
@@ -9983,6 +9983,22 @@
         "required": [
           "inventoryId",
           "productId"
+        ],
+        "additionalProperties": false
+      },
+      "SaleParams": {
+        "type": "object",
+        "properties": {
+          "inventoryId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "saleId": {
+            "$ref": "#/components/schemas/UUID"
+          }
+        },
+        "required": [
+          "inventoryId",
+          "saleId"
         ],
         "additionalProperties": false
       },

@@ -1,5 +1,7 @@
 # Contratos API V1
 
+API-06 implementa POST `/v1/inventories/:inventoryId/sales/:saleId/void`200/VOIDED: SaleParams UUID genéricos, reversión completa bajo lock y state evidence exacta antes de Application. Misma key/hash replay; distinta stale409 REVISION_CONFLICT; distinta vigente contra VOIDED422 VOID_NOT_ELIGIBLE. Shared VoidSaleResult conserva ALREADY_VOIDED, sin accepted Cloud no-op. Misma política para API-07 futuro, sin implementarlo. [Detalle](API-06.md).
+
 API-05 materializa POST adjustments200/AdjustStockResult con estado exacto y revision literal, diferencia derivada por AdjustStockUseCase, costo de movimiento separado del promedio y receipt/ChangeSet histórico. [Detalle](API-05.md).
 
 API-04 materializa POST purchases200/RegisterPurchaseResult con Purchase un Product, estado completo y revision literal exacta. Referencia `{operationId}` en revisión directa se rechaza400 antes del executor; el envelope global Sync sigue congelado. PriceAnalysis informativo y replay histórico desde Product snapshot/ChangeSet, sin auto-price update. [Detalle](API-04.md).
@@ -112,10 +114,10 @@ Respuestas auth/dataset `Cache-Control: no-store`; error incluye requestId.
 | GET | /v1/inventories/I/stock-low | Productos activos con bajo stock | S | Lectura | Query/domain predicate |
 | POST | /v1/inventories/I/sales | Sale multiproducto, costos derivados | S | Key | C, todas las líneas |
 | GET | /v1/inventories/I/sales/:id | Detalle/snapshots/void eligibility | S | Lectura | Query |
-| POST | /v1/inventories/I/sales/:id/void | Anular venta completa elegible | S | Key + ya VOIDED | C |
+| POST | /v1/inventories/I/sales/:id/void | Anular venta completa elegible | S | Misma key replay; distinta exige estado exacto; ya VOIDED/current422 | C |
 | POST | /v1/inventories/I/purchases | Purchase un producto | S | Key | C |
 | GET | /v1/inventories/I/purchases/:id | Detalle/snapshots/eligibility | S | Lectura | Query |
-| POST | /v1/inventories/I/purchases/:id/void | Anular compra elegible | S | Key + ya VOIDED | C |
+| POST | /v1/inventories/I/purchases/:id/void | Anular compra elegible (API-07 planned) | S | Misma política Cloud API-06: key replay/distinta estado exacto/no accepted no-op | C |
 | POST | /v1/inventories/I/adjustments | Conteo físico/motivo/costo aceptado | S | Key | C |
 | GET | /v1/inventories/I/history | Cronología comercial | S | Lectura | Query, no filas técnicas |
 | GET | /v1/inventories/I/operations/:operationId | Receipt/status de comando | S | Lectura | Query scoped |

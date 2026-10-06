@@ -1,5 +1,7 @@
 # Modelo cloud conceptual
 
+API-06 utiliza Sale/SALE originales/SaleItems/State y REVERSAL existentes sin migración. Cambia solo Sale.status/updatedAt y States, añade reversals con sourceId=reversalOfMovementId=original.id y FK/unique existentes. State revision+1n/lastMovement nuevo; snapshots históricos intactos. Nuevo comando ya-voided/current se rechaza422 sin Inventory revision/ChangeSet; misma operationId hace replay. [Detalle](API-06.md).
+
 API-04 usa Purchase/Movement/State existentes: promedio/snapshots Domain, Movement con costo de compra, State con costo promedio/revision+1/lastMovement. ChangeSet incluye Product snapshot de aceptación aunque no hay Product SQL mutation/metadataRevision change. Sin schema/migration. [Evidencia](API-04.md).
 
 API-03 materializa Sale/Items/SALE Movements/States en tablas existentes: una transacción y ChangeSet por venta completa. Estado conserva unitCost, avanza stateRevision +1n por producto y lastMovementId de su línea. KNOWN/UNKNOWN, costo0 y profit negativo exactos; ningún Product update ni cambio de schema/migration. [Evidencia](API-03.md).

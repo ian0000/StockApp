@@ -95,7 +95,11 @@ Todos los objetos tienen allowlists; no se aceptan owner, stock derivado ni prop
 
 Una compra contiene un producto: no existe PurchaseItem. AdjustStock recibe conteo físico y costo
 aceptado; Application/Domain deriva diferencia y movimiento. Las anulaciones conservan las reglas
-de última operación inequívoca, estado exacto y `ALREADY_VOIDED` sin nuevos efectos.
+de última operación inequívoca y estado exacto. `ALREADY_VOIDED` sin nuevos efectos permanece en
+Domain/Application/local y en el shared result model. Cloud directo materializa éxito VOIDED;
+misma operationId/hash →replay original, distinta stale→409 REVISION_CONFLICT, distinta vigente
+contra operación ya VOIDED→422 VOID_NOT_ELIGIBLE. No se agrega un ACCEPTED Cloud no-op.
+La decisión humana API-06 también rige API-07 futuro, sin implementarlo todavía.
 
 `decodeCommandEnvelope` rechaza IDs nuevos duplicados (también cambios solo de mayúsculas),
 productos repetidos, evidencia incompleta/ajena, referencia de receipt no declarada en dependsOn,

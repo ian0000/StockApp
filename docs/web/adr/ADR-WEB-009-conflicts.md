@@ -12,7 +12,10 @@ reescribe una estimación histórica y oculta decisiones financieras.
 Product metadata revision optimista, conflictos visibles. Sale admite delta de stock sobre
 estado actual solo con snapshot de costo equivalente y producto activo; conservar precio/costo/profit.
 Purchase/Adjustment exigen estado esperado exacto. Void exige última operación inequívoca y estado
-compatible; ya VOIDED idempotente. Propuesta rechazada y dependientes permanecen revisables,
+compatible. Decisión humana API-06 (2026-10-06): Cloud misma operationId/hash hace replay;
+distinta stale→409, distinta vigente contra operación ya VOIDED→422, sin commit no-op.
+ALREADY_VOIDED permanece local y en el shared result; aplicar lo mismo a API-07 futuro.
+Propuesta rechazada y dependientes permanecen revisables,
 sin reescritura financiera automática. No LWW por tiempo.
 Fuente: tabla normativa y resolución en [SYNC](../SYNC.md).
 

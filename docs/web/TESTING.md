@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+API-06 integra test/void-sales en test:db required: multi-product all-or-nothing, costos históricos/null/cero/negativo, archived, precondiciones y cobertura, elegibilidad, dos pools/lock observado, distinct concurrent void→VOIDED+CONFLICT y same-operation→una ejecución/replay, rollback por write, A/B/seguridad/corrupción/legacy y compiled HTTP/SMTP/restart. Domain/Application/local ALREADY_VOIDED tests intactos. [Evidencia](API-06.md).
+
 API-05 integra test/adjustments en test:db required:128 focused PASS, PostgreSQL18.6 real, conteo/costos, exact-state, concurrencia con Sale/Purchase/archive, rollback por write, A/B/CLOUD-05/corrupción y compiled HTTP/SMTP/restart. [Evidencia](API-05.md).
 
 API-04 añade test/purchases/*.test.ts al test:db obligatorio y focused test:purchases: PostgreSQL18.6, promedio exacto/test-first, cero/null/negativo, priceAnalysis incluido overflow no fatal, snapshot Product, estados exactos, dos pools/locks observados, Sale-before-Purchase conflict, rollback, A/B, corrupción, compiled HTTP/SMTP/restart/replay. Regresiones API-01/02/03/Mobile conservadas. [Conteos y gates](API-04.md).
