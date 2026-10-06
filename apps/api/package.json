@@ -8,12 +8,12 @@
   },
   "scripts": {
     "dev": "tsx --conditions=development src/server.ts",
-    "build": "pnpm --filter @stock-app/contracts build && tsc -p tsconfig.build.json",
+    "build": "pnpm --filter @stock-app/contracts build && tsc -p tsconfig.build.json && node build.mjs",
     "start": "node dist/server.js",
     "lint": "eslint src test drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
-    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts test/commands/*.test.ts",
+    "test:db": "tsx --conditions=development --test --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts test/commands/*.test.ts test/products/*.test.ts",
     "test:commands": "tsx --conditions=development --test --test-concurrency=2 test/commands/*.test.ts",
     "test:ownership": "tsx --conditions=development --test test/ownership/*.test.ts",
     "pilot:access": "tsx --conditions=development src/ownership/pilot-cli.ts",
@@ -22,7 +22,8 @@
     "auth:check": "auth check schema --config src/auth/schema-config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --conditions=development src/infrastructure/postgres/migrate.ts",
-    "test:security": "tsx --conditions=development --test test/security/*.test.ts"
+    "test:security": "tsx --conditions=development --test test/security/*.test.ts",
+    "test:products": "tsx --conditions=development --test --test-concurrency=2 test/products/*.test.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.7",
@@ -34,7 +35,9 @@
     "fastify": "5.12.5",
     "nodemailer": "10.0.14",
     "pg": "8.23.1",
-    "uuid": "14.0.1"
+    "uuid": "14.0.1",
+    "@stock-app/application": "workspace:*",
+    "@stock-app/domain": "workspace:*"
   },
   "devDependencies": {
     "@types/nodemailer": "8.0.2",
@@ -42,6 +45,7 @@
     "@types/smtp-server": "3.5.13",
     "auth": "1.7.7",
     "drizzle-kit": "0.31.10",
-    "smtp-server": "3.19.16"
+    "smtp-server": "3.19.16",
+    "esbuild": "0.28.2"
   }
 }

@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+API-02 añade test/products/*.test.ts al test:db obligatorio y focused test:products. PostgreSQL18.6 real: stock0/positivo/costo0, FKs/rollback tardío, barcode, metadata revisions/BIGINT, dos pools con lock observado, aislamiento A/B, legacy UUID y replay. HTTP compilado usa auth real/SMTP local y reinicia runtime para recuperar CreateResult y MutationResult. ProductParams/manifest/OpenAPI participan en pnpm check. [Conteos y gates](API-02.md).
+
 API-01 añade test:commands a test:db obligatorio: PostgreSQL18.6, dos pools/barriers/DB-observed locks,
 retry/hash mismatch, no gaps, rollback tardío, terminales, BIGINT/overflow, corrupción, A/B y clock.
 Smoke compilado + SMTP/auth real reinicia API y recupera mismo receipt. Unit fingerprint/header y

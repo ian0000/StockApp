@@ -1,10 +1,12 @@
 # Contratos API V1
 
+API-02 implementa POST products, PATCH product y POST archive con 200 y resultados comerciales congelados. ProductParams valida inventoryId/productId UUID genéricos; IDs nuevos v7. CSRF/Origin/JSON/rate/ownership existentes; errores de transporte antes del executor, terminales durables 404/409/422. Product create replay reconstruye Product/state/movement desde ChangeSet; mutation replay Product. [Detalles](API-02.md).
+
 API-01 implementa GET `/v1/inventories/:inventoryId/operations/:operationId` con OperationParams
 (Inventory UUID genérico, operation UUIDv7), sesión verified/cloud habilitado, own200/missing o
 foreign404, no-store/requestId y read rate120/min. CONFLICT/REJECTED reconstruyen error con requestId
 actual; corrupción500 sanitizada. GET sin CSRF. Motor reusable y helper Idempotency-Key existen;
-ningún endpoint comercial se implementa todavía. [API-01](API-01.md).
+los comandos Product se implementan en API-02 y los financieros siguen planned. [API-01](API-01.md).
 
 CLOUD-06 congela formas ejecutables en [CONTRACTS_V1](CONTRACTS_V1.md) y
 [OpenAPI 3.1.1](openapi/stockapp-v1.json), con disponibilidad implemented/planned por operación.

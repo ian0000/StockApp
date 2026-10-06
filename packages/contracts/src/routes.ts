@@ -31,6 +31,7 @@ export const contractSchemas = {
   NoQuery: ownership.noQuerySchema,
   InventoryParams: ownership.inventoryParamsSchema,
   OperationParams: ownership.operationParamsSchema,
+  ProductParams: ownership.productParamsSchema,
   Inventory: ownership.inventoryMetadataSchema,
   Business: ownership.businessSchema,
   Me: ownership.meResponseSchema,
@@ -112,7 +113,7 @@ export interface RouteContract {
   readonly summary: string;
   readonly auth: AuthLevel;
   readonly implementationStatus: 'implemented' | 'planned';
-  readonly params?: 'InventoryParams' | 'OperationParams';
+  readonly params?: 'InventoryParams' | 'OperationParams' | 'ProductParams';
   readonly query?: ContractSchemaName;
   readonly body?: ContractSchemaName;
   readonly responses: Readonly<Record<number, ContractSchemaName>>;
@@ -261,33 +262,45 @@ export const routeContracts: readonly RouteContract[] = [
     'cloud-inventory',
     'ProductRead',
   ),
-  planned(
-    'post',
-    `${inventoryPath}/products`,
-    'createProduct',
-    'Create a product and optional initial stock movement',
-    'cloud-inventory',
-    'CreateProductResult',
-    { body: 'CreateProductCommand', command: true },
-  ),
-  planned(
-    'patch',
-    `${inventoryPath}/products/{productId}`,
-    'updateProduct',
-    'Update metadata with expected metadata revision',
-    'cloud-inventory',
-    'ProductMutationResult',
-    { body: 'UpdateProductCommand', command: true },
-  ),
-  planned(
-    'post',
-    `${inventoryPath}/products/{productId}/archive`,
-    'archiveProduct',
-    'Archive a product; no financial tombstone',
-    'cloud-inventory',
-    'ProductMutationResult',
-    { body: 'ArchiveProductCommand', command: true },
-  ),
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/products`,
+      'createProduct',
+      'Create a product and optional initial stock movement',
+      'cloud-inventory',
+      'CreateProductResult',
+      { body: 'CreateProductCommand', command: true },
+    ),
+    implementationStatus: 'implemented',
+    params: 'InventoryParams',
+  },
+  {
+    ...planned(
+      'patch',
+      `${inventoryPath}/products/{productId}`,
+      'updateProduct',
+      'Update metadata with expected metadata revision',
+      'cloud-inventory',
+      'ProductMutationResult',
+      { body: 'UpdateProductCommand', command: true },
+    ),
+    implementationStatus: 'implemented',
+    params: 'ProductParams',
+  },
+  {
+    ...planned(
+      'post',
+      `${inventoryPath}/products/{productId}/archive`,
+      'archiveProduct',
+      'Archive a product; no financial tombstone',
+      'cloud-inventory',
+      'ProductMutationResult',
+      { body: 'ArchiveProductCommand', command: true },
+    ),
+    implementationStatus: 'implemented',
+    params: 'ProductParams',
+  },
   planned(
     'get',
     `${inventoryPath}/stock-low`,

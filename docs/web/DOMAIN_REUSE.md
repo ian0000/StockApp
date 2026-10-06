@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+API-02 reutiliza CreateProductUseCase, UpdateProductUseCase y ArchiveProductUseCase sin modificar Application/Domain. Ports mínimos PostgreSQL ligados a la transacción API-01; runInTransaction invoca el callback y difiere únicamente State hasta después de Movement, sin BEGIN adicional. Update/Archive conservan authoritativeUpdatedAt del reloj servidor. Cloud revisions/receipts/scope quedan en API. [Detalle](API-02.md).
+
 La fuente de reglas es `docs/BUSINESS_RULES.md` y su implementación probada en
 `packages/domain`; Application orquesta esas reglas. Ninguna app tendrá otra fórmula financiera.
 

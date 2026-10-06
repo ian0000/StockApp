@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+Actualización API-02 (2026-10-06), base main `6b1fee7`: tres comandos Product implementados; nueve rutas implemented y /health404. Initial Product/state/movement atómicos, metadataRevision, barcode scoped, replay tras reinicio y aislamiento A/B. Application/Domain/Mobile y schema/migrations intactos. API enlaza los paquetes existentes y compila sus módulos puros con esbuild0.28.2 (dev dependency ya presente transitivamente). [Evidencia](API-02.md).
+
 Actualización API-01, base main `42acccb`: motor server-only PostgreSQL de receipt/idempotencia,
 Inventory row lock/revisión/ChangeSet y GET operation implementados, sin endpoints comerciales.
 Seis rutas implemented, /health404. No cambios Domain/Application/Mobile/schema/migrations.
