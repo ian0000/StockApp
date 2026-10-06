@@ -1,5 +1,9 @@
 # StockApp Cloud + Web — baseline de arquitectura
 
+API-01 materializa [motor transaccional y receipts](API-01.md): Inventory FOR UPDATE, fingerprint,
+idempotencia, revisiones/ChangeSets atómicos y GET operation. Seis rutas implemented; comandos
+comerciales, sync/import/lifecycle y Web siguen planned. No deployment.
+
 CLOUD-06 implementa [CONTRACTS_V1](CONTRACTS_V1.md), [OpenAPI generado](openapi/README.md) y adaptación
 Application/callers Mobile para IDs y tiempos explícitos. [Evidencia](CLOUD-06.md). Comandos API,
 sync/import/lifecycle, Web y despliegue siguen planned; /health continúa 404.
@@ -32,6 +36,7 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [CLOUD-04](CLOUD-04.md) | Ownership, bootstrap vacío, aislamiento A/B y acceso piloto local/CI |
 | [CLOUD-05](CLOUD-05.md) | CORS/CSRF/rate limits durables y transporte |
 | [CLOUD-06](CLOUD-06.md) | Freeze V1, OpenAPI y regresión Application/Mobile |
+| [API-01](API-01.md) | Motor transaccional, locking, idempotencia, receipts y GET operation |
 | [CONTRACTS_V1](CONTRACTS_V1.md) | Fuente ejecutable, catálogo, IDs/tiempo y límites congelados |
 | [OpenAPI](openapi/README.md) | Artefacto machine-readable y generación/check |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |

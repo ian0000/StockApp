@@ -12,7 +12,8 @@ se derivan. Check compara bytes contra generación determinista in-memory y est�
 No exige dist previo, herramienta global, DB, credenciales ni validator externo.
 
 `x-stockapp-implementation-status` distingue implemented/planned por operación. Solo /live,
-/v1/session/csrf, /v1/me, /v1/business e Inventory metadata existen. /health permanece planned/404.
+/v1/session/csrf, /v1/me, /v1/business, Inventory metadata y GET operation existen. OperationParams
+valida Inventory UUID genérico/operation UUIDv7. /health permanece planned/404.
 No se afirma despliegue. Better Auth 1.7.7 maneja `/api/auth/*` mediante su contrato separado.
 Sesiones oficiales por cookie, X-CSRF-Token para mutaciones, Idempotency-Key de comandos futuro.
 Ver [CONTRACTS_V1](../CONTRACTS_V1.md) para versiones, unidades, IDs, tiempo y límites.

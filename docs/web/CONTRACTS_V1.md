@@ -1,5 +1,9 @@
 # Contratos StockApp V1 — CLOUD-06
 
+Adición compatible API-01: OperationParams requiere inventoryId UUID genérico y operationId UUIDv7;
+GET operation pasa implemented y mantiene OperationReceipt/ApiError congelados. Seis rutas actuales.
+Motor transaccional y schemas internos de receipt permanecen server-only. [API-01](API-01.md).
+
 Fuente ejecutable: `packages/contracts/src`. JSON Schema determina las formas; `json-schema-to-ts`
 deriva los tipos y Ajv 8.20.0 valida los límites. No importa Fastify, React, Expo, Drizzle,
 Better Auth ni Domain. No contiene cálculos de costo, ganancia, margen o redondeo.
@@ -93,8 +97,9 @@ self-dependency y auto-supersession. No recomputa resultados financieros. Una re
 string o referencia `{operationId}` a un padre declarado. La venta compara costos esperados;
 no impone stateRevision estricto que bloquee deltas con costo equivalente y stock negativo.
 
-Los comandos HTTP futuros exigirán `Idempotency-Key == operationId` y que IDs del path coincidan
-con payload. API-01 implementará fingerprint/receipt/lock/revisiones; CLOUD-06 solo congela el contrato.
+Los comandos HTTP futuros exigirán `Idempotency-Key == operationId` con igualdad UUID case-insensitive
+y que IDs del path coincidan con payload. API-01 implementa el helper y motor fingerprint/receipt/lock/
+revisiones, sin exponer commands comerciales todavía; CLOUD-06 congeló el contrato.
 Los snapshots enviados nunca autorizan asignar costo, ganancia o stock directamente.
 
 ## Application y Mobile
@@ -167,8 +172,9 @@ Better Auth delete-user permanece deshabilitado. No se crean workers ni procesos
 Schemas conocidos se reutilizan mediante `$ref`. No lleva timestamps, servidores desplegados,
 Swagger UI ni cliente generado. Usa JSON Schema 2020-12 y no necesita un validator externo de red.
 
-Solo cinco operaciones son implemented: GET /live, GET /v1/session/csrf, GET /v1/me,
-POST /v1/business y GET /v1/inventories/{inventoryId}. El resto, incluido /health, es planned.
+Seis operaciones son implemented: GET /live, GET /v1/session/csrf, GET /v1/me,
+POST /v1/business, GET /v1/inventories/{inventoryId} y GET /v1/inventories/{inventoryId}/operations/{operationId}.
+El resto, incluido /health, es planned.
 /health y los futuros endpoints continúan respondiendo 404. Auth `/api/auth/*` queda explícitamente
 fuera del contrato de negocio, bajo Better Auth 1.7.7; no se copian sus DTOs ni password handling.
 /v1 usa cookie oficial de sesión y X-CSRF-Token para mutaciones; no se anuncia JWT bearer.
@@ -182,6 +188,6 @@ pnpm check
 
 Check compara generación in-memory con el artefacto versionado y falla si está stale. Forma parte
 del required Quality checks existente, sin workflow opcional ni deployment. Tests verifican schemas,
-refs, IDs únicos de rutas/operaciones, request/response, cinco rutas runtime, JSON reproducible y stale.
+refs, IDs únicos de rutas/operaciones, request/response, seis rutas runtime, JSON reproducible y stale.
 Referencias de formato: [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html) y
 [JSON Schema 2020-12](https://json-schema.org/draft/2020-12/json-schema-core).

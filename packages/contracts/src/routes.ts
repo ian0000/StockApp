@@ -30,6 +30,7 @@ export const contractSchemas = {
   Health: objectSchema({ status: { type: 'string', const: 'ok' } }),
   NoQuery: ownership.noQuerySchema,
   InventoryParams: ownership.inventoryParamsSchema,
+  OperationParams: ownership.operationParamsSchema,
   Inventory: ownership.inventoryMetadataSchema,
   Business: ownership.businessSchema,
   Me: ownership.meResponseSchema,
@@ -111,7 +112,7 @@ export interface RouteContract {
   readonly summary: string;
   readonly auth: AuthLevel;
   readonly implementationStatus: 'implemented' | 'planned';
-  readonly params?: 'InventoryParams';
+  readonly params?: 'InventoryParams' | 'OperationParams';
   readonly query?: ContractSchemaName;
   readonly body?: ContractSchemaName;
   readonly responses: Readonly<Record<number, ContractSchemaName>>;
@@ -366,14 +367,17 @@ export const routeContracts: readonly RouteContract[] = [
     'HistoryPage',
     { query: 'HistoryQuery' },
   ),
-  planned(
-    'get',
-    `${inventoryPath}/operations/{operationId}`,
-    'getOperation',
-    'Own durable command receipt',
-    'cloud-inventory',
-    'OperationReceipt',
-  ),
+  {
+    method: 'get',
+    path: `${inventoryPath}/operations/{operationId}`,
+    operationId: 'getOperation',
+    summary: 'Own durable command receipt',
+    auth: 'cloud-inventory',
+    implementationStatus: 'implemented',
+    params: 'OperationParams',
+    query: 'NoQuery',
+    responses: { ...readErrors, 200: 'OperationReceipt' },
+  },
   planned(
     'post',
     `${inventoryPath}/sync/devices`,

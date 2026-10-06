@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { apiErrorSchema, createApiError } from '@stock-app/contracts';
 import { registerLiveRoute } from './routes/live.js';
 import { SecurityError } from './security/policy.js';
+import { CommandError } from './commands/errors.js';
 
 export function buildApp(
   options: { logger?: boolean; logStream?: Writable } = {},
@@ -64,6 +65,10 @@ export function buildApp(
       );
   });
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof CommandError)
+      return reply
+        .code(error.statusCode)
+        .send(createApiError(error.code, error.message, request.id));
     if (error instanceof SecurityError) {
       if (error.retryAfter) reply.header('retry-after', error.retryAfter);
       return reply

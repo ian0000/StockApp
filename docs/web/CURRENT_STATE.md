@@ -1,5 +1,10 @@
 # Auditoría del estado actual
 
+Actualización API-01, base main `42acccb`: motor server-only PostgreSQL de receipt/idempotencia,
+Inventory row lock/revisión/ChangeSet y GET operation implementados, sin endpoints comerciales.
+Seis rutas implemented, /health404. No cambios Domain/Application/Mobile/schema/migrations.
+[Alcance y pruebas](API-01.md); no sync/Web/deployment ni continuación automática.
+
 Actualización CLOUD-06, 2026-10-05, base main `ce73381`: contracts V1/OpenAPI generados y
 reproducibles, capabilities de /v1/me, schemas runtime compartidos y Application con IDs/tiempo
 explícitos. Mobile prepara esas entradas en composición; Domain y schemas/migrations SQLite/Postgres

@@ -40,7 +40,7 @@ test('implemented route schemas match the manifest and future routes remain abse
   t.after(() => app.close());
   const registered = new Set<string>();
   app.addHook('onRoute', (options) => {
-    const path = options.url.replace(':inventoryId', '{inventoryId}');
+    const path = options.url.replace(/:([A-Za-z]+)/g, '{$1}');
     const contract = routeContracts.find(
       (route) =>
         route.path === path && route.method.toUpperCase() === options.method,
