@@ -253,13 +253,6 @@ async function registerAfterSelection(source: 'manual' | 'scanner') {
   let purchaseId = 0;
   let movementId = 0;
   const useCase = new RegisterPurchaseUseCase({
-    purchaseIdGenerator: {
-      generate: () => `purchase-${++purchaseId}`,
-    },
-    inventoryMovementIdGenerator: {
-      generate: () => `movement-${++movementId}`,
-    },
-    clock: { now: () => 1_776_444_000_000 },
     transactionManager: {
       runInTransaction: (operation) => operation(repositories),
     },
@@ -270,6 +263,10 @@ async function registerAfterSelection(source: 'manual' | 'scanner') {
   assert.equal(updatedStates.length, 0);
 
   const purchaseResult = await useCase.execute({
+    purchaseId: `purchase-${++purchaseId}`,
+    movementId: `movement-${++movementId}`,
+    occurredAt: 1_776_444_000_000,
+    createdAt: 1_776_444_000_000,
     inventoryId: product.product.inventoryId,
     productId: selection.selectedProduct!.product.id,
     quantity: 5,

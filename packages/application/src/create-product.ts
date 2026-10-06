@@ -10,6 +10,11 @@ import {
 } from '@stock-app/domain';
 
 import type { TransactionManager } from './ports';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  type CommandTimes,
+} from './command-identity';
 
 export interface ProductIdGenerator {
   generate(): string;
@@ -23,7 +28,9 @@ export interface Clock {
   now(): TimestampMs;
 }
 
-export interface CreateProductInput {
+export interface CreateProductInput extends CommandTimes {
+  readonly productId: string;
+  readonly initialMovementId: string | null;
   readonly inventoryId: string;
   readonly name: string;
   readonly variant?: string | null;
@@ -41,9 +48,6 @@ export interface CreateProductResult {
 }
 
 interface CreateProductDependencies {
-  readonly productIdGenerator: ProductIdGenerator;
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
-  readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
 
@@ -51,8 +55,13 @@ export class CreateProductUseCase {
   constructor(private readonly dependencies: CreateProductDependencies) {}
 
   async execute(input: CreateProductInput): Promise<CreateProductResult> {
-    const productId = this.dependencies.productIdGenerator.generate();
-    const creationTime = this.dependencies.clock.now();
+    const productId = input.productId;
+    const creationTime = input.createdAt;
+    validateCommandTimes(input);
+    requireNewIdentities([
+      productId,
+      ...(input.initialMovementId === null ? [] : [input.initialMovementId]),
+    ]);
     const product = createProduct({
       id: productId,
       inventoryId: input.inventoryId,
@@ -68,18 +77,28 @@ export class CreateProductUseCase {
       initialStock: input.initialStock,
       initialUnitCost: input.initialUnitCost,
     });
-    const initialMovement =
-      initialInventory.movement === null
-        ? null
-        : createInventoryMovement({
-            ...initialInventory.movement,
-            id: this.dependencies.inventoryMovementIdGenerator.generate(),
-            inventoryId: product.inventoryId,
-            productId: product.id,
-            effectiveAt: creationTime,
-            createdAt: creationTime,
-            updatedAt: creationTime,
-          });
+    if (
+      (initialInventory.movement === null) !==
+      (input.initialMovementId === null)
+    )
+      throw new TypeError(
+        'Initial stock and its caller movement identity must correspond.',
+      );
+    let initialMovement: InventoryMovement | null = null;
+    if (
+      initialInventory.movement !== null &&
+      input.initialMovementId !== null
+    ) {
+      initialMovement = createInventoryMovement({
+        ...initialInventory.movement,
+        id: input.initialMovementId,
+        inventoryId: product.inventoryId,
+        productId: product.id,
+        effectiveAt: input.occurredAt,
+        createdAt: creationTime,
+        updatedAt: creationTime,
+      });
+    }
 
     const result = Object.freeze({
       product,

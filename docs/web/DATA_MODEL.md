@@ -1,5 +1,10 @@
 # Modelo cloud conceptual
 
+CLOUD-06 congela la representación transport en [CONTRACTS_V1](CONTRACTS_V1.md), sin cambiar DB,
+schema, migration ni invariantes financieras. Money/Percentage son strings seguros escalados10^6;
+Revision permanece string sin límite JS-safe. Tiempos comerciales/originales preservados y updatedAt
+de metadata autoritativo quedan separados. Backup formatVersion1 conserva números locales seguros.
+
 Schema de aplicación IMPLEMENTADO por CLOUD-02; SQL/migrations versionados en apps/api/drizzle.
 Auth materializado por CLOUD-03; comandos comerciales/sync todavía no ejecutables. Drizzle PostgreSQL + driver pg;
 SQLite conserva su schema y migraciones propias. Server schema en `apps/api` será autoridad
@@ -26,16 +31,18 @@ IDs proporcionados nunca se convierten automáticamente en tenant autorizado.
 ## Entidades y columnas principales
 
 Conservar los campos/snapshots del modelo local auditado; columna técnica adicional es explícita.
+En la tabla, UUID comercial almacenado admite versiones legacy válidas; las creaciones nuevas V1
+exigen UUIDv7. Las relaciones conservan el UUID original, sin regeneración ni remapeo.
 
 | Entidad | Identidad/relaciones | Datos y estado |
 | --- | --- | --- |
-| Product | UUIDv7, inventoryId | name, variant?, barcode?, regularSalePriceUnits, minimumStock?, isArchived, createdAt, updatedAt; metadataRevision |
+| Product | UUID, inventoryId | name, variant?, barcode?, regularSalePriceUnits, minimumStock?, isArchived, createdAt, updatedAt; metadataRevision |
 | InventoryState | PK inventoryId/productId, FK compuesta Product | stock, unitCostUnits nullable; stateRevision, lastMovementId |
-| Sale | UUIDv7, inventoryId | status CONFIRMED/VOIDED, total/cost?/profit?, notes?, effectiveAt, createdAt, updatedAt |
-| SaleItem | UUIDv7, inventoryId, saleId/productId | quantity, unitSalePriceUnits, subtotal, unitCostSnapshot?, estimatedCost?/Profit?, costStatus KNOWN/UNKNOWN |
-| Purchase | UUIDv7, inventoryId/productId | quantity, unitCost, total, stockBefore/After, averageCostBefore?/After, status, notes?, timestamps |
-| StockAdjustment | UUIDv7, inventoryId/productId | stockBefore, actualStock, difference, reason, costMode?, unitCost, timestamps; inmutable |
-| InventoryMovement | UUIDv7, inventoryId/productId | type/delta, stockBefore/After, costSnapshot?, sourceType/Id, metadata?, timestamps; reversalOfMovementId? FK |
+| Sale | UUID, inventoryId | status CONFIRMED/VOIDED, total/cost?/profit?, notes?, effectiveAt, createdAt, updatedAt |
+| SaleItem | UUID, inventoryId, saleId/productId | quantity, unitSalePriceUnits, subtotal, unitCostSnapshot?, estimatedCost?/Profit?, costStatus KNOWN/UNKNOWN |
+| Purchase | UUID, inventoryId/productId | quantity, unitCost, total, stockBefore/After, averageCostBefore?/After, status, notes?, timestamps |
+| StockAdjustment | UUID, inventoryId/productId | stockBefore, actualStock, difference, reason, costMode?, unitCost, timestamps; inmutable |
+| InventoryMovement | UUID, inventoryId/productId | type/delta, stockBefore/After, costSnapshot?, sourceType/Id, metadata?, timestamps; reversalOfMovementId? FK |
 | SyncDevice | UUIDv7, businessId | registration, protocol/domain version, lastSeen; no hardware fingerprint |
 | OperationReceipt | PK businessId/operationId | payloadHash, kind, entity IDs, resultCode, result references, committedRevision, deviceId?, receivedAt |
 | InventoryChangeSet | PK inventoryId/revision | commit completo: upserts o tombstones de entidades, serverRecordedAt |
@@ -59,11 +66,18 @@ Backup local formatVersion 1 continúa usando números seguros; codec import/exp
 
 Stock/cantidad: BIGINT con rango JS safe integer; quantity >0 y conteo físico >=0.
 API números enteros seguros; validación antes de arithmetic. DB no limita stock >=0.
-UUIDv7 comercial en tipo PostgreSQL `uuid`, sin confiar en orden/timestamp embebido para concurrencia;
-V1 auditada genera UUIDv7; import cloud exige identificadores UUID representables y los preserva.
-El validator local acepta strings más generales: un backup local con IDs no representables en uuid
-cloud se rechaza con explicación, sin regeneración/mapeo silencioso ni impedir Restore local.
-Soportar import de otros esquemas de IDs sería un ticket formal posterior.
+Las identidades comerciales nuevas V1 se generan como UUIDv7 en tipo PostgreSQL `uuid`.
+Los IDs históricos/importados que sean UUID válidos representables se preservan exactamente,
+incluido UUIDv4 y otras versiones admitidas por el schema UUID genérico. DTOs, lecturas, FKs,
+evidencia, paths y comandos que referencian entidades existentes usan UUID genérico; crear Sale,
+SaleItem, Purchase, StockAdjustment o movimientos nuevos, incluidas reversiones, exige UUIDv7.
+Business es UUIDv7 porque solo se crea en cloud. operationId, referencias de receipt/dependencias,
+deviceId, snapshotId e importId continúan UUIDv7; Inventory.generation es UUID técnico genérico.
+No confiar en orden/timestamp embebido para concurrencia. Clasificación completa en
+[CONTRACTS_V1](CONTRACTS_V1.md#compatibilidad-de-uuid--cloud-06-fix).
+El validator local acepta strings más generales: un backup con IDs no UUID se rechaza con explicación
+en la futura frontera de import cloud, sin regeneración/remapeo ni cambios al Restore local.
+Backup formatVersion 1 conserva sus strings locales. Otros esquemas de IDs requieren ticket formal.
 
 Timestamps del dominio (`effectiveAt/createdAt/updatedAt`) siguen epoch ms BIGINT seguros y no negativos,
 preservados al importar. Transporte llama `occurredAt` al tiempo comercial del comando y lo mapea a

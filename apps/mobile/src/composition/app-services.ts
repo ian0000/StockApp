@@ -1,9 +1,11 @@
 import {
-  AdjustStockUseCase,
+  assembleLocalCommands,
+  type LocalCommandServices,
+} from './local-commands';
+import {
   ArchiveProductUseCase,
   CreateBackupUseCase,
   CreateInventoryUseCase,
-  CreateProductUseCase,
   FindProductByBarcodeUseCase,
   GetCurrentInventoryUseCase,
   GetProductDetailsUseCase,
@@ -13,12 +15,8 @@ import {
   GetTopSellingProductUseCase,
   ListHistoryUseCase,
   ListProductsUseCase,
-  RegisterPurchaseUseCase,
-  RegisterSaleUseCase,
   RestoreBackupUseCase,
   UpdateProductUseCase,
-  VoidSaleUseCase,
-  VoidPurchaseUseCase,
   type Clock,
   type BackupRestoreTransaction,
   type BackupSnapshotReader,
@@ -51,11 +49,11 @@ type AppIdGenerator = InventoryIdGenerator &
   StockAdjustmentIdGenerator;
 
 export interface AppServices {
-  readonly adjustStock: AdjustStockUseCase;
+  readonly adjustStock: LocalCommandServices['adjustStock'];
   readonly archiveProduct: ArchiveProductUseCase;
   readonly createBackup: CreateBackupUseCase;
   readonly createInventory: CreateInventoryUseCase;
-  readonly createProduct: CreateProductUseCase;
+  readonly createProduct: LocalCommandServices['createProduct'];
   readonly findProductByBarcode: FindProductByBarcodeUseCase;
   readonly getCurrentInventory: GetCurrentInventoryUseCase;
   readonly getProductDetails: GetProductDetailsUseCase;
@@ -65,12 +63,12 @@ export interface AppServices {
   readonly getTopSellingProduct: GetTopSellingProductUseCase;
   readonly listHistory: ListHistoryUseCase;
   readonly listProducts: ListProductsUseCase;
-  readonly registerPurchase: RegisterPurchaseUseCase;
-  readonly registerSale: RegisterSaleUseCase;
+  readonly registerPurchase: LocalCommandServices['registerPurchase'];
+  readonly registerSale: LocalCommandServices['registerSale'];
   readonly restoreBackup: RestoreBackupUseCase;
   readonly updateProduct: UpdateProductUseCase;
-  readonly voidSale: VoidSaleUseCase;
-  readonly voidPurchase: VoidPurchaseUseCase;
+  readonly voidSale: LocalCommandServices['voidSale'];
+  readonly voidPurchase: LocalCommandServices['voidPurchase'];
 }
 
 export interface AppServiceDependencies {
@@ -107,11 +105,11 @@ export function assembleAppServices({
   transactionManager,
 }: AppServiceDependencies): AppServices {
   return Object.freeze({
-    adjustStock: new AdjustStockUseCase({
-      stockAdjustmentIdGenerator: idGenerator,
-      inventoryMovementIdGenerator: idGenerator,
+    ...assembleLocalCommands({
       clock,
+      idGenerator,
       transactionManager,
+      saleDetailsReader,
     }),
     archiveProduct: new ArchiveProductUseCase({
       clock,
@@ -125,12 +123,6 @@ export function assembleAppServices({
       inventoryIdGenerator: idGenerator,
       clock,
       inventoryRepository,
-    }),
-    createProduct: new CreateProductUseCase({
-      productIdGenerator: idGenerator,
-      inventoryMovementIdGenerator: idGenerator,
-      clock,
-      transactionManager,
     }),
     findProductByBarcode: new FindProductByBarcodeUseCase(productRepository),
     getCurrentInventory: new GetCurrentInventoryUseCase(inventoryRepository),
@@ -149,33 +141,10 @@ export function assembleAppServices({
       inventoryStateRepository,
       productRepository,
     }),
-    registerPurchase: new RegisterPurchaseUseCase({
-      purchaseIdGenerator: idGenerator,
-      inventoryMovementIdGenerator: idGenerator,
-      clock,
-      transactionManager,
-    }),
-    registerSale: new RegisterSaleUseCase({
-      saleIdGenerator: idGenerator,
-      saleItemIdGenerator: idGenerator,
-      inventoryMovementIdGenerator: idGenerator,
-      clock,
-      transactionManager,
-    }),
     restoreBackup: new RestoreBackupUseCase(backupRestoreTransaction),
     updateProduct: new UpdateProductUseCase({
       clock,
       productRepository,
-    }),
-    voidSale: new VoidSaleUseCase({
-      inventoryMovementIdGenerator: idGenerator,
-      clock,
-      transactionManager,
-    }),
-    voidPurchase: new VoidPurchaseUseCase({
-      inventoryMovementIdGenerator: idGenerator,
-      clock,
-      transactionManager,
     }),
   });
 }

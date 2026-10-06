@@ -1,3 +1,7 @@
+import {
+  CreateProductFixtureCaller as CreateProductUseCase,
+  type CreateProductFixtureInput as CreateProductInput,
+} from './support/local-command-callers';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -5,8 +9,6 @@ import test from 'node:test';
 import { Money } from '@stock-app/domain';
 
 import {
-  CreateProductUseCase,
-  type CreateProductInput,
   type InventoryMovementRepository,
   type InventoryStateRepository,
   type ProductIdGenerator,

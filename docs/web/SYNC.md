@@ -1,5 +1,11 @@
 # Sincronización Mobile ↔ Cloud
 
+CLOUD-06 congela envelope V1, devices, push/results, ChangeSet, pull/highWaterMark/cursors y snapshot
+en [CONTRACTS_V1](CONTRACTS_V1.md). /v1/me anuncia protocolVersions/domainVersions `[1]`.
+Los endpoints sync y proyecciones/outbox siguen planned; no se ejecutan comandos ni ChangeSets.
+Tombstones V1 es array vacío: no hay borrado financiero, archive/VOIDED son upserts. Tipos técnicos
+de lifecycle requieren definición concreta API-10 antes de ampliar ese campo.
+
 Fuente normativa del protocolo V1. Diseño, no código. API no recibe un CRUD del estado final.
 
 ## Autoridad y durabilidad
@@ -15,6 +21,12 @@ Envelope: protocolVersion=1, domainVersion, deviceId, operationId UUIDv7 estable
 entity IDs generados offline, occurredAt, payload, base revisions por producto/metadata,
 dependsOn operationIds y resultado financiero local esperado. Fingerprint SHA-256 de JSON
 canónico versionado calculado por server; retries conservan bytes semánticos/IDs.
+
+Las entidades nuevas del comando exigen UUIDv7, pero sus referencias a Inventory/Product o
+ventas/compras históricas admiten UUID legacy válidos, incluido UUIDv4, preservados exactamente.
+ChangeSets, upserts, pull y snapshots transportan IDs/FKs comerciales genéricos: importar no cambia
+identidades ni obliga a convertirlas a v7. operationId, dependsOn, supersedesOperationId, referencias
+de receipt, deviceId y snapshotId siguen UUIDv7. Revision/cursor deciden progreso; UUID no decide orden.
 
 Domain preserva valores financieros históricos. El servidor deriva resultado con el MISMO Domain
 y compara snapshots monetarios recibidos. Una expectativa del cliente no se vuelve fuente de stock.

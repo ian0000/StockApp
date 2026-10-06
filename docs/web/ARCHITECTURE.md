@@ -1,5 +1,10 @@
 # Arquitectura objetivo
 
+CLOUD-06 materializa [contracts V1](CONTRACTS_V1.md): schemas JSON + tipos derivados, Ajv2020 y
+manifiesto framework-independent generan OpenAPI 3.1.1. API importa ownership schemas compartidos.
+Application recibe identidad/tiempo explícitos y llama el mismo Domain; Mobile prepara entradas
+mediante adapters de composición. No hay matemática duplicada ni endpoints financieros/sync nuevos.
+
 Normativa para la fase Cloud/Web; sistema actual en CURRENT_STATE. No hay servicios desplegados.
 
 CLOUD-01 (2026-10-03) implementa solo foundation HTTP local/contracts base. Roles de negocio,

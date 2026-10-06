@@ -83,15 +83,14 @@ export async function runSqliteTransactionSmokeTest(): Promise<SmokeResult> {
 
     const transactionManager = createSqliteTransactionManager({ sqlite });
     const successUseCase = new CreateProductUseCase({
-      productIdGenerator: { generate: () => 'smoke-success-product' },
-      inventoryMovementIdGenerator: {
-        generate: () => 'smoke-shared-movement',
-      },
-      clock: { now: () => 1_776_444_000_000 },
       transactionManager,
     });
 
     await successUseCase.execute({
+      productId: 'smoke-success-product',
+      initialMovementId: 'smoke-shared-movement',
+      occurredAt: 1_776_444_000_000,
+      createdAt: 1_776_444_000_000,
       inventoryId: 'smoke-success-inventory',
       name: 'Successful product',
       regularSalePrice: Money.fromDecimal('2.5'),
@@ -128,17 +127,16 @@ export async function runSqliteTransactionSmokeTest(): Promise<SmokeResult> {
     );
 
     const rollbackUseCase = new CreateProductUseCase({
-      productIdGenerator: { generate: () => 'smoke-rollback-product' },
-      inventoryMovementIdGenerator: {
-        generate: () => 'smoke-shared-movement',
-      },
-      clock: { now: () => 1_776_444_001_000 },
       transactionManager,
     });
     let rollbackError: unknown;
 
     try {
       await rollbackUseCase.execute({
+        productId: 'smoke-rollback-product',
+        initialMovementId: 'smoke-shared-movement',
+        occurredAt: 1_776_444_001_000,
+        createdAt: 1_776_444_001_000,
         inventoryId: 'smoke-rollback-inventory',
         name: 'Rolled-back product',
         regularSalePrice: Money.fromDecimal('3'),

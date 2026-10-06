@@ -9,14 +9,20 @@ import {
   type StockAdjustment,
 } from '@stock-app/domain';
 
-import type { Clock, InventoryMovementIdGenerator } from './create-product';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  type CommandTimes,
+} from './command-identity';
 import type { TransactionManager } from './ports';
 
 export interface StockAdjustmentIdGenerator {
   generate(): string;
 }
 
-export interface AdjustStockInput {
+export interface AdjustStockInput extends CommandTimes {
+  readonly stockAdjustmentId: string;
+  readonly movementId: string;
   readonly inventoryId: string;
   readonly productId: string;
   readonly actualStock: number;
@@ -31,9 +37,6 @@ export interface AdjustStockResult {
 }
 
 interface AdjustStockDependencies {
-  readonly stockAdjustmentIdGenerator: StockAdjustmentIdGenerator;
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
-  readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
 
@@ -96,6 +99,10 @@ function normalizeRequiredIdentifier(value: string, label: string): string {
 }
 
 function validateAndNormalizeInput({
+  stockAdjustmentId,
+  occurredAt,
+  createdAt,
+  movementId,
   inventoryId,
   productId,
   actualStock,
@@ -136,6 +143,10 @@ function validateAndNormalizeInput({
   }
 
   return Object.freeze({
+    stockAdjustmentId,
+    occurredAt,
+    createdAt,
+    movementId,
     inventoryId: normalizeRequiredIdentifier(inventoryId, 'Inventory ID'),
     productId: normalizeRequiredIdentifier(productId, 'Product ID'),
     actualStock,
@@ -194,6 +205,8 @@ export class AdjustStockUseCase {
 
   async execute(input: AdjustStockInput): Promise<AdjustStockResult> {
     const normalized = validateAndNormalizeInput(input);
+    validateCommandTimes(normalized);
+    requireNewIdentities([normalized.stockAdjustmentId, normalized.movementId]);
 
     return this.dependencies.transactionManager.runInTransaction(
       async (repositories) => {
@@ -269,11 +282,9 @@ export class AdjustStockUseCase {
           );
         }
 
-        const adjustmentId =
-          this.dependencies.stockAdjustmentIdGenerator.generate();
-        const movementId =
-          this.dependencies.inventoryMovementIdGenerator.generate();
-        const timestamp = this.dependencies.clock.now();
+        const adjustmentId = normalized.stockAdjustmentId;
+        const movementId = normalized.movementId;
+        const timestamp = normalized.createdAt;
         const adjustment = createStockAdjustment({
           id: adjustmentId,
           inventoryId: normalized.inventoryId,
@@ -284,7 +295,7 @@ export class AdjustStockUseCase {
           reason: normalized.reason,
           costMode: applied.costMode,
           unitCost: applied.unitCost,
-          effectiveAt: timestamp,
+          effectiveAt: normalized.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
         });
@@ -300,7 +311,7 @@ export class AdjustStockUseCase {
           sourceType: 'STOCK_ADJUSTMENT',
           sourceId: adjustment.id,
           metadata: null,
-          effectiveAt: timestamp,
+          effectiveAt: normalized.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
         });

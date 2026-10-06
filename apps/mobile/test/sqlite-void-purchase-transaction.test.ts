@@ -172,7 +172,7 @@ function seedVoidablePurchase(
 
 function createHarness(database: DatabaseSync) {
   const drizzleDatabase = createNodeSqliteDrizzle(database);
-  let idCalls = 0;
+  const idCalls = 0;
   let clockCalls = 0;
   const transactionManager: TransactionManager = {
     runInTransaction: (operation) =>
@@ -187,12 +187,6 @@ function createHarness(database: DatabaseSync) {
       ),
   };
   const useCase = new VoidPurchaseUseCase({
-    inventoryMovementIdGenerator: {
-      generate() {
-        idCalls += 1;
-        return `reversal-${idCalls}`;
-      },
-    },
     clock: {
       now() {
         clockCalls += 1;
@@ -219,6 +213,9 @@ test('real SQLite commits one exact Purchase reversal and retry is idempotent', 
     seedVoidablePurchase(database, 'success');
     const harness = createHarness(database);
     const input = {
+      occurredAt: TIMESTAMP + 1,
+      createdAt: TIMESTAMP + 1,
+      reversalMovementId: 'reversal-1',
       inventoryId: 'inventory-success',
       purchaseId: 'purchase-success',
     };
@@ -276,7 +273,7 @@ test('real SQLite commits one exact Purchase reversal and retry is idempotent', 
 
     assert.equal(first.kind, 'VOIDED');
     assert.equal(second.kind, 'ALREADY_VOIDED');
-    assert.equal(harness.getIdCalls(), 1);
+    assert.equal(harness.getIdCalls(), 0);
     assert.equal(harness.getClockCalls(), 1);
     assert.equal(purchase.status, 'VOIDED');
     assert.equal(purchase.quantity, 10);
@@ -362,6 +359,9 @@ for (const scenario of [
     try {
       seedVoidablePurchase(database, 'cost', scenario.seed);
       await createHarness(database).useCase.execute({
+        occurredAt: TIMESTAMP + 1,
+        createdAt: TIMESTAMP + 1,
+        reversalMovementId: 'reversal-1',
         inventoryId: 'inventory-cost',
         purchaseId: 'purchase-cost',
       });
@@ -413,6 +413,9 @@ for (const offset of [0, 1]) {
           TIMESTAMP + offset,
         );
       const result = await createHarness(database).useCase.execute({
+        occurredAt: TIMESTAMP + 1,
+        createdAt: TIMESTAMP + 1,
+        reversalMovementId: 'reversal-1',
         inventoryId: 'inventory-later',
         purchaseId: 'purchase-later',
       });
@@ -479,6 +482,9 @@ for (const failure of [
       await assert.rejects(
         () =>
           createHarness(database).useCase.execute({
+            occurredAt: TIMESTAMP + 1,
+            createdAt: TIMESTAMP + 1,
+            reversalMovementId: 'reversal-1',
             inventoryId: 'inventory-rollback',
             purchaseId: 'purchase-rollback',
           }),

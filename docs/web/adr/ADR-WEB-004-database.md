@@ -11,7 +11,9 @@ Mobile utiliza Drizzle SQLite; proveedor cloud antiguo Supabase era provisional.
 
 PostgreSQL en Railway con Drizzle + pg; schemas/migraciones dialect-specific en apps/api,
 sin compartir sqliteTable. Money BIGINT escalado 10^6 con rango seguro igual Domain,
-JSON strings y codecs explícitos. UUIDv7 comercial; epoch ms domain y timestamps server UTC.
+JSON strings y codecs explícitos. UUIDv7 para nuevas identidades comerciales; UUID histórico válido
+preservado sin remapeo conforme a CLOUD-06-FIX. DTOs/FKs/referencias aceptan UUID genérico.
+Epoch ms domain y timestamps server UTC.
 Fuente: [DATA_MODEL](../DATA_MODEL.md), [OPERATIONS](../OPERATIONS.md).
 
 ## Alternativas

@@ -122,6 +122,7 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
         user: { id: userA, email: 'owner-a@example.test', emailVerified: true },
         business: null,
         inventory: null,
+        capabilities: { protocolVersions: [1], domainVersions: [1] },
       });
       await code('GET', `/v1/inventories/${id()}`, 404, 'NOT_FOUND', cookieA);
       await zeroData();

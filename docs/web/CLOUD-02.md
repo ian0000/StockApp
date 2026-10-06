@@ -80,7 +80,8 @@ inventory_change_sets. Lifecycle/import: import_sessions, deletion_requests. Aut
 Inventory generation es UUID técnico random default; revision/metadataRevision/stateRevision default 0.
 lastMovementId FK incluye Inventory/Product. Campos reversal y lastMovement nullable durante upgrade.
 No relaciones financieras ON DELETE CASCADE: todas las FKs NO ACTION. Product delete con historia falla.
-UUIDv7 comercial será generado/validado por los futuros límites de aplicación; PostgreSQL almacena uuid.
+UUIDv7 comercial nuevo se genera/valida en los límites de aplicación; PostgreSQL almacena uuid.
+CLOUD-06-FIX aclara que UUID históricos válidos se preservan sin exigir v7 ni remapear FKs.
 La generación técnica no es ID comercial ni cursor de commit.
 
 104 CHECKs, 16 FKs, 14 PKs, 9 UNIQUE constraints y 34 índices totales observados en PostgreSQL 18.6.

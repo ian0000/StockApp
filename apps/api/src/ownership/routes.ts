@@ -1,5 +1,16 @@
 import type { FastifyInstance } from 'fastify';
-import { createApiError } from '@stock-app/contracts';
+import {
+  createApiError,
+  noQuerySchema,
+  bootstrapRequestSchema,
+  bootstrapResponseSchema,
+  inventoryMetadataSchema,
+  inventoryParamsSchema,
+  meResponseSchema,
+  csrfResponseSchema,
+  PROTOCOL_VERSION,
+  DOMAIN_VERSION,
+} from '@stock-app/contracts';
 import type { StockAppAuth } from '../auth/create-auth.js';
 import { bootstrapEmptyInventory, type BootstrapInput } from './bootstrap.js';
 import {
@@ -10,43 +21,6 @@ import {
 import { OwnershipError } from './errors.js';
 import { businesses, inventories } from '../infrastructure/postgres/schema.js';
 import { authorizeBusinessRequest } from '../security/business.js';
-
-const noQuery = {
-  type: 'object',
-  properties: {},
-  additionalProperties: false,
-} as const;
-const bootstrapSchema = {
-  type: 'object',
-  properties: {
-    inventoryName: { type: 'string', minLength: 1, maxLength: 200 },
-    currency: { type: 'string', pattern: '^[A-Z]{3}$' },
-    reportingTimeZone: { type: 'string', minLength: 1, maxLength: 100 },
-  },
-  required: ['inventoryName', 'currency', 'reportingTimeZone'],
-  additionalProperties: false,
-} as const;
-const inventorySchema = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    name: { type: 'string' },
-    currency: { type: 'string' },
-    reportingTimeZone: { type: 'string' },
-  },
-  required: ['id', 'name', 'currency', 'reportingTimeZone'],
-  additionalProperties: false,
-} as const;
-const businessSchema = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    status: { type: 'string', enum: ['ACTIVE', 'DELETING'] },
-    cloudAccessEnabled: { type: 'boolean' },
-  },
-  required: ['id', 'status', 'cloudAccessEnabled'],
-  additionalProperties: false,
-} as const;
 
 function inventoryDto(inventory: typeof inventories.$inferSelect) {
   return {
@@ -87,15 +61,8 @@ export function registerOwnershipRoutes(
       '/v1/session/csrf',
       {
         schema: {
-          querystring: noQuery,
-          response: {
-            200: {
-              type: 'object',
-              properties: { token: { type: 'string' } },
-              required: ['token'],
-              additionalProperties: false,
-            },
-          },
+          querystring: noQuerySchema,
+          response: { 200: csrfResponseSchema },
         },
       },
       async (request) => {
@@ -107,28 +74,8 @@ export function registerOwnershipRoutes(
       '/v1/me',
       {
         schema: {
-          querystring: noQuery,
-          response: {
-            200: {
-              type: 'object',
-              properties: {
-                user: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    email: { type: 'string' },
-                    emailVerified: { type: 'boolean' },
-                  },
-                  required: ['id', 'email', 'emailVerified'],
-                  additionalProperties: false,
-                },
-                business: { anyOf: [businessSchema, { type: 'null' }] },
-                inventory: { anyOf: [inventorySchema, { type: 'null' }] },
-              },
-              required: ['user', 'business', 'inventory'],
-              additionalProperties: false,
-            },
-          },
+          querystring: noQuerySchema,
+          response: { 200: meResponseSchema },
         },
       },
       async (request) => {
@@ -145,6 +92,10 @@ export function registerOwnershipRoutes(
           },
           business: business ? businessDto(business) : null,
           inventory: inventory ? inventoryDto(inventory) : null,
+          capabilities: {
+            protocolVersions: [PROTOCOL_VERSION],
+            domainVersions: [DOMAIN_VERSION],
+          },
         };
       },
     );
@@ -153,27 +104,11 @@ export function registerOwnershipRoutes(
       {
         bodyLimit: 32 * 1024,
         schema: {
-          body: bootstrapSchema,
-          querystring: noQuery,
+          body: bootstrapRequestSchema,
+          querystring: noQuerySchema,
           response: {
-            200: {
-              type: 'object',
-              properties: {
-                business: businessSchema,
-                inventory: inventorySchema,
-              },
-              required: ['business', 'inventory'],
-              additionalProperties: false,
-            },
-            201: {
-              type: 'object',
-              properties: {
-                business: businessSchema,
-                inventory: inventorySchema,
-              },
-              required: ['business', 'inventory'],
-              additionalProperties: false,
-            },
+            200: bootstrapResponseSchema,
+            201: bootstrapResponseSchema,
           },
         },
       },
@@ -195,20 +130,9 @@ export function registerOwnershipRoutes(
       '/v1/inventories/:inventoryId',
       {
         schema: {
-          querystring: noQuery,
-          params: {
-            type: 'object',
-            properties: {
-              inventoryId: {
-                type: 'string',
-                pattern:
-                  '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-              },
-            },
-            required: ['inventoryId'],
-            additionalProperties: false,
-          },
-          response: { 200: inventorySchema },
+          querystring: noQuerySchema,
+          params: inventoryParamsSchema,
+          response: { 200: inventoryMetadataSchema },
         },
       },
       async (request) => {

@@ -9,7 +9,11 @@ import {
   type Purchase,
 } from '@stock-app/domain';
 
-import type { Clock, InventoryMovementIdGenerator } from './create-product';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  type CommandTimes,
+} from './command-identity';
 import type { TransactionManager } from './ports';
 import {
   createPurchasePriceAnalysis,
@@ -20,7 +24,9 @@ export interface PurchaseIdGenerator {
   generate(): string;
 }
 
-export interface RegisterPurchaseInput {
+export interface RegisterPurchaseInput extends CommandTimes {
+  readonly purchaseId: string;
+  readonly movementId: string;
   readonly inventoryId: string;
   readonly productId: string;
   readonly quantity: number;
@@ -37,9 +43,6 @@ export interface RegisterPurchaseResult {
 }
 
 interface RegisterPurchaseDependencies {
-  readonly purchaseIdGenerator: PurchaseIdGenerator;
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
-  readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
 
@@ -74,6 +77,10 @@ function normalizeRequiredIdentifier(value: string, label: string): string {
 }
 
 function validateAndNormalizeInput({
+  purchaseId,
+  occurredAt,
+  createdAt,
+  movementId,
   inventoryId,
   productId,
   quantity,
@@ -97,6 +104,10 @@ function validateAndNormalizeInput({
   }
 
   return Object.freeze({
+    purchaseId,
+    occurredAt,
+    createdAt,
+    movementId,
     inventoryId: normalizeRequiredIdentifier(inventoryId, 'Inventory ID'),
     productId: normalizeRequiredIdentifier(productId, 'Product ID'),
     quantity,
@@ -110,6 +121,8 @@ export class RegisterPurchaseUseCase {
 
   async execute(input: RegisterPurchaseInput): Promise<RegisterPurchaseResult> {
     const normalized = validateAndNormalizeInput(input);
+    validateCommandTimes(normalized);
+    requireNewIdentities([normalized.purchaseId, normalized.movementId]);
     const { transactionManager } = this.dependencies;
 
     const persisted = await transactionManager.runInTransaction(
@@ -164,8 +177,8 @@ export class RegisterPurchaseUseCase {
           throw new Error('Purchase resulting cost unexpectedly missing.');
         }
 
-        const purchaseId = this.dependencies.purchaseIdGenerator.generate();
-        const timestamp = this.dependencies.clock.now();
+        const purchaseId = normalized.purchaseId;
+        const timestamp = normalized.createdAt;
         const purchase = createPurchase({
           id: purchaseId,
           inventoryId: normalized.inventoryId,
@@ -175,7 +188,7 @@ export class RegisterPurchaseUseCase {
           totalAmount: normalized.unitCost.multiplyByInteger(
             normalized.quantity,
           ),
-          effectiveAt: timestamp,
+          effectiveAt: normalized.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
           status: 'CONFIRMED',
@@ -192,11 +205,11 @@ export class RegisterPurchaseUseCase {
           stockBefore: currentState.stock,
         });
         const movement = createInventoryMovement({
-          id: this.dependencies.inventoryMovementIdGenerator.generate(),
+          id: normalized.movementId,
           inventoryId: normalized.inventoryId,
           productId: normalized.productId,
           ...movementDraft,
-          effectiveAt: timestamp,
+          effectiveAt: normalized.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
         });

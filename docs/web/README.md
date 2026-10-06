@@ -1,5 +1,9 @@
 # StockApp Cloud + Web — baseline de arquitectura
 
+CLOUD-06 implementa [CONTRACTS_V1](CONTRACTS_V1.md), [OpenAPI generado](openapi/README.md) y adaptación
+Application/callers Mobile para IDs y tiempos explícitos. [Evidencia](CLOUD-06.md). Comandos API,
+sync/import/lifecycle, Web y despliegue siguen planned; /health continúa 404.
+
 ARCH-STOCKAPP-WEB-001 · 2026-10-02 (America/Guayaquil).
 Estado: baseline aprobada humanamente y mergeada mediante PR #75. CLOUD-01 incorpora
 foundation API local y contracts base; CLOUD-02 añade schema/migrations PostgreSQL y QA real local/CI.
@@ -26,6 +30,10 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [CLOUD-02](CLOUD-02.md) | Persistencia PostgreSQL, migrations y QA real local/CI |
 | [CLOUD-03](CLOUD-03.md) | Identidad Better Auth, sesiones y SMTP local/CI |
 | [CLOUD-04](CLOUD-04.md) | Ownership, bootstrap vacío, aislamiento A/B y acceso piloto local/CI |
+| [CLOUD-05](CLOUD-05.md) | CORS/CSRF/rate limits durables y transporte |
+| [CLOUD-06](CLOUD-06.md) | Freeze V1, OpenAPI y regresión Application/Mobile |
+| [CONTRACTS_V1](CONTRACTS_V1.md) | Fuente ejecutable, catálogo, IDs/tiempo y límites congelados |
+| [OpenAPI](openapi/README.md) | Artefacto machine-readable y generación/check |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |
 | [REQUIREMENTS](REQUIREMENTS.md) | Requisitos verificables y decisiones pendientes |
 | [SCOPE](SCOPE.md) | V1 cloud, exclusiones y compatibilidad con Free/Pro |

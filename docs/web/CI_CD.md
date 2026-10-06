@@ -1,5 +1,10 @@
 # CI/CD futuro
 
+CLOUD-06 añade `contracts:openapi` y `contracts:openapi:check`. `pnpm check` ejecuta primero el check
+de artefacto, que compara generación in-memory y falla ante stale; el required Quality checks de CI
+lo hereda sin nuevo job opcional. Check corre desde checkout limpio sin dist/global tooling.
+[OpenAPI](openapi/README.md), [evidencia](CLOUD-06.md). No cambia CD ni despliega servicios.
+
 Actual: `.github/workflows/ci.yml` corre `pnpm check` en PR a main/push main, Node 22.16.0,
 pnpm fijado y install frozen lockfile. CLOUD-01 añade build:api al check; sin root build ni CD.
 Workspaces nuevos participan automáticamente en formato/lint/typecheck/tests. CLOUD-02 añade al

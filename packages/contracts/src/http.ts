@@ -1,4 +1,5 @@
 import type { FromSchema } from 'json-schema-to-ts';
+import { revisionSchema } from './transport.js';
 
 export const requestIdSchema = { type: 'string', minLength: 1 } as const;
 export const liveResponseSchema = {
@@ -29,6 +30,17 @@ export const apiErrorSchema = {
             'PAYLOAD_TOO_LARGE',
             'UNSUPPORTED_MEDIA_TYPE',
             'RATE_LIMITED',
+            'UNSUPPORTED_PROTOCOL',
+            'REVISION_CONFLICT',
+            'COST_SNAPSHOT_CONFLICT',
+            'IDEMPOTENCY_KEY_REUSED',
+            'IMPORT_NOT_EMPTY',
+            'SYNC_RESET_REQUIRED',
+            'SNAPSHOT_EXPIRED',
+            'DOMAIN_RULE',
+            'VOID_NOT_ELIGIBLE',
+            'MONEY_OVERFLOW',
+            'TEMPORARILY_UNAVAILABLE',
           ],
         },
         message: { type: 'string', minLength: 1 },
@@ -37,9 +49,23 @@ export const apiErrorSchema = {
           type: 'object',
           additionalProperties: { type: 'array', items: { type: 'string' } },
         },
+        details: {
+          type: 'object',
+          properties: {
+            currentRevision: revisionSchema,
+          },
+          required: ['currentRevision'],
+          additionalProperties: false,
+        },
       },
       required: ['code', 'message', 'requestId'],
       additionalProperties: false,
+      allOf: [
+        {
+          if: { properties: { details: true }, required: ['details'] },
+          then: { properties: { code: { const: 'REVISION_CONFLICT' } } },
+        },
+      ],
     },
   },
   required: ['error'],

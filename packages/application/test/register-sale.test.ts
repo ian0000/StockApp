@@ -1,3 +1,7 @@
+import {
+  RegisterSaleFixtureCaller as RegisterSaleUseCase,
+  type RegisterSaleFixtureInput as RegisterSaleInput,
+} from './support/local-command-callers';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -15,7 +19,6 @@ import {
   DuplicateSaleProductError,
   EmptySaleError,
   MissingInventoryStateError,
-  RegisterSaleUseCase,
   SaleProductUnavailableError,
   type Clock,
   type InventoryMovementIdGenerator,
@@ -23,7 +26,6 @@ import {
   type InventoryStateRecord,
   type InventoryStateRepository,
   type ProductRepository,
-  type RegisterSaleInput,
   type SaleIdGenerator,
   type SaleItemIdGenerator,
   type SaleItemRepository,

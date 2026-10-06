@@ -10,7 +10,11 @@ import {
   type SaleItem,
 } from '@stock-app/domain';
 
-import type { Clock, InventoryMovementIdGenerator } from './create-product';
+import {
+  requireNewIdentities,
+  validateCommandTimes,
+  type CommandTimes,
+} from './command-identity';
 import type { TransactionManager } from './ports';
 
 export interface SaleIdGenerator {
@@ -22,12 +26,15 @@ export interface SaleItemIdGenerator {
 }
 
 export interface RegisterSaleLineInput {
+  readonly saleItemId: string;
+  readonly movementId: string;
   readonly productId: string;
   readonly quantity: number;
   readonly unitSalePrice: Money;
 }
 
-export interface RegisterSaleInput {
+export interface RegisterSaleInput extends CommandTimes {
+  readonly saleId: string;
   readonly inventoryId: string;
   readonly items: readonly RegisterSaleLineInput[];
   readonly notes?: string | null;
@@ -39,10 +46,6 @@ export interface RegisterSaleResult {
 }
 
 interface RegisterSaleDependencies {
-  readonly saleIdGenerator: SaleIdGenerator;
-  readonly saleItemIdGenerator: SaleItemIdGenerator;
-  readonly inventoryMovementIdGenerator: InventoryMovementIdGenerator;
-  readonly clock: Clock;
   readonly transactionManager: TransactionManager;
 }
 
@@ -99,6 +102,9 @@ function normalizeRequiredIdentifier(value: string, label: string): string {
 }
 
 function validateAndNormalizeInput({
+  saleId,
+  occurredAt,
+  createdAt,
   inventoryId,
   items,
   notes,
@@ -138,6 +144,9 @@ function validateAndNormalizeInput({
   });
 
   return Object.freeze({
+    saleId,
+    occurredAt,
+    createdAt,
     inventoryId: normalizedInventoryId,
     items: Object.freeze(normalizedItems),
     notes,
@@ -153,6 +162,11 @@ export class RegisterSaleUseCase {
 
   async execute(input: RegisterSaleInput): Promise<RegisterSaleResult> {
     const normalized = validateAndNormalizeInput(input);
+    validateCommandTimes(normalized);
+    requireNewIdentities([
+      normalized.saleId,
+      ...normalized.items.flatMap((line) => [line.saleItemId, line.movementId]),
+    ]);
 
     return this.dependencies.transactionManager.runInTransaction(
       async (repositories) => {
@@ -188,8 +202,8 @@ export class RegisterSaleUseCase {
           }
         }
 
-        const saleId = this.dependencies.saleIdGenerator.generate();
-        const timestamp = this.dependencies.clock.now();
+        const saleId = normalized.saleId;
+        const timestamp = normalized.createdAt;
         const preparedLines: PreparedLine[] = normalized.items.map(
           (inputItem) => {
             const currentState = statesByProductId.get(inputItem.productId);
@@ -215,7 +229,7 @@ export class RegisterSaleUseCase {
             }
 
             const item = createSaleItem({
-              id: this.dependencies.saleItemIdGenerator.generate(),
+              id: inputItem.saleItemId,
               saleId,
               productId: inputItem.productId,
               quantity: inputItem.quantity,
@@ -229,7 +243,7 @@ export class RegisterSaleUseCase {
               updatedAt: timestamp,
             });
             const movement = createInventoryMovement({
-              id: this.dependencies.inventoryMovementIdGenerator.generate(),
+              id: inputItem.movementId,
               inventoryId: normalized.inventoryId,
               productId: inputItem.productId,
               type: 'SALE',
@@ -240,7 +254,7 @@ export class RegisterSaleUseCase {
               sourceType: 'SALE',
               sourceId: saleId,
               metadata: null,
-              effectiveAt: timestamp,
+              effectiveAt: normalized.occurredAt,
               createdAt: timestamp,
               updatedAt: timestamp,
             });
@@ -287,7 +301,7 @@ export class RegisterSaleUseCase {
         const sale = createSale({
           id: saleId,
           inventoryId: normalized.inventoryId,
-          effectiveAt: timestamp,
+          effectiveAt: normalized.occurredAt,
           createdAt: timestamp,
           updatedAt: timestamp,
           status: 'CONFIRMED',

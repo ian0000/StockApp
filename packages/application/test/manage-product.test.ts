@@ -13,6 +13,29 @@ import {
 
 const INVENTORY_ID = 'inventory-123';
 
+test('metadata uses the executor clock and never moves behind original or previous timestamps', async () => {
+  for (const serverTime of [50, 100, 250]) {
+    const stored = product({ updatedAt: 200 });
+    const repository = new StubProductManagementRepository(stored);
+    const updated = await new UpdateProductUseCase({
+      productRepository: repository,
+      clock: { now: () => serverTime },
+    }).execute({
+      inventoryId: INVENTORY_ID,
+      productId: stored.id,
+      name: stored.name,
+      regularSalePrice: stored.regularSalePrice,
+    });
+    assert.equal(updated.updatedAt, Math.max(200, serverTime));
+    assert.equal(updated.createdAt, 100);
+    const archived = await new ArchiveProductUseCase({
+      productRepository: repository,
+      clock: { now: () => serverTime },
+    }).execute({ inventoryId: INVENTORY_ID, productId: stored.id });
+    assert.equal(archived.updatedAt, Math.max(200, serverTime));
+  }
+});
+
 function product(overrides: Partial<Product> = {}): Product {
   return Object.freeze({
     ...createProduct({
