@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+Batch humano API-04→API-05→API-06 vigente: cada ticket tiene rama/commit/PR/checks/merge independientes. API-05 añade tests de ajustes al required existente. Avanzar solo con todos los gates PASS, CI/GitGuardian del head final, merge normal y main limpio0/0; cualquier STOP condition detiene el batch. STOP final API-06, sin deploy. Las notas inferiores describen autorizaciones históricas ya sustituidas por este batch. [API-05](API-05.md).
+
 API-04 integra test/purchases en test:db required existente, sin skip/optional/continue-on-error. Frozen install/check/build/OpenAPI y generate DB/Auth sin drift; CI/GitGuardian del head final antes de merge normal. STOP después de API-04/main limpio0/0, sin API-05/WEB-01/SYNC-01 automático. [Evidencia](API-04.md).
 
 API-03 integra tests/sales en test:db del required Quality checks existente; sin skip/optional/continue-on-error ni cambios de workflow/deploy. Frozen install, pnpm check/build/OpenAPI y generación DB/auth sin drift son gates. STOP después de API-03/main limpio0/0, sin API-04/WEB-01/SYNC-01 automático. [Evidencia](API-03.md).

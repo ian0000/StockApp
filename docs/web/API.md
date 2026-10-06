@@ -1,5 +1,7 @@
 # Contratos API V1
 
+API-05 materializa POST adjustments200/AdjustStockResult con estado exacto y revision literal, diferencia derivada por AdjustStockUseCase, costo de movimiento separado del promedio y receipt/ChangeSet histórico. [Detalle](API-05.md).
+
 API-04 materializa POST purchases200/RegisterPurchaseResult con Purchase un Product, estado completo y revision literal exacta. Referencia `{operationId}` en revisión directa se rechaza400 antes del executor; el envelope global Sync sigue congelado. PriceAnalysis informativo y replay histórico desde Product snapshot/ChangeSet, sin auto-price update. [Detalle](API-04.md).
 
 API-03 implementa POST /v1/inventories/:inventoryId/sales: RegisterSaleCommand → 200 RegisterSaleResult congelado. InventoryParams genérico, IDs nuevos v7, Product legacyv4; seguridad CLOUD-05 y engine API-01. Cost mismatch409 COST_SNAPSHOT_CONFLICT sin details extra; missing/archived/foreign404; Money overflow422; corrupción500 sin receipt. [Detalle](API-03.md).

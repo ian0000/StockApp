@@ -1,5 +1,7 @@
 # StockApp Cloud + Web — baseline de arquitectura
 
+API-05 implementa [AdjustStock](API-05.md): conteo físico, costos Domain, estado exacto y resultado durable. Doce rutas implemented. Batch humano API-04→API-05→API-06 autorizado; avanzar solo tras gates completos/merge/main limpio0/0, detener ante fallos y STOP final API-06. Los párrafos de tickets anteriores conservan su estado histórico.
+
 API-04 implementa [RegisterPurchase](API-04.md): estado/revisión exactos, promedio Domain, stock cero/negativo, snapshots y análisis de precio informativo. Product canónico se incluye en ChangeSet para replay histórico sin escribir Product. Once rutas implemented; otros comandos/lecturas/Web/Sync/deploy siguen planned.
 
 API-03 implementa [RegisterSale multiproducto](API-03.md): snapshots de costo exactos/null, stock negativo, evidencia verificada antes de writes, stateRevision/lastMovementId y replay histórico durable. Diez rutas implemented; detalles/void/lecturas y otros comandos/sync/Web siguen planned, sin deployment.
@@ -46,6 +48,7 @@ una fuente normativa principal en la tabla siguiente; los ADRs explican motivos 
 | [API-02](API-02.md) | Product commands, stock inicial, metadata revisions y replay durable |
 | [API-03](API-03.md) | Sale multiproducto, evidencia/costos históricos, concurrencia y replay |
 | [API-04](API-04.md) | Compra, estado exacto, costo promedio y priceAnalysis durable |
+| [API-05](API-05.md) | Conteo físico, costo aceptado, movimiento y estado exacto |
 | [CONTRACTS_V1](CONTRACTS_V1.md) | Fuente ejecutable, catálogo, IDs/tiempo y límites congelados |
 | [OpenAPI](openapi/README.md) | Artefacto machine-readable y generación/check |
 | [PRODUCT](PRODUCT.md) | Usuario y frontera de la app autenticada |

@@ -2,9 +2,9 @@
 
 ## Prioridad de ejecución humana — 2026-10-06
 
-Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Tras API-04 detenerse, sin comenzar otro ticket.
+Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-04→API-05→API-06, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, STOP ante cualquier fallo y STOP final API-06. No autoriza API-07+/Web/Sync/deploy.
 
-47 tickets: CLOUD-01..06 y API-01..04 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md)); 37 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01..06 y API-01..05 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md)); 36 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -20,8 +20,9 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 | CLOUD-05 | IMPLEMENTED — Seguridad transport/secrets/CSRF/rate limits | CLOUD-04 | Allowlist/size/redaction, CSRF/Origin, brute force durable; SECURITY tests |
 | CLOUD-06 | IMPLEMENTED — Contracts V1, compatibilidad UUID legacy y Application IDs/tiempo | CLOUD-02, CLOUD-04 | OpenAPI/schema/DTO, nuevos IDs v7/referencias UUID, tiempos offline, regresión, ninguna fórmula duplicada |
 
-API-01..04 fueron autorizados por tickets independientes. Siguiente ticket planificado: **API-05**;
-requiere una solicitud nueva. API-05+, SYNC-01+ y WEB-01+ continúan **PLANNED**.
+API-05 está implementado y en validación de su gate. API-06 está autorizado únicamente tras completar
+API-05/merge/main limpio0/0. API-06+ permanece **PLANNED** hasta su implementación; API-07+,
+SYNC-01+ y WEB-01+ no están autorizados por el batch actual.
 
 CLOUD-06 y CLOUD-06-FIX fueron solicitados explícitamente y tienen implementación/validación documentadas.
 OpenAPI/DTO/envelopes V1, engine/GET receipt API-01 y runtime Product/Sale/Purchase API-02/03/04 existen.
@@ -35,7 +36,7 @@ WEB-01, otros comandos financieros/sync/import/lifecycle siguen planned; no come
 | API-02 | IMPLEMENTED — Product create/edit/archive y stock inicial; [evidencia](API-02.md) | API-01 | Metadata version, barcode unique scoped, movement/state inicial atómicos |
 | API-03 | IMPLEMENTED — RegisterSale multiproducto; [evidencia](API-03.md) | API-02 | All-or-nothing, costos históricos/null, negativo permitido, same cost delta concurrency |
 | API-04 | IMPLEMENTED — RegisterPurchase un producto; [evidencia](API-04.md) | API-02 | Expected state, promedio exacto, snapshots y analysis; test-first críticos |
-| API-05 | AdjustStock conteo físico | API-02 | Motivo/costo válido, stateRevision, movimiento; no ajuste cero |
+| API-05 | IMPLEMENTED — AdjustStock conteo físico; [evidencia](API-05.md) | API-02 | Motivo/costo válido, stateRevision, movimiento; no ajuste cero |
 | API-06 | VoidSale server | API-03 | Última inequívoca/todas líneas, already voided y reversal unique; rollback |
 | API-07 | VoidPurchase server | API-04 | Última inequívoca, stock/costo snapshots, archived allowed, ninguna compra antigua replay |
 | API-08 | Read models Home/products/detail/history/bajo | API-03, API-04, API-05, API-06, API-07 | Scoping/keyset, métricas CONFIRMED y null completo; timezone consistente |
