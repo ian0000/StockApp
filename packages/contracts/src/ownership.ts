@@ -63,6 +63,11 @@ export const csrfResponseSchema = objectSchema({ token: textSchema });
 export const inventoryParamsSchema = objectSchema({
   inventoryId: uuidSchema,
 });
+export const operationParamsSchema = objectSchema({
+  inventoryId: uuidSchema,
+  operationId: uuidV7Schema,
+});
+export type OperationParams = FromSchema<typeof operationParamsSchema>;
 export type MeResponse = FromSchema<typeof meResponseSchema>;
 export type BootstrapRequest = FromSchema<typeof bootstrapRequestSchema>;
 export type BootstrapResponse = FromSchema<typeof bootstrapResponseSchema>;

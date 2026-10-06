@@ -5700,7 +5700,7 @@
       "get": {
         "operationId": "getOperation",
         "summary": "Own durable command receipt",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -9951,6 +9951,22 @@
         },
         "required": [
           "inventoryId"
+        ],
+        "additionalProperties": false
+      },
+      "OperationParams": {
+        "type": "object",
+        "properties": {
+          "inventoryId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "operationId": {
+            "$ref": "#/components/schemas/UUIDv7"
+          }
+        },
+        "required": [
+          "inventoryId",
+          "operationId"
         ],
         "additionalProperties": false
       },

@@ -1,5 +1,11 @@
 # Seguridad y threat model
 
+API-01 añade GET receipt con autorización/read limit/CORS/Origin/no-store/requestId existentes.
+Pruebas A/B incluyen Inventory v4/operation v7 y JSONB corrupto500 sanitizado; no payload/hash en logs.
+Motor revalida owner/verified/ACTIVE/flag tras lock Inventory, queries scoped, refs/ChangeSets allowlist.
+Concurrencia/replay/rollback probados en PostgreSQL real, sin exponer command/debug endpoint.
+Seguridad de futuros adapters financieros sigue pendiente. [Evidencia](API-01.md).
+
 Activos: credenciales/sesiones, inventario/costos/rentabilidad, recibos y backups.
 CLOUD-03 implementa solo foundation auth: verified obligatorio, sesiones DB sin refresh/cache,
 cookies host-only, verify/reset TTL, revoke, redacción y defensas propias de Better Auth.

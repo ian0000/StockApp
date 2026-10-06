@@ -1,5 +1,10 @@
 # Modelo cloud conceptual
 
+API-01 usa inventories.revision, operation_receipts e inventory_change_sets existentes; sin schema
+change/migration. Receipt PK businessId/operationId y resultReferences internos estrictos; accepted
+revision no-null, terminal negativo null. Changes JSONB solo {upserts,tombstones}; columnas reconstruyen
+ChangeSet validado. Revision bigint +1 bajo lock Inventory, sin sequence/gaps de rollback. [API-01](API-01.md).
+
 CLOUD-06 congela la representación transport en [CONTRACTS_V1](CONTRACTS_V1.md), sin cambiar DB,
 schema, migration ni invariantes financieras. Money/Percentage son strings seguros escalados10^6;
 Revision permanece string sin límite JS-safe. Tiempos comerciales/originales preservados y updatedAt

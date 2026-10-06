@@ -1,5 +1,10 @@
 # Arquitectura objetivo
 
+API-01 materializa el límite transaccional en infrastructure/postgres: READ COMMITTED,
+FOR UPDATE de Inventory autorizado, callback en el mismo tx, revision bigint, receipt/ChangeSet
+atómicos. Savepoint revierte writes de callback para resultados terminales negativos. GET operation
+consulta resultado durable scoped; no endpoint comercial aún. [Detalle](API-01.md).
+
 CLOUD-06 materializa [contracts V1](CONTRACTS_V1.md): schemas JSON + tipos derivados, Ajv2020 y
 manifiesto framework-independent generan OpenAPI 3.1.1. API importa ownership schemas compartidos.
 Application recibe identidad/tiempo explícitos y llama el mismo Domain; Mobile prepara entradas

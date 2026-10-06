@@ -1,5 +1,11 @@
 # Pruebas y DoD futura
 
+API-01 añade test:commands a test:db obligatorio: PostgreSQL18.6, dos pools/barriers/DB-observed locks,
+retry/hash mismatch, no gaps, rollback tardío, terminales, BIGINT/overflow, corrupción, A/B y clock.
+Smoke compilado + SMTP/auth real reinicia API y recupera mismo receipt. Unit fingerprint/header y
+OperationParams/OpenAPI entran en pnpm check. Focused test:commands requiere build/TEST_DATABASE_URL;
+no mocks DB/skips ni fake endpoints. [Detalle y gates](API-01.md).
+
 CLOUD-06 añade tests de contratos estrictos, versiones, null/zero, Percentage/rangos, UUID/v7,
 IDs duplicados, evidencia/dependencies, OpenAPI determinista/stale/refs y manifest contra runtime.
 Application prueba IDs/time exactos, venta multilínea, reversals por producto y metadata clock skew.

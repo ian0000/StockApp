@@ -1,5 +1,11 @@
 # CI/CD futuro
 
+API-01 integra test/commands/*.test.ts en pnpm test:db y required Quality checks existente,
+con PostgreSQL18.6 real y SMTP local. Fingerprint/header y OperationParams/manifest/OpenAPI se
+validan también en pnpm check. Sin workflow opcional/skip/continue-on-error/deploy. Generadores
+Drizzle/auth deben permanecer sin diff. PR/merge autorizado solo con checks/reviews verdes; STOP
+main clean0/0 sin API-02/SYNC-01/WEB-01. [API-01](API-01.md).
+
 CLOUD-06 añade `contracts:openapi` y `contracts:openapi:check`. `pnpm check` ejecuta primero el check
 de artefacto, que compara generación in-memory y falla ante stale; el required Quality checks de CI
 lo hereda sin nuevo job opcional. Check corre desde checkout limpio sin dist/global tooling.

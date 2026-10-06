@@ -1,6 +1,6 @@
 # Backlog de implementación Cloud/Web
 
-47 tickets: CLOUD-01/CLOUD-02/CLOUD-03/CLOUD-04/CLOUD-05/CLOUD-06 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y compatibilidad UUID](CLOUD-06.md)); 41 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01..06 y API-01 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md)); 40 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -16,17 +16,18 @@ Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar 
 | CLOUD-05 | IMPLEMENTED — Seguridad transport/secrets/CSRF/rate limits | CLOUD-04 | Allowlist/size/redaction, CSRF/Origin, brute force durable; SECURITY tests |
 | CLOUD-06 | IMPLEMENTED — Contracts V1, compatibilidad UUID legacy y Application IDs/tiempo | CLOUD-02, CLOUD-04 | OpenAPI/schema/DTO, nuevos IDs v7/referencias UUID, tiempos offline, regresión, ninguna fórmula duplicada |
 
-Siguiente ticket planificado tras CLOUD-06: **API-01**, requiere solicitud explícita independiente.
+API-01 fue autorizado por ticket independiente. Siguiente ticket planificado: **API-02**;
+requiere una solicitud nueva. API-02+, SYNC-01+ y WEB-01+ continúan **PLANNED**.
 
 CLOUD-06 y CLOUD-06-FIX fueron solicitados explícitamente y tienen implementación/validación documentadas.
-OpenAPI/DTO/envelopes V1 existen. API-01/WEB-01 y todos los runtime financieros/sync/import/lifecycle
+OpenAPI/DTO/envelopes V1 y engine/GET receipt API-01 existen. WEB-01 y runtime financieros/sync/import/lifecycle
 siguen planned; no comenzarlos por completar sus dependencias.
 
 ## F1 — Comandos y consultas server
 
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
-| API-01 | Receipt/idempotencia/lock/revisión/ChangeSet transaccional | CLOUD-05, CLOUD-06 | Retry concurrente/ACK perdido, hash mismatch, commit ordering sin gaps perdidos |
+| API-01 | IMPLEMENTED — Receipt/idempotencia/lock/revisión/ChangeSet transaccional + GET operation | CLOUD-05, CLOUD-06 | PostgreSQL real, retry/ACK perdido/hash mismatch, commit ordering sin gaps/rollback, A/B, OpenAPI |
 | API-02 | Product create/edit/archive y stock inicial | API-01 | Metadata version, barcode unique scoped, movement/state inicial atómicos |
 | API-03 | RegisterSale multiproducto | API-02 | All-or-nothing, costos históricos/null, negativo permitido, same cost delta concurrency |
 | API-04 | RegisterPurchase un producto | API-02 | Expected state, promedio exacto, snapshots y analysis; test-first críticos |

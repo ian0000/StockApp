@@ -93,16 +93,20 @@ function parameters(route: RouteContract): Parameter[] {
   for (const match of route.path.matchAll(/\{([^}]+)\}/g)) {
     const name = match[1];
     if (!name) continue;
+    const declared = route.params
+      ? fields(contractSchemas[route.params], 'path').find(
+          (parameter) => parameter.name === name,
+        )?.schema
+      : undefined;
     const schema =
-      name === 'inventoryId' && route.params
-        ? contractSchemas[route.params].properties.inventoryId
-        : name === 'index'
-          ? ({
-              type: 'integer',
-              minimum: 0,
-              maximum: Number.MAX_SAFE_INTEGER,
-            } as const)
-          : pathIdentitySchemas[name];
+      declared ??
+      (name === 'index'
+        ? ({
+            type: 'integer',
+            minimum: 0,
+            maximum: Number.MAX_SAFE_INTEGER,
+          } as const)
+        : pathIdentitySchemas[name]);
     if (!schema) throw new Error(`Unclassified path parameter: ${name}`);
     result.push({ name, in: 'path', required: true, schema });
   }

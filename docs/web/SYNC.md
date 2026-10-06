@@ -1,5 +1,11 @@
 # Sincronización Mobile ↔ Cloud
 
+API-01 materializa infraestructura receipt/hash/lock/revision/ChangeSet y GET operation durable,
+sin endpoints sync ni ejecución comercial. Misma key/hash reproduce resultado tras restart;
+hash distinto409, conflict/rejected sin revisión, transient sin receipt. Resolución dependsOn/parent
+receipt/expectedStateRevision.operationId y DEPENDENCY_BLOCKED queda en adapters/SYNC-02.
+[Motor y pruebas](API-01.md). El resto del protocolo sigue como diseño futuro.
+
 CLOUD-06 congela envelope V1, devices, push/results, ChangeSet, pull/highWaterMark/cursors y snapshot
 en [CONTRACTS_V1](CONTRACTS_V1.md). /v1/me anuncia protocolVersions/domainVersions `[1]`.
 Los endpoints sync y proyecciones/outbox siguen planned; no se ejecutan comandos ni ChangeSets.

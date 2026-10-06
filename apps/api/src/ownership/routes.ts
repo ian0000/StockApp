@@ -10,6 +10,9 @@ import {
   csrfResponseSchema,
   PROTOCOL_VERSION,
   DOMAIN_VERSION,
+  operationParamsSchema,
+  operationReceiptSchema,
+  type OperationParams,
 } from '@stock-app/contracts';
 import type { StockAppAuth } from '../auth/create-auth.js';
 import { bootstrapEmptyInventory, type BootstrapInput } from './bootstrap.js';
@@ -21,6 +24,7 @@ import {
 import { OwnershipError } from './errors.js';
 import { businesses, inventories } from '../infrastructure/postgres/schema.js';
 import { authorizeBusinessRequest } from '../security/business.js';
+import { findOperationReceipt } from '../infrastructure/postgres/command-receipts.js';
 
 function inventoryDto(inventory: typeof inventories.$inferSelect) {
   return {
@@ -143,6 +147,40 @@ export function registerOwnershipRoutes(
           request.params.inventoryId,
         );
         return inventoryDto(context.inventory);
+      },
+    );
+    scoped.get<{ Params: OperationParams }>(
+      '/v1/inventories/:inventoryId/operations/:operationId',
+      {
+        schema: {
+          querystring: noQuerySchema,
+          params: operationParamsSchema,
+          response: { 200: operationReceiptSchema },
+        },
+      },
+      async (request) => {
+        const authenticated = await authorizeBusinessRequest(auth, request);
+        const context = await resolveCloudInventory(
+          database,
+          authenticated,
+          request.params.inventoryId,
+        );
+        const receipt = await findOperationReceipt(
+          database,
+          {
+            businessId: context.business.id,
+            inventoryId: context.inventory.id,
+          },
+          request.params.operationId,
+          request.id,
+        );
+        if (!receipt)
+          throw new OwnershipError(
+            404,
+            'NOT_FOUND',
+            'No encontramos esta operación.',
+          );
+        return receipt.result;
       },
     );
   });
