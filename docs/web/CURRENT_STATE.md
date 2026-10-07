@@ -1,5 +1,11 @@
 # Auditoría del estado actual
 
+Actualización API-08 (2026-10-07), base main `726d9de`: ocho GET scoped PostgreSQL reales,
+keyset opaco, dashboard por timezone y detalles históricos con metadata Product actual nullable.
+Veintidós rutas implemented; Domain/Application/Mobile/schema/migrations intactos.
+check1473 y DB933 PASS, cero fail/skips; entrega Git/CI/GitGuardian se verifica antes de merge.
+API-09 solo tras DONE/MERGED y main limpio0/0. [Evidencia](API-08.md).
+
 Actualización API-07 (2026-10-06), base main `ad5bbe5`: POST VoidPurchase y adaptador ligado al tx API-01; snapshots históricos inmutables, restauración exacta del estado anterior, seguridad existente y replay durable. Catorce rutas implemented. Batch vigente API-07→API-08→API-09; cada gate/PR/merge independiente, STOP final API-09, sin API-10/Web/Sync/Mobile/deploy. [Evidencia](API-07.md).
 
 Actualización API-06 (2026-10-06), base main `2cd2baf`: POST VoidSale con adaptador tx-bound de VoidSaleUseCase existente; reversión completa de todas las líneas, snapshots inmutables, state preconditions exactas y replay durable. Trece rutas implemented; decisión humana Cloud distingue retry por operationId del nuevo comando stale409 o already-voided/current422. ALREADY_VOIDED local/shared y API-01 intactos. [Evidencia](API-06.md).

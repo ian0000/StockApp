@@ -1,5 +1,11 @@
 # CI/CD futuro
 
+API-08 añade test/read-models/*.test.ts al test:db required existente, sin cambiar workflow,
+continue-on-error, skips, dependencias ni parámetros PG. OpenAPI incluye ocho GET reales,
+SaleDetailItem reutilizable y22 rutas implemented; check detecta drift. Gates locales pesados
+secuenciales y CI/GitGuardian del head final deben pasar antes de merge normal; API-09 solo
+tras DONE/MERGED/main limpio0/0. Sin deploy ni infraestructura nueva. [Detalle](API-08.md).
+
 Batch humano vigente API-07→API-08→API-09, cada rama/commit/PR/CI/GitGuardian/merge independiente. API-07 añade void-purchases al required existente, sin workflow/deploy/configuración PG nueva. Gates pesados secuenciales; cualquier fallo detiene el batch. Avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE y STOP final API-09. Las autorizaciones históricas inferiores quedan sustituidas. [Evidencia](API-07.md).
 
 API-06 incorpora void-sales al required test:db existente y focused test:void-sales; sin skips/opcional/continue-on-error ni cambios de workflow/deploy. Validar frozen install/check/build/OpenAPI/DB/Auth sin drift y CI/GitGuardian del head final antes de merge normal/main clean0/0. Decisión humana Cloud documentada; STOP final API-06, sin API-07+ automático. [Evidencia](API-06.md).

@@ -1,5 +1,11 @@
 # Contratos API V1
 
+API-08 implementa ocho GET de inventario: dashboard, products, by-barcode, Product detail,
+stock-low, Sale/Purchase detail e history. Veintidós rutas implemented; lista viva keyset,
+request snapshot READ ONLY/REPEATABLE READ, auth/ownership/rate/no-store existentes.
+SaleDetailItem enriquece solo la lectura con metadata actual nullable; snapshots/SaleItem
+financiero intactos. VOIDED legible con eligibility false/null. [Detalle](API-08.md).
+
 API-07 implementa POST `/v1/inventories/:inventoryId/purchases/:purchaseId/void`200/VOIDED, PurchaseParams UUID genéricos y estado exacto antes de VoidPurchaseUseCase. REVERSAL conserva costo entrante; State restaura stock/costo promedio previos. Same-key replay, distinta stale409 y distinta vigente contra VOIDED422, sin no-op. Catorce rutas implemented. [Detalle](API-07.md).
 
 API-06 implementa POST `/v1/inventories/:inventoryId/sales/:saleId/void`200/VOIDED: SaleParams UUID genéricos, reversión completa bajo lock y state evidence exacta antes de Application. Misma key/hash replay; distinta stale409 REVISION_CONFLICT; distinta vigente contra VOIDED422 VOID_NOT_ELIGIBLE. Shared VoidSaleResult conserva ALREADY_VOIDED, sin accepted Cloud no-op. Misma política para API-07 futuro, sin implementarlo. [Detalle](API-06.md).
@@ -83,7 +89,7 @@ AdjustStock retorna ajuste y state; status/consulta por operationId resuelve inc
 Listados keyset: limit default 50, máximo 100 (History máximo 50), cursor opaco scoped/filtros.
 Productos `createdAt DESC,id DESC`; History `effectiveAt DESC,createdAt DESC,id DESC`.
 No offset ilimitado; snapshots de export/import tienen paginación coherente distinta de lista viva.
-Search parcial name/variant/barcode; barcode como string sin parse numérico.
+Search parcial normalizado en name/variant; barcode exacto como string sin parse numérico.
 Respuestas auth/dataset `Cache-Control: no-store`; error incluye requestId.
 
 ## Rutas
@@ -119,7 +125,7 @@ Respuestas auth/dataset `Cache-Control: no-store`; error incluye requestId.
 | POST | /v1/inventories/I/sales/:id/void | Anular venta completa elegible | S | Misma key replay; distinta exige estado exacto; ya VOIDED/current422 | C |
 | POST | /v1/inventories/I/purchases | Purchase un producto | S | Key | C |
 | GET | /v1/inventories/I/purchases/:id | Detalle/snapshots/eligibility | S | Lectura | Query |
-| POST | /v1/inventories/I/purchases/:id/void | Anular compra elegible (API-07 planned) | S | Misma política Cloud API-06: key replay/distinta estado exacto/no accepted no-op | C |
+| POST | /v1/inventories/I/purchases/:id/void | Anular compra elegible (API-07 implemented) | S | Misma política Cloud API-06: key replay/distinta estado exacto/no accepted no-op | C |
 | POST | /v1/inventories/I/adjustments | Conteo físico/motivo/costo aceptado | S | Key | C |
 | GET | /v1/inventories/I/history | Cronología comercial | S | Lectura | Query, no filas técnicas |
 | GET | /v1/inventories/I/operations/:operationId | Receipt/status de comando | S | Lectura | Query scoped |

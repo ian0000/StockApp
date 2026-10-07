@@ -15,6 +15,7 @@ import { registerPurchaseRoutes } from '../src/purchases/routes.js';
 import { registerAdjustmentRoutes } from '../src/adjustments/routes.js';
 import { registerVoidSaleRoutes } from '../src/void-sales/routes.js';
 import { registerVoidPurchaseRoutes } from '../src/void-purchases/routes.js';
+import { registerReadRoutes } from '../src/read-models/routes.js';
 import { registerProductRoutes } from '../src/products/routes.js';
 import { registerOwnershipRoutes } from '../src/ownership/routes.js';
 
@@ -83,6 +84,12 @@ test('implemented route schemas match the manifest and future routes remain abse
   registerAdjustmentRoutes(app, runtime.auth, database);
   registerVoidSaleRoutes(app, runtime.auth, database);
   registerVoidPurchaseRoutes(app, runtime.auth, database);
+  registerReadRoutes(
+    app,
+    runtime.auth,
+    database,
+    'fictional-contract-test-only-secret',
+  );
   await app.ready();
   assert.deepEqual(
     [...registered].sort(),
@@ -98,14 +105,16 @@ test('implemented route schemas match the manifest and future routes remain abse
   const live = await app.inject('/live');
   assert.equal(live.statusCode, 200);
   createSchemaValidator(contractSchemas.Live)(live.json());
-  for (const path of [
-    '/health',
-    '/v1/me/export',
-    '/v1/inventories/019a0000-0000-7000-8000-000000000001/products',
-  ]) {
+  for (const path of ['/health', '/v1/me/export']) {
     const response = await app.inject(path);
     assert.equal(response.statusCode, 404);
     createSchemaValidator(contractSchemas.ApiError)(response.json());
   }
+  const products = await app.inject(
+    '/v1/inventories/019a0000-0000-7000-8000-000000000001/products',
+  );
+  assert.equal(products.statusCode, 401);
+  createSchemaValidator(contractSchemas.ApiError)(products.json());
+  assert.equal(products.json().error.code, 'UNAUTHENTICATED');
   assert.equal(connections, 0);
 });
