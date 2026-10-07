@@ -105,6 +105,21 @@ export const saleItemSchema = {
     }),
   ],
 } as const;
+// Presentation metadata belongs only to the read projection, never to financial items or Sync.
+export const saleDetailItemSchema = {
+  oneOf: [
+    objectSchema({
+      ...saleItemSchema.oneOf[0].properties,
+      productName: nullable(textSchema),
+      productVariant: optionalTextSchema,
+    }),
+    objectSchema({
+      ...saleItemSchema.oneOf[1].properties,
+      productName: nullable(textSchema),
+      productVariant: optionalTextSchema,
+    }),
+  ],
+} as const;
 export const purchaseSchema = objectSchema({
   id: uuidSchema,
   inventoryId: uuidSchema,
@@ -175,7 +190,7 @@ export const voidEligibilitySchema = objectSchema({
 });
 export const saleDetailSchema = objectSchema({
   sale: saleSchema,
-  items: arrayOf(saleItemSchema),
+  items: arrayOf(saleDetailItemSchema),
   voidEligibility: voidEligibilitySchema,
 });
 export const purchaseDetailSchema = objectSchema({
@@ -236,6 +251,7 @@ export type ProductDto = FromSchema<typeof productSchema>;
 export type InventoryStateDto = FromSchema<typeof inventoryStateSchema>;
 export type SaleDto = FromSchema<typeof saleSchema>;
 export type SaleItemDto = FromSchema<typeof saleItemSchema>;
+export type SaleDetailItemDto = FromSchema<typeof saleDetailItemSchema>;
 export type PurchaseDto = FromSchema<typeof purchaseSchema>;
 export type AdjustmentDto = FromSchema<typeof adjustmentSchema>;
 export type InventoryMovementDto = FromSchema<typeof movementSchema>;

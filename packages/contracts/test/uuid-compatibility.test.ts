@@ -401,7 +401,13 @@ test('all seven persisted DTOs, read models and history accept legacy IDs and FK
   assert.doesNotThrow(() =>
     createSchemaValidator(contractSchemas.SaleDetail)({
       sale: stored.Sale,
-      items: [stored.SaleItem],
+      items: [
+        {
+          ...stored.SaleItem,
+          productName: null,
+          productVariant: null,
+        },
+      ],
       voidEligibility: { eligible: false, reason: null },
     }),
   );

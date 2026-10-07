@@ -9,6 +9,7 @@ import { registerPurchaseRoutes } from './purchases/routes.js';
 import { registerAdjustmentRoutes } from './adjustments/routes.js';
 import { registerVoidSaleRoutes } from './void-sales/routes.js';
 import { registerVoidPurchaseRoutes } from './void-purchases/routes.js';
+import { registerReadRoutes } from './read-models/routes.js';
 import { registerProductRoutes } from './products/routes.js';
 import { registerOwnershipRoutes } from './ownership/routes.js';
 
@@ -47,6 +48,12 @@ export async function startServer(): Promise<void> {
       registerAdjustmentRoutes(app, runtime.auth, runtime.database);
       registerVoidSaleRoutes(app, runtime.auth, runtime.database);
       registerVoidPurchaseRoutes(app, runtime.auth, runtime.database);
+      registerReadRoutes(
+        app,
+        runtime.auth,
+        runtime.database,
+        runtime.config.secret,
+      );
     }
     await app.listen(readServerConfig(process.env));
   } catch {

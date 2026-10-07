@@ -1,5 +1,12 @@
 # Pruebas y DoD futura
 
+API-08 integra read-models en required test:db y focused test:read-models: auth/A-B,
+cursor opaco scoped/filtros/keyset/límites, búsqueda/barcode exacto, costs null/cero/negative,
+detalles actuales/archived/VOIDED y snapshots, eligibility/corrupción, history, timezone/DST,
+dashboard y no writes comerciales. Smoke compilado real con SMTP/PostgreSQL y restart.
+check1473 y test:db933 PASS (total único2406), cero fail/skips/cancelled; las regresiones,
+generadores y gates remotos se verifican antes de entrega. [Evidencia](API-08.md).
+
 API-07 integra void-purchases en required test:db y focused test:void-purchases: promedio previo/null/cero/negativo, snapshots y archivo, estado exacto/elegibilidad, locks entre dos pools, replay/409/422, rollback en cada write, corrupción, legacyv4, HTTP/A-B y compiled SMTP/restart. Gates pesados secuenciales; configuración PG intacta. [Evidencia](API-07.md).
 
 API-06 integra test/void-sales en test:db required: multi-product all-or-nothing, costos históricos/null/cero/negativo, archived, precondiciones y cobertura, elegibilidad, dos pools/lock observado, distinct concurrent void→VOIDED+CONFLICT y same-operation→una ejecución/replay, rollback por write, A/B/seguridad/corrupción/legacy y compiled HTTP/SMTP/restart. Domain/Application/local ALREADY_VOIDED tests intactos. [Evidencia](API-06.md).

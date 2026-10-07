@@ -1152,7 +1152,7 @@
       "get": {
         "operationId": "getDashboard",
         "summary": "Business-day summary, low stock, top sellers and recent operations",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -1356,7 +1356,7 @@
       "get": {
         "operationId": "listProducts",
         "summary": "Active products ordered by createdAt DESC, id DESC",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -1935,7 +1935,7 @@
       "get": {
         "operationId": "getProductByBarcode",
         "summary": "Exact active barcode lookup",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -2148,7 +2148,7 @@
       "get": {
         "operationId": "getProduct",
         "summary": "Product, current state and profitability",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -3071,7 +3071,7 @@
       "get": {
         "operationId": "listLowStock",
         "summary": "Active low-stock products",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -3643,7 +3643,7 @@
       "get": {
         "operationId": "getSale",
         "summary": "Historical snapshots and void eligibility",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -4559,7 +4559,7 @@
       "get": {
         "operationId": "getPurchase",
         "summary": "Purchase snapshots and void eligibility",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -5475,7 +5475,7 @@
       "get": {
         "operationId": "listHistory",
         "summary": "Commercial history ordered by effectiveAt DESC, createdAt DESC, id DESC",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "cloud-inventory",
         "security": [
           {
@@ -10564,6 +10564,178 @@
           }
         ]
       },
+      "SaleDetailItem": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "inventoryId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "saleId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "productId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "quantity": {
+                "$ref": "#/components/schemas/Quantity"
+              },
+              "unitSalePrice": {
+                "$ref": "#/components/schemas/PositiveMoney"
+              },
+              "subtotal": {
+                "$ref": "#/components/schemas/NonnegativeMoney"
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "updatedAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "costStatus": {
+                "type": "string",
+                "const": "KNOWN"
+              },
+              "unitCostSnapshot": {
+                "$ref": "#/components/schemas/NonnegativeMoney"
+              },
+              "estimatedCost": {
+                "$ref": "#/components/schemas/NonnegativeMoney"
+              },
+              "estimatedProfit": {
+                "$ref": "#/components/schemas/Money"
+              },
+              "productName": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "productVariant": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "inventoryId",
+              "saleId",
+              "productId",
+              "quantity",
+              "unitSalePrice",
+              "subtotal",
+              "createdAt",
+              "updatedAt",
+              "costStatus",
+              "unitCostSnapshot",
+              "estimatedCost",
+              "estimatedProfit",
+              "productName",
+              "productVariant"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "inventoryId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "saleId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "productId": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "quantity": {
+                "$ref": "#/components/schemas/Quantity"
+              },
+              "unitSalePrice": {
+                "$ref": "#/components/schemas/PositiveMoney"
+              },
+              "subtotal": {
+                "$ref": "#/components/schemas/NonnegativeMoney"
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "updatedAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "costStatus": {
+                "type": "string",
+                "const": "UNKNOWN"
+              },
+              "unitCostSnapshot": {
+                "type": "null"
+              },
+              "estimatedCost": {
+                "type": "null"
+              },
+              "estimatedProfit": {
+                "type": "null"
+              },
+              "productName": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "productVariant": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "inventoryId",
+              "saleId",
+              "productId",
+              "quantity",
+              "unitSalePrice",
+              "subtotal",
+              "createdAt",
+              "updatedAt",
+              "costStatus",
+              "unitCostSnapshot",
+              "estimatedCost",
+              "estimatedProfit",
+              "productName",
+              "productVariant"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
       "Purchase": {
         "type": "object",
         "properties": {
@@ -11153,7 +11325,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaleItem"
+              "$ref": "#/components/schemas/SaleDetailItem"
             }
           },
           "voidEligibility": {

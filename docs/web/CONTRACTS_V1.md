@@ -1,5 +1,12 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-08 registra ocho GET de lectura reales; disponibilidad actual22 implemented.
+SaleDetailItem es schema/type de lectura dedicado: campos financieros de SaleItem más
+productName/productVariant nullable y requeridos. Solo SaleDetail.items lo referencia.
+Metadata Product actual scoped, incluido archived; relación no resoluble null. SaleItem,
+RegisterSaleResult.items, ChangeSet/Sync y protocolVersion/domainVersion1 intactos.
+VOIDED eligibility false/null sin enum nuevo. [Detalle](API-08.md).
+
 API-07 conecta PurchaseParams UUID genéricos a registro/RouteContract.params y OpenAPI, y marca VoidPurchase implemented. Command/result compartidos intactos; nuevas Operation/REVERSAL UUIDv7, referencias legacyv4 permitidas. [Evidencia](API-07.md).
 
 API-04 marca registerPurchase implemented y añade InventoryParams reutilizado, sin cambiar schemas/envelope V1. En POST purchases directo solo expectedStateRevision literal string; `{operationId}` se rechaza400/sin receipt antes del executor. Resolución de dependencia sigue SYNC-02; el contrato global conserva ambos modos. [Detalle](API-04.md).
@@ -146,7 +153,7 @@ Dashboard expresa el producto más vendido nullable, como el reader Application 
 
 Páginas: `{items,nextCursor}`. Limit default 50, máximo general 100 y History 50. Cursor permanece
 opaco/scoped/filtros; orden Products `createdAt DESC,id DESC`, History `effectiveAt DESC,createdAt DESC,id DESC`.
-Estas formas no implementan consultas SQL ni endpoints nuevos.
+API-08 materializa estas consultas en PostgreSQL; el cursor interno no es contrato cliente.
 
 El catálogo de error preserva todos los códigos CLOUD-01/04/05 y añade los códigos normativos de
 API.md: UNSUPPORTED_PROTOCOL, REVISION_CONFLICT, COST_SNAPSHOT_CONFLICT, IDEMPOTENCY_KEY_REUSED,
@@ -184,9 +191,10 @@ Better Auth delete-user permanece deshabilitado. No se crean workers ni procesos
 Schemas conocidos se reutilizan mediante `$ref`. No lleva timestamps, servidores desplegados,
 Swagger UI ni cliente generado. Usa JSON Schema 2020-12 y no necesita un validator externo de red.
 
-Seis operaciones son implemented: GET /live, GET /v1/session/csrf, GET /v1/me,
-POST /v1/business, GET /v1/inventories/{inventoryId} y GET /v1/inventories/{inventoryId}/operations/{operationId}.
-El resto, incluido /health, es planned.
+Veintidós operaciones son implemented: las seis de foundation/ownership/receipt,
+los ocho comandos Product/Sale/Purchase/Adjustment/void y los ocho GET de API-08.
+routeContracts/OpenAPI son la lista ejecutable. Backup/export, Sync/import/lifecycle y /health
+siguen planned.
 /health y los futuros endpoints continúan respondiendo 404. Auth `/api/auth/*` queda explícitamente
 fuera del contrato de negocio, bajo Better Auth 1.7.7; no se copian sus DTOs ni password handling.
 /v1 usa cookie oficial de sesión y X-CSRF-Token para mutaciones; no se anuncia JWT bearer.

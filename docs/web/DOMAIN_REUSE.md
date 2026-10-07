@@ -1,5 +1,11 @@
 # Reutilización del dominio
 
+API-08 usa mappers existentes y reglas Domain de bajo stock/margin/markup y validación pura
+del ledger original con prepareSaleReversal/preparePurchaseReversal. No escribe reversals
+ni modifica use cases. Detalles VOIDED omiten simulación; enrichment Product actual solo en
+SaleDetailItem read DTO. Ganancias desconocidas, snapshots y sumas exactas conservan la
+semántica Application. Sin imports UI/SQLite ni fórmula nueva. [Detalle](API-08.md).
+
 API-07 reutiliza VoidPurchaseUseCase/preparePurchaseReversal intactos. PurchaseVoidRepository mínimo/scoped/mismo tx captura REVERSAL con costo entrante y State con promedio anterior. Cloud valida State antes de Application y conserva política API-06; no active-Product gate ni nueva regla financiera. [Evidencia](API-07.md).
 
 API-06 reutiliza VoidSaleUseCase/prepareSaleReversal sin cambiar Domain/Application ni sus tests locales. SaleVoidRepository mínimo/scoped/mismo tx captura outputs completos y persiste reversalOfMovementId explícito con constraints existentes. Cloud compara State primero y mapea NOT_ELIGIBLE/ALREADY_VOIDED a422 después de esa comparación; misma key usa API-01 replay. No nueva elegibilidad, promedio, costo histórico ni active-Product gate. [Decisión y evidencia](API-06.md).
