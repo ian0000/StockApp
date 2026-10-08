@@ -1,5 +1,7 @@
 # Identidad y autorización
 
+WEB-02 implementa el cliente React oficial1.7.7 en apps/web: métodos imperativos/getSession sin montar broadcast con localStorage, cookies include y estados derivados de Me. Query generation/clear/cancelación separan cuentas; logout fallido retira UI/cache sin declarar revocación. Signup/verify/reset y CSRF del bootstrap vacío funcionan según contrato existente. [Detalle](WEB-02.md).
+
 API-10 conserva official sign-in durante DELETING y recent-session<=300000ms inclusivo. Nueva sesión permite me/csrf/deletion recovery, no dataset/commands/export/import/sync. Identidad sin Business también puede borrar; request tx revoca todas las sesiones y worker purga auth. delete-user permanece deshabilitado. [Detalle](API-10.md).
 
 API-09 implementa recencia de export sobre session.createdAt oficial:<=300000ms inclusivo,
@@ -13,7 +15,7 @@ Decisión: Better Auth alojado en la API Railway, adapter Drizzle PostgreSQL, em
 sesiones opacas en DB, plugin Expo. No auth criptográfica casera, JWT ledger ni proveedor BaaS.
 SMTP estándar para verificación/reset; operador elige credenciales durante despliegue.
 Materializado local/CI por [CLOUD-03](CLOUD-03.md): Better Auth, adapter Drizzle y Expo 1.7.7.
-No hay servicio Railway ni cliente Web/Mobile todavía.
+No hay servicio Railway ni cliente Mobile todavía; cliente Web implementado por WEB-02.
 
 Comparación: auth propio obliga a mantener hashing, reset, sesiones y defensas; proveedor gestionado
 reduce carga pero suma coste/lock-in y un sistema externo de identidad; librería especializada

@@ -71,6 +71,7 @@ export type OperationParams = FromSchema<typeof operationParamsSchema>;
 export type MeResponse = FromSchema<typeof meResponseSchema>;
 export type BootstrapRequest = FromSchema<typeof bootstrapRequestSchema>;
 export type BootstrapResponse = FromSchema<typeof bootstrapResponseSchema>;
+export type CsrfResponse = FromSchema<typeof csrfResponseSchema>;
 
 export const productParamsSchema = objectSchema({
   inventoryId: uuidSchema,

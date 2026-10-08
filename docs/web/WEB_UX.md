@@ -1,12 +1,14 @@
 # Arquitectura UX Web
 
+WEB-02 materializa identidad, shell y creación vacía. Anonymous→login; no Business→onboarding; disabled/DELETING/sin Inventory→estado seguro+refresh/logout; enabled con Inventory→shell. No import funcional (MIG-03) ni comercio WEB-03+. [Detalle](WEB-02.md).
+
 SPA responsive optimizada para escritorio, usable con teclado y browser móvil. Paridad de capacidades
 en PARITY_MATRIX; etiquetas/cálculos siguen UX canónica. No diseño pixel-perfect en esta fase.
 
 | Ruta app | Propósito |
 | --- | --- |
 | /login, /signup, /verify-email, /reset-password | Identidad y recuperación |
-| /onboarding | Elegir vacío/import y consentimiento |
+| /onboarding | Crear vacío (WEB-02); import/consentimiento pendiente MIG-03 |
 | / | Inicio: hoy, acciones +Venta/+Compra, stock bajo y recientes |
 | /products | Lista/búsqueda de activos, stock, precio y código |
 | /products/new, /products/:id, /products/:id/edit | Alta, detalle, editar/archivar |

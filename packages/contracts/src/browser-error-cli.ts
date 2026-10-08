@@ -4,6 +4,12 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import standaloneModule from 'ajv/dist/standalone/index.js';
 import ucs2lengthModule from 'ajv/dist/runtime/ucs2length.js';
 import { apiErrorSchema } from './http.js';
+import {
+  meResponseSchema,
+  csrfResponseSchema,
+  bootstrapRequestSchema,
+  bootstrapResponseSchema,
+} from './ownership.js';
 
 // Build-only: the browser receives a static validator, never the Ajv compiler.
 const output = process.argv[2];
@@ -16,25 +22,33 @@ const compiler = new Ajv2020({
   useDefaults: false,
   code: { source: true, esm: true, lines: true },
 });
-const validate = compiler.compile(apiErrorSchema);
-// Ajv emits this runtime helper as a CJS require even for standalone ESM.
-// Inline its existing pure implementation; the client needs neither require nor Ajv.
-const browserCode = standaloneModule
-  .default(compiler, validate)
-  .replaceAll(
-    'require("ajv/dist/runtime/ucs2length").default',
-    `(${ucs2lengthModule.default.toString()})`,
-  );
-if (/\brequire\s*\(/.test(browserCode))
-  throw new Error('Unexpected standalone runtime dependency.');
+const schemas = [
+  ['api-error', 'ApiErrorEnvelope', apiErrorSchema],
+  ['me', 'MeResponse', meResponseSchema],
+  ['csrf', 'CsrfResponse', csrfResponseSchema],
+  ['bootstrap-request', 'BootstrapRequest', bootstrapRequestSchema],
+  ['bootstrap-response', 'BootstrapResponse', bootstrapResponseSchema],
+] as const;
 await mkdir(resolve(output), { recursive: true });
-await writeFile(
-  resolve(output, 'api-error.mjs'),
-  '// Generated from @stock-app/contracts ApiError. Do not edit.\n' +
-    browserCode,
-);
-await writeFile(
-  resolve(output, 'api-error.d.mts'),
-  'import type { ApiErrorEnvelope } from "@stock-app/contracts";\n' +
-    'export default function validate(input: unknown): input is ApiErrorEnvelope;\n',
-);
+for (const [name, type, schema] of schemas) {
+  const validate = compiler.compile(schema);
+  // Ajv emits this runtime helper as a CJS require even for standalone ESM.
+  // Inline its existing pure implementation; the client needs neither require nor Ajv.
+  const browserCode = standaloneModule
+    .default(compiler, validate)
+    .replaceAll(
+      'require("ajv/dist/runtime/ucs2length").default',
+      `(${ucs2lengthModule.default.toString()})`,
+    );
+  if (/\brequire\s*\(/.test(browserCode))
+    throw new Error('Unexpected standalone runtime dependency.');
+  await writeFile(
+    resolve(output, `${name}.mjs`),
+    '// Generated from @stock-app/contracts. Do not edit.\n' + browserCode,
+  );
+  await writeFile(
+    resolve(output, `${name}.d.mts`),
+    `import type { ${type} } from "@stock-app/contracts";\n` +
+      `export default function validate(input: unknown): input is ${type};\n`,
+  );
+}

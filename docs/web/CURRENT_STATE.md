@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-02 implementa cliente React Better Auth1.7.7, guards/estados de acceso, shell responsive y bootstrap vacío con CSRF. Gates locales PASS: check1524/Web47/DB1004 y ambos builds,0fail/skips; generadores sin drift. CI/GitGuardian/merge se verifican en PR del head final. Sin cambios API/DB/Domain/Application/Mobile; features comerciales/hosting pendientes. [Detalle](WEB-02.md).
+
 WEB-01 añade apps/web SPA React/Vite/Router/Query y cliente fetch separado con contracts; rutas foundation sin llamadas comerciales. Gates locales PASS: check1492/Web15/DB1004 y ambos builds;0fail/skips. CI/GitGuardian/merge se verifican en PR del head final. [Detalle](WEB-01.md).
 
 API-10 añade POST me/deletion y25 rutas implemented; borrado durable local, worker startup/wake/timer y CLI suppression registry export/apply. Sin migration/dependencias/Domain/Application/Mobile. Local/provider gates se registran en el reporte API-10, sin inferir infraestructura operativa ni release de privacy. [Detalle](API-10.md).
