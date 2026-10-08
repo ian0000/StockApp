@@ -1156,6 +1156,65 @@ Podrá implementar el resto de la tarea que no dependa de esa decisión.
 
 ---
 
+# 65.1. Política operativa: HUMAN STOP, AUTO-FIX y TEST/QA INFRASTRUCTURE
+
+Un test fallido no implica automáticamente una decisión humana. Primero clasificar el fallo.
+Esta sección contiene la regla operativa canónica; [TESTING.md](docs/web/TESTING.md) conserva su
+aplicación al QA.
+
+## HUMAN STOP
+
+Solicitar revisión humana únicamente ante una decisión real de producto, scope, arquitectura, UX,
+contrato público, regla financiera/Domain, schema/migration no prevista, dependencia nueva relevante,
+seguridad, privacidad, lifecycle, pérdida/corrupción de datos o relajación de garantías. También ante
+contradicciones entre fuentes de verdad o un edge case no definido que afecte comportamiento observable.
+
+Detener únicamente la decisión afectada. Antes de preguntar, revisar READ-ONLY el resto del ticket
+para reunir otros blockers razonablemente detectables y entregar, cuando sea posible, un único
+CONSOLIDATED HUMAN REVIEW. No inventar la decisión pendiente.
+
+## AUTO-FIX
+
+No pedir permiso para correcciones mecánicas inequívocas dentro del ticket aprobado: fixtures stale,
+expected revisions incorrectas, timestamps incoherentes, typing exclusivo de tests, route counts
+viejos, tests que esperan 404 para rutas ya implementadas, fixtures OpenAPI generados/stale, helpers
+que contradicen reglas documentadas, setup/teardown incorrecto, timezone determinista de fixtures o
+expectativas derivadas que una fuente de verdad define inequívocamente.
+
+Solo aplicar cuando exista una fuente de verdad clara y la corrección no cambie semántica productiva,
+Domain, contrato público fuera del ticket ni schema/migration. No reducir cobertura, convertir fallos
+en skips ni relajar assertions. Aplicar la corrección, documentarla y continuar. En la entrega reportar:
+
+```text
+AUTO-FIX:
+CAUSE:
+SOURCE OF TRUTH:
+FILES:
+PRODUCTION BEHAVIOR CHANGED: NO
+```
+
+## TEST/QA INFRASTRUCTURE
+
+Investigar y corregir con evidencia problemas exclusivamente del harness: cleanup ordering,
+app/runtime lifecycle, pools de test, disposable DB lifecycle, resource ownership, fixture provisioning,
+clocks/timezones deterministas, coordinación exclusiva de CREATE/DROP/setup y aislamiento de recursos.
+
+Conservar PostgreSQL real cuando el test lo requiere, comportamiento productivo y concurrencia
+funcional que la prueba pretende validar. No eliminar tests ni esconder fallos.
+
+Las siguientes medidas siguen requiriendo HUMAN STOP antes de modificarlas automáticamente:
+
+- `connectionTimeoutMillis`, `pool.max` y test-concurrency global;
+- configuración del servidor PostgreSQL, recursos de CI y timeouts globales de CI;
+- retry loops para obtener verde y sleeps artificiales;
+- skip/todo y assertions relajadas;
+- DROP FORCE y terminate_backend global.
+
+La intervención humana se reserva para decisiones; el mantenimiento mecánico inequívoco continúa
+dentro del scope autorizado.
+
+---
+
 # 66. Si encuentra deuda técnica
 
 No corregir automáticamente todo el proyecto.
