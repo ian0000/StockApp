@@ -1,5 +1,10 @@
 # Arquitectura UX Web
 
+WEB-05 materializa Nueva venta y detalle: búsqueda/Enter/barcode teclado, carrito único por Product,
+precio exacto editable, qty±/Quitar, warning Tienes/Venderás/Quedará con confirmación explícita,
+retry/check/descarte consciente e historia nullable/VOIDED sin anulación. Cart React en memoria
+persiste navegación del shell; limpia aceptación/descarte/boundary. [Detalle](WEB-05.md).
+
 WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
 
 WEB-03 materializa Products con búsqueda por form explícito/Enter autorizada en el ticket, keyset Cargar más y alta de siete campos incluyendo stock/costo inicial. Barcode teclado exacto y precarga por navigation state; incertidumbre bloquea edición/nuevo envío hasta resolución o descarte consciente. Detalle/edit/archive siguen WEB-04. [Detalle](WEB-03.md).

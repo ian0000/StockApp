@@ -43,6 +43,17 @@ const schemas = [
   ],
   ['operation-receipt', 'OperationReceipt', contractSchemas.OperationReceipt],
   [
+    'register-sale-command',
+    'RegisterSaleCommand',
+    contractSchemas.RegisterSaleCommand,
+  ],
+  [
+    'register-sale-result',
+    'RegisterSaleCommandResult',
+    contractSchemas.RegisterSaleResult,
+  ],
+  ['sale-detail', 'SaleDetailDto', contractSchemas.SaleDetail],
+  [
     'update-product-command',
     'UpdateProductCommand',
     contractSchemas.UpdateProductCommand,

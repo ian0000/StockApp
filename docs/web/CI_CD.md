@@ -1,5 +1,9 @@
 # CI/CD futuro
 
+WEB-05 conserva workflow/recursos/timeout/concurrency y gates existentes. Web/OpenAPI/check/
+API build/test:db/generadores completos; CI y GitGuardian PASS del head final antes de merge
+normal. Main clean0/0 y STOP; sin WEB-06 ni deploy. [Detalle](WEB-05.md).
+
 WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
 
 WEB-03 conserva gates/workflow/recursos/timeouts/concurrency existentes. Dos dependencias Web ya autorizadas/resueltas; frozen lockfile, builds, test:db y generadores requeridos. CI/GitGuardian PASS del head final antes de merge normal; main clean0/0 y STOP, sin WEB-04/deploy. [Detalle](WEB-03.md).

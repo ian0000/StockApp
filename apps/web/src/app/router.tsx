@@ -8,8 +8,6 @@ import { PrivateBoundary, HomePage } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
 const foundationRoutes = [
-  ['/sales/new', 'Nueva venta'],
-  ['/sales/:id', 'Detalle de venta'],
   ['/purchases/new', 'Nueva compra'],
   ['/purchases/:id', 'Detalle de compra'],
   ['/adjustments/new', 'Ajuste de stock'],
@@ -93,6 +91,15 @@ export function createAppRoutes(): RouteObject[] {
                 }),
               }),
             ),
+            ...(['/sales/new', '/sales/:id'] as const).map((path) => ({
+              path,
+              lazy: async () => ({
+                Component:
+                  path === '/sales/new'
+                    ? (await import('../routes/sales.js')).NewSalePage
+                    : (await import('../routes/sales.js')).SaleDetailPage,
+              }),
+            })),
             ...foundationRoutes.map(([path, title]) => ({
               path,
               lazy: page(title),

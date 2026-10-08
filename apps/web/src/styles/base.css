@@ -126,28 +126,47 @@ a[aria-current='page'] {
 .stock-label {
   display: block;
 }
-.product-detail dl {
+.product-detail dl,
+.sale-detail dl {
   display: grid;
   grid-template-columns: minmax(8rem, 1fr) minmax(0, 2fr);
   gap: 0.75rem 1rem;
   overflow-wrap: anywhere;
 }
-.product-detail dt {
+.product-detail dt,
+.sale-detail dt {
   font-weight: 600;
 }
-.product-detail dd {
+.product-detail dd,
+.sale-detail dd {
   margin: 0;
+}
+.sale-cart-line,
+.sale-history-line {
+  padding: 1rem 0;
+  border-bottom: 1px solid #c7d2da;
+  overflow-wrap: anywhere;
+}
+.sale-cart-line input {
+  max-width: 24rem;
+}
+.sale-cart-line output {
+  display: inline-block;
+  min-width: 2rem;
+  text-align: center;
 }
 fieldset {
   min-width: 0;
   border: 1px solid #c7d2da;
 }
 @media (max-width: 48rem) {
-  .product-detail dl {
+  .product-detail dl,
+  .sale-detail dl {
     grid-template-columns: 1fr;
     gap: 0.25rem;
   }
-  .product-detail dd {
+  .product-detail dd,
+  .sale-detail dd {
     margin-bottom: 0.75rem;
   }
   .product-card {
