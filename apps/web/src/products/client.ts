@@ -2,6 +2,8 @@ import type {
   CreateProductCommand,
   ProductPage,
   ProductReadDto,
+  UpdateProductCommand,
+  ArchiveProductCommand,
 } from '@stock-app/contracts';
 import { ApiClientError, type createApiClient } from '../api/client.js';
 import { requestCsrf } from '../api/csrf.js';
@@ -10,6 +12,9 @@ import validateProduct from '../api/generated/product-read.mjs';
 import validateCommand from '../api/generated/create-product-command.mjs';
 import validateResult from '../api/generated/create-product-result.mjs';
 import validateReceipt from '../api/generated/operation-receipt.mjs';
+import validateUpdate from '../api/generated/update-product-command.mjs';
+import validateArchive from '../api/generated/archive-product-command.mjs';
+import validateMutation from '../api/generated/product-mutation-result.mjs';
 
 const prefix = (inventoryId: string) =>
   `/v1/inventories/${encodeURIComponent(inventoryId)}`;
@@ -24,6 +29,69 @@ function ownProduct(product: ProductReadDto, inventoryId: string) {
 }
 export function createProductsClient(api: ReturnType<typeof createApiClient>) {
   return {
+    async detail(inventoryId: string, productId: string, signal: AbortSignal) {
+      try {
+        const response = await api.request(
+          `${prefix(inventoryId)}/products/${encodeURIComponent(productId)}`,
+          { signal },
+        );
+        if (
+          response.status !== 200 ||
+          !validateProduct(response.body) ||
+          !ownProduct(response.body, inventoryId) ||
+          response.body.product.id.toLowerCase() !== productId.toLowerCase()
+        )
+          throw new ApiClientError('INVALID_JSON', response.status);
+        return response.body;
+      } catch (error) {
+        if (
+          error instanceof ApiClientError &&
+          error.status === 404 &&
+          error.apiError?.error.code === 'NOT_FOUND'
+        )
+          return null;
+        throw error;
+      }
+    },
+    async mutate(
+      inventoryId: string,
+      command: UpdateProductCommand | ArchiveProductCommand,
+      signal: AbortSignal,
+      beforeSend: () => void,
+    ) {
+      if (
+        !(command.commandKind === 'PRODUCT_UPDATE'
+          ? validateUpdate(command)
+          : validateArchive(command))
+      )
+        throw new ApiClientError('INVALID_JSON', null);
+      const token = await requestCsrf(api, signal);
+      beforeSend();
+      const archive = command.commandKind === 'PRODUCT_ARCHIVE';
+      const response = await api.request(
+        `${prefix(inventoryId)}/products/${encodeURIComponent(command.payload.productId)}${archive ? '/archive' : ''}`,
+        {
+          method: archive ? 'POST' : 'PATCH',
+          body: command,
+          headers: {
+            'X-CSRF-Token': token,
+            'Idempotency-Key': command.operationId,
+          },
+          signal,
+        },
+      );
+      if (
+        response.status !== 200 ||
+        !validateMutation(response.body) ||
+        response.body.product.id.toLowerCase() !==
+          command.payload.productId.toLowerCase() ||
+        response.body.product.inventoryId.toLowerCase() !==
+          inventoryId.toLowerCase() ||
+        response.body.product.isArchived !== archive
+      )
+        throw new ApiClientError('INVALID_JSON', response.status);
+      return response.body;
+    },
     async page(
       inventoryId: string,
       search: string,

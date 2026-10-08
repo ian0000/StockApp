@@ -1,6 +1,18 @@
-import { infiniteQueryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type { ProductsClient } from './client.js';
 import { productsKey, type ProductScope } from './controller.js';
+
+export function productDetailOptions(
+  client: ProductsClient,
+  scope: ProductScope,
+  id: string,
+) {
+  return queryOptions({
+    queryKey: productsKey(scope, 'detail', id.toLowerCase()),
+    retryOnMount: false,
+    queryFn: ({ signal }) => client.detail(scope.inventoryId, id, signal),
+  });
+}
 
 export function productListOptions(
   client: ProductsClient,

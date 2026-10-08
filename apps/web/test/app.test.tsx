@@ -80,8 +80,6 @@ test('enabled root shows real inventory metadata, semantic navigation, active st
 });
 test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
   for (const path of [
-    '/products/fixture',
-    '/products/fixture/edit',
     '/sales/new',
     '/sales/fixture',
     '/purchases/new',
@@ -97,12 +95,17 @@ test('private commercial placeholders render inside authenticated shell includin
     if (path.endsWith('/edit')) assert.ok(html.includes('Editar producto'));
   }
 });
-test('WEB-03 list/new are real forms while product details remain authenticated placeholders', async () => {
+test('Product list/new/detail/edit are real routes with distinct loading screens', async () => {
   assert.ok((await renderPath('/products')).includes('Buscar productos'));
   const create = await renderPath('/products/new');
   assert.ok(create.includes('Nuevo producto'));
   assert.ok(create.includes('Stock inicial'));
   assert.ok(!create.includes('Las pantallas se incorporarán por etapas'));
+  for (const path of ['/products/fixture', '/products/fixture/edit']) {
+    const html = await renderPath(path);
+    assert.ok(html.includes('Cargando producto'));
+    assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
+  }
 });
 test('public auth screens expose labeled usable forms and no private shell', async () => {
   for (const path of [

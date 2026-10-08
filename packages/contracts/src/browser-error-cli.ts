@@ -42,6 +42,21 @@ const schemas = [
     contractSchemas.CreateProductResult,
   ],
   ['operation-receipt', 'OperationReceipt', contractSchemas.OperationReceipt],
+  [
+    'update-product-command',
+    'UpdateProductCommand',
+    contractSchemas.UpdateProductCommand,
+  ],
+  [
+    'archive-product-command',
+    'ArchiveProductCommand',
+    contractSchemas.ArchiveProductCommand,
+  ],
+  [
+    'product-mutation-result',
+    'ProductMutationResult',
+    contractSchemas.ProductMutationResult,
+  ],
 ] as const;
 await mkdir(resolve(output), { recursive: true });
 for (const [name, type, schema] of schemas) {

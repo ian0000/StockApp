@@ -1,8 +1,20 @@
-import type { CreateProductCommand } from '@stock-app/contracts';
+import type {
+  CreateProductCommand,
+  UpdateProductCommand,
+  ArchiveProductCommand,
+  ProductReadDto,
+  ProductDto,
+} from '@stock-app/contracts';
 import type { QueryClient } from '@tanstack/react-query';
 import { ApiClientError } from '../api/client.js';
 import { SessionController, privateQueryKey } from '../auth/session.js';
 import type { ProductsClient } from './client.js';
+import {
+  buildUpdateCommand,
+  buildArchiveCommand,
+  type ProductEditDraft,
+} from './edit.js';
+
 import {
   buildProductCommand,
   ProductFormError,
@@ -15,6 +27,9 @@ import {
   type PendingProduct,
   type PendingStorage,
 } from './pending.js';
+
+type ProductCommand =
+  CreateProductCommand | UpdateProductCommand | ArchiveProductCommand;
 
 export type ProductScope = {
   generation: number;
@@ -46,10 +61,20 @@ export const productsKey = (scope: ProductScope, ...parts: string[]) =>
     ...parts,
   );
 export type ProductMutationView = {
-  kind: 'READY' | 'SENDING' | 'UNCERTAIN' | 'CHECKING' | 'ACCEPTED' | 'ERROR';
+  kind:
+    | 'READY'
+    | 'SENDING'
+    | 'UNCERTAIN'
+    | 'CHECKING'
+    | 'ACCEPTED'
+    | 'ERROR'
+    | 'CONFLICT';
   message: string;
   field?: keyof ProductForm;
   canRetry?: boolean;
+  commandKind?: ProductCommand['commandKind'];
+  productId?: string;
+  latest?: ProductReadDto | null;
 };
 export function productErrorMessage(error: unknown) {
   if (error instanceof ApiClientError) {
@@ -73,7 +98,7 @@ export function productErrorMessage(error: unknown) {
 
 export class ProductsController {
   private descriptor: PendingProduct | null;
-  private intent: CreateProductCommand | null = null;
+  private intent: ProductCommand | null = null;
   private view: ProductMutationView;
   private listeners = new Set<() => void>();
   private request?: AbortController;
@@ -151,19 +176,48 @@ export class ProductsController {
     scope: ProductScope,
     epoch: number,
     recovered: boolean,
+    commandKind: ProductCommand['commandKind'] = 'PRODUCT_CREATE',
+    productId?: string,
   ) {
     this.intent = null;
     this.descriptor = null;
     clearPending(this.storage);
-    await this.queries.invalidateQueries({
-      queryKey: productsKey(scope, 'list'),
-    });
+    if (commandKind === 'PRODUCT_ARCHIVE') {
+      const key = productId
+        ? productsKey(scope, 'detail', productId.toLowerCase())
+        : productsKey(scope, 'detail');
+      await this.queries.cancelQueries({ queryKey: key });
+      this.queries.removeQueries({ queryKey: key });
+      await this.queries.invalidateQueries({
+        queryKey: productsKey(scope, 'list'),
+      });
+      await this.queries.invalidateQueries({
+        queryKey: productsKey(scope, 'barcode'),
+      });
+    } else
+      await this.queries.invalidateQueries({
+        queryKey:
+          commandKind === 'PRODUCT_CREATE'
+            ? productsKey(scope, 'list')
+            : productsKey(scope),
+      });
     if (this.current(epoch, scope))
       this.publish({
         kind: 'ACCEPTED',
-        message: recovered
-          ? 'El producto anterior sí fue registrado.'
-          : 'Producto registrado.',
+        commandKind,
+        productId,
+        message:
+          commandKind === 'PRODUCT_CREATE'
+            ? recovered
+              ? 'El producto anterior sí fue registrado.'
+              : 'Producto registrado.'
+            : commandKind === 'PRODUCT_UPDATE'
+              ? recovered
+                ? 'El cambio anterior sí fue guardado.'
+                : 'Producto actualizado.'
+              : recovered
+                ? 'El producto anterior fue archivado.'
+                : 'Producto archivado. Su historial se conserva.',
       });
   }
   async submit(form: ProductForm) {
@@ -198,6 +252,119 @@ export class ProductsController {
     }
     await this.send(scope);
   }
+  async update(draft: ProductEditDraft) {
+    await this.prepare(() => buildUpdateCommand(draft));
+  }
+  async archive(product: ProductDto) {
+    await this.prepare(() => buildArchiveCommand(product));
+  }
+  private async prepare(
+    build: () => UpdateProductCommand | ArchiveProductCommand,
+  ) {
+    if (
+      this.busy ||
+      this.descriptor ||
+      this.intent ||
+      ['ACCEPTED', 'CONFLICT'].includes(this.view.kind)
+    )
+      return;
+    const scope = productScope(this.session);
+    if (!scope || !this.online()) {
+      this.publish({
+        kind: 'ERROR',
+        message:
+          'Necesitas conexión y acceso al inventario para guardar el cambio.',
+      });
+      return;
+    }
+    try {
+      this.intent = build();
+    } catch (error) {
+      this.publish({
+        kind: 'ERROR',
+        message:
+          error instanceof ProductFormError
+            ? error.message
+            : 'Revisa los datos del producto.',
+        ...(error instanceof ProductFormError ? { field: error.field } : {}),
+      });
+      return;
+    }
+    await this.send(scope);
+  }
+  resolveConflict() {
+    if (!this.busy && this.view.kind === 'CONFLICT')
+      this.publish({ kind: 'READY', message: '' });
+  }
+  async reviewConflict() {
+    const scope = productScope(this.session),
+      { commandKind, productId } = this.view;
+    if (
+      !scope ||
+      this.busy ||
+      this.view.kind !== 'CONFLICT' ||
+      !commandKind ||
+      !productId ||
+      !this.online()
+    )
+      return;
+    this.busy = true;
+    const epoch = ++this.epoch;
+    this.request = new AbortController();
+    try {
+      await this.conflict(scope, epoch, commandKind, productId);
+    } finally {
+      if (epoch === this.epoch) this.busy = false;
+    }
+  }
+  private async conflict(
+    scope: ProductScope,
+    epoch: number,
+    commandKind: ProductCommand['commandKind'],
+    productId?: string,
+  ) {
+    this.intent = null;
+    this.descriptor = null;
+    clearPending(this.storage);
+    this.publish({
+      kind: 'CONFLICT',
+      commandKind,
+      productId,
+      message: 'El producto cambió en otro lugar. Tus cambios no se guardaron.',
+    });
+    await this.queries.invalidateQueries({
+      queryKey: productsKey(scope),
+      refetchType: 'none',
+    });
+    if (!productId) {
+      await this.queries.refetchQueries({
+        queryKey: productsKey(scope, 'detail'),
+        type: 'active',
+      });
+      return;
+    }
+    try {
+      const latest = await this.client.detail(
+        scope.inventoryId,
+        productId,
+        this.request!.signal,
+      );
+      if (!this.current(epoch, scope)) return;
+      this.queries.setQueryData(
+        productsKey(scope, 'detail', productId.toLowerCase()),
+        latest,
+      );
+      this.publish({ ...this.view, latest });
+    } catch (error) {
+      if (!this.current(epoch, scope)) return;
+      this.session.handleBusinessError(error);
+      if (this.current(epoch, scope))
+        this.publish({
+          ...this.view,
+          message: `${this.view.message} ${productErrorMessage(error)}`,
+        });
+    }
+  }
   async retry() {
     const scope = productScope(this.session);
     if (
@@ -219,35 +386,72 @@ export class ProductsController {
     this.request = request;
     let started = false;
     const previouslySent = this.descriptor !== null;
-    this.publish({ kind: 'SENDING', message: 'Registrando…' });
+    this.publish({
+      kind: 'SENDING',
+      commandKind: command.commandKind,
+      productId: command.payload.productId,
+      message: 'Registrando…',
+    });
     try {
-      await this.client.create(
-        scope.inventoryId,
-        command,
-        request.signal,
-        () => {
-          const currentScope = productScope(this.session);
-          if (
-            !this.current(epoch, scope) ||
-            !currentScope ||
-            currentScope.inventoryId !== scope.inventoryId ||
-            currentScope.businessId !== scope.businessId ||
-            request.signal.aborted
-          )
-            throw new Error('Session boundary');
-          const descriptor: PendingProduct = {
-            operationId: command.operationId,
-            inventoryId: scope.inventoryId,
-            commandKind: 'PRODUCT_CREATE',
-          };
-          writePending(this.storage, descriptor);
-          this.descriptor = descriptor;
-          started = true;
-        },
-      );
-      if (this.current(epoch, scope)) await this.accepted(scope, epoch, false);
+      // Narrow each command before invoking its typed client; the callback is shared.
+      const beforeSend = () => {
+        const currentScope = productScope(this.session);
+        if (
+          !this.current(epoch, scope) ||
+          !currentScope ||
+          currentScope.inventoryId !== scope.inventoryId ||
+          currentScope.businessId !== scope.businessId ||
+          request.signal.aborted
+        )
+          throw new Error('Session boundary');
+        const descriptor: PendingProduct = {
+          operationId: command.operationId,
+          inventoryId: scope.inventoryId,
+          commandKind: command.commandKind,
+        };
+        writePending(this.storage, descriptor);
+        this.descriptor = descriptor;
+        started = true;
+      };
+      if (command.commandKind === 'PRODUCT_CREATE')
+        await this.client.create(
+          scope.inventoryId,
+          command,
+          request.signal,
+          beforeSend,
+        );
+      else
+        await this.client.mutate(
+          scope.inventoryId,
+          command,
+          request.signal,
+          beforeSend,
+        );
+      if (this.current(epoch, scope))
+        await this.accepted(
+          scope,
+          epoch,
+          false,
+          command.commandKind,
+          command.payload.productId,
+        );
     } catch (error) {
       if (!this.current(epoch, scope)) return;
+      if (
+        started &&
+        error instanceof ApiClientError &&
+        error.status === 409 &&
+        error.apiError?.error.code === 'REVISION_CONFLICT' &&
+        command.commandKind !== 'PRODUCT_CREATE'
+      ) {
+        await this.conflict(
+          scope,
+          epoch,
+          command.commandKind,
+          command.payload.productId,
+        );
+        return;
+      }
       this.session.handleBusinessError(error);
       if (!this.current(epoch, scope)) return;
       const definitive =
@@ -259,6 +463,8 @@ export class ProductsController {
       if ((!started && previouslySent) || (started && !definitive)) {
         this.publish({
           kind: 'UNCERTAIN',
+          commandKind: command.commandKind,
+          productId: command.payload.productId,
           message:
             'No sabemos aún si se registró. Comprueba el estado o reintenta el mismo envío.',
           canRetry: true,
@@ -267,10 +473,28 @@ export class ProductsController {
         this.intent = null;
         this.descriptor = null;
         clearPending(this.storage);
+        if (
+          started &&
+          error instanceof ApiClientError &&
+          error.status === 404 &&
+          command.commandKind !== 'PRODUCT_CREATE'
+        )
+          this.queries.setQueryData(
+            productsKey(
+              scope,
+              'detail',
+              command.payload.productId.toLowerCase(),
+            ),
+            null,
+          );
         this.publish({
           kind: 'ERROR',
           message: started
-            ? productErrorMessage(error)
+            ? command.commandKind !== 'PRODUCT_CREATE' &&
+              error instanceof ApiClientError &&
+              error.status === 422
+              ? 'No pudimos guardar el cambio. Revisa los datos y el código de barras.'
+              : productErrorMessage(error)
             : 'No pudimos preparar el envío. El comando no fue enviado; vuelve a intentarlo.',
         });
       }
@@ -294,6 +518,7 @@ export class ProductsController {
     this.request = request;
     this.publish({
       kind: 'CHECKING',
+      commandKind: descriptor.commandKind,
       message: 'Estamos comprobando si se registró.',
     });
     try {
@@ -303,12 +528,38 @@ export class ProductsController {
         request.signal,
       );
       if (!this.current(epoch, scope)) return;
-      if (receipt?.status === 'ACCEPTED')
-        await this.accepted(scope, epoch, true);
-      else if (receipt) {
+      if (receipt?.status === 'ACCEPTED') {
+        const products = receipt.changeSet.upserts.products;
+        const p = products[0];
+        if (
+          products.length !== 1 ||
+          !p ||
+          p.inventoryId.toLowerCase() !== scope.inventoryId.toLowerCase() ||
+          (this.intent &&
+            p.id.toLowerCase() !==
+              this.intent.payload.productId.toLowerCase()) ||
+          p.isArchived !== (descriptor.commandKind === 'PRODUCT_ARCHIVE')
+        )
+          throw new ApiClientError('INVALID_JSON', 200);
+        await this.accepted(scope, epoch, true, descriptor.commandKind, p.id);
+      } else if (receipt) {
+        const productId = this.intent?.payload.productId;
+        if (
+          receipt.error.code === 'REVISION_CONFLICT' &&
+          descriptor.commandKind !== 'PRODUCT_CREATE' &&
+          productId !== undefined
+        ) {
+          await this.conflict(scope, epoch, descriptor.commandKind, productId);
+          return;
+        }
         this.intent = null;
         this.descriptor = null;
         clearPending(this.storage);
+        if (descriptor.commandKind !== 'PRODUCT_CREATE')
+          await this.queries.invalidateQueries({
+            queryKey: productsKey(scope),
+          });
+        if (!this.current(epoch, scope)) return;
         this.publish({
           kind: 'ERROR',
           message:

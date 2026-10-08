@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
+
 WEB-03 conecta ProductPage/Barcode/CreateProduct/receipt a Web con Domain Money y uuid14.0.1. Solo descriptor mínimo de envío en sessionStorage; ninguna persistencia comercial. Local check1605/Web128/DB1004 y builds/generadores PASS,0fail/skips. API/DB/Domain/Application/Mobile intactos; CI/GitGuardian/merge se verifican en PR del head final. [Detalle y gates](WEB-03.md).
 
 WEB-02 implementa cliente React Better Auth1.7.7, guards/estados de acceso, shell responsive y bootstrap vacío con CSRF. Gates locales PASS: check1524/Web47/DB1004 y ambos builds,0fail/skips; generadores sin drift. CI/GitGuardian/merge se verifican en PR del head final. Sin cambios API/DB/Domain/Application/Mobile; features comerciales/hosting pendientes. [Detalle](WEB-02.md).

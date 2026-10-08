@@ -4,7 +4,7 @@ export const PENDING_PRODUCT_KEY = 'stockapp.pending-product';
 export type PendingProduct = {
   operationId: string;
   inventoryId: string;
-  commandKind: 'PRODUCT_CREATE';
+  commandKind: 'PRODUCT_CREATE' | 'PRODUCT_UPDATE' | 'PRODUCT_ARCHIVE';
 };
 export type PendingStorage = Pick<
   Storage,
@@ -23,7 +23,9 @@ export function readPending(storage: PendingStorage): PendingProduct | null {
       !('operationId' in value) ||
       !('inventoryId' in value) ||
       !('commandKind' in value) ||
-      value.commandKind !== 'PRODUCT_CREATE'
+      (value.commandKind !== 'PRODUCT_CREATE' &&
+        value.commandKind !== 'PRODUCT_UPDATE' &&
+        value.commandKind !== 'PRODUCT_ARCHIVE')
     )
       throw new TypeError();
     return {
@@ -53,7 +55,7 @@ export function writePending(
     JSON.stringify({
       operationId: descriptor.operationId,
       inventoryId: descriptor.inventoryId,
-      commandKind: 'PRODUCT_CREATE',
+      commandKind: descriptor.commandKind,
     }),
   );
 }

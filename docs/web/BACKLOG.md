@@ -1,5 +1,7 @@
 # Backlog de implementación Cloud/Web
 
+WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
+
 WEB-03 implementa lista/búsqueda/alta/barcode teclado y recuperación de incertidumbre; detalle/edit/archive siguen WEB-04. Gates y entrega remota del head final en [WEB-03](WEB-03.md).
 
 WEB-02 IMPLEMENTED: auth oficial, aislamiento de sesión/query, shell y onboarding vacío; gates locales PASS. CI/GitGuardian/merge se verifican en PR del head final. [Detalle](WEB-02.md). No autoriza WEB-03+ ni deploy.
@@ -19,7 +21,7 @@ Scope histórico API-09: sin API-10/import/delete/Web/Sync/Mobile/deploy. La aut
 
 Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-07→API-08→API-09, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, Correcciones mecánicas/test-only con evidencia autorizadas; STOP ante decisiones humanas reales y STOP final API-09. No autoriza API-10/Web/Sync/Mobile/deploy.
 
-47 tickets: CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01/02 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md)); 29 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01..04 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md)); 27 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -39,7 +41,7 @@ API-06 y API-07 completaron gate/merge (PR #87/#88), main limpio0/0. API-08 impl
 
 CLOUD-06 y CLOUD-06-FIX fueron solicitados explícitamente y tienen implementación/validación documentadas.
 OpenAPI/DTO/envelopes V1, engine/GET receipt API-01 y runtime Product/Sale/Purchase API-02/03/04 existen.
-WEB-01/02 existen como foundation/auth/shell/onboarding vacío; features WEB-03+, sync/import e infraestructura siguen planned y requieren ticket autorizado.
+WEB-01/02 existen como foundation/auth/shell/onboarding vacío; features WEB-05+, sync/import e infraestructura siguen planned y requieren ticket autorizado.
 
 ## F1 — Comandos y consultas server
 
@@ -79,7 +81,7 @@ No integrar SYNC-06/MIG-02 si faltan pruebas de proyección/conflictos; outbox s
 | WEB-01 | IMPLEMENTED — React/Vite/Router/Query foundation | CLOUD-06 | Build SPA workspace, routes/loading, contracts client sin endpoints inventados |
 | WEB-02 | IMPLEMENTED — Auth/app shell/onboarding vacío; [evidencia](WEB-02.md) | WEB-01, CLOUD-03, CLOUD-04, CLOUD-05 | Verify/login/reset/session, query isolation/logout, acceso cloud habilitado |
 | WEB-03 | IMPLEMENTED — Lista/búsqueda/alta/barcode teclado; [evidencia](WEB-03.md) | WEB-02, API-02 | Fields actuales exactos, lector/string/unknown, inicial stock/costo; gates locales PASS |
-| WEB-04 | Product detalle/edit/archive/rentabilidad | WEB-03, API-08 | Metadata conflict visible, valores no editados exactos, history preserved |
+| WEB-04 | IMPLEMENTED — Product detalle/edit/archive/rentabilidad; [evidencia](WEB-04.md) | WEB-03, API-08 | Metadata conflict visible, valores no editados exactos, history preserved |
 | WEB-05 | Carrito/registro/detalle Sale | WEB-04, API-03 | Multi líneas, warning negativo, uncertainty key/reload, no optimistic stock |
 | WEB-06 | Compra/detalle/margen editable/precio sugerido | WEB-04, API-04 | Un producto, costo correcto; fallo precio no repite compra; sin default arbitrario |
 | WEB-07 | Conteo físico/Adjustment | WEB-04, API-05 | Motivo/costo/diferencia, stale state explicación, no Undo ajuste |
