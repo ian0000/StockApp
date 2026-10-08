@@ -48,3 +48,80 @@ a {
   outline: 3px solid #075e92;
   outline-offset: 4px;
 }
+
+label {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 1rem;
+}
+input,
+button {
+  box-sizing: border-box;
+  font: inherit;
+  min-height: 44px;
+  border: 1px solid #687e8e;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+}
+input {
+  width: 100%;
+  background: white;
+  color: inherit;
+}
+button {
+  margin: 0.5rem 0.5rem 0.5rem 0;
+  cursor: pointer;
+  background: #075e92;
+  color: white;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.app-shell {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+.app-shell aside {
+  background: white;
+  padding: 1rem;
+  border-right: 1px solid #c7d2da;
+  overflow-wrap: anywhere;
+}
+.app-shell nav {
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+a[aria-current='page'] {
+  font-weight: 700;
+  border-left: 3px solid currentColor;
+  padding-left: 0.5rem;
+}
+.skip-link {
+  position: absolute;
+  top: -10rem;
+  padding: 0.5rem;
+  background: white;
+}
+.skip-link:focus {
+  top: 0;
+}
+@media (max-width: 48rem) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+  .app-shell aside {
+    border-right: 0;
+    border-bottom: 1px solid #c7d2da;
+  }
+  .app-shell nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  main {
+    margin: 1rem;
+  }
+}

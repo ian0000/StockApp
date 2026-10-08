@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-02 usa required gates WEB-01 existentes, sin cambiar workflow/recursos/timeouts/concurrency. Better Auth1.7.7 Web ya resuelto backend; frozen lockfile/ambos builds/test:db/generadores/CI/GitGuardian del head final obligatorios antes de merge normal. STOP tras main limpio0/0; sin WEB-03/deploy. [Detalle](WEB-02.md).
+
 WEB-01 añade build:web al final de pnpm check; lint/typecheck/test Web entran por workspace. CI conserva frozen install, API/PostgreSQL/generadores y sus recursos/timeouts, sin CD. [Detalle](WEB-01.md).
 
 API-10 integra test/deletion en required test:db existente sin cambiar workflow, recursos, concurrency ni timeouts. Check/OpenAPI/build/generadores/regresiones y CI/GitGuardian del head final deben pasar antes de merge normal. API-10 no autoriza Web/Sync/MIG/DevOps/Mobile ni deploy. [Detalle](API-10.md).

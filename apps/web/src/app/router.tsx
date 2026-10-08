@@ -4,14 +4,10 @@ import {
   useNavigation,
   type RouteObject,
 } from 'react-router';
+import { PrivateBoundary, HomePage } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
 const foundationRoutes = [
-  ['/login', 'Acceso'],
-  ['/signup', 'Crear cuenta'],
-  ['/verify-email', 'Verificar correo'],
-  ['/reset-password', 'Recuperar acceso'],
-  ['/onboarding', 'Inicio de configuración'],
   ['/products', 'Productos'],
   ['/products/new', 'Nuevo producto'],
   ['/products/:id', 'Detalle de producto'],
@@ -50,11 +46,38 @@ export function createAppRoutes(): RouteObject[] {
       HydrateFallback: LoadingPage,
       ErrorBoundary: RouteErrorPage,
       children: [
-        { index: true, lazy: page('Aplicación web', true) },
-        ...foundationRoutes.map(([path, title]) => ({
-          path,
-          lazy: page(title),
-        })),
+        ...(['login', 'signup', 'verify-email', 'reset-password'] as const).map(
+          (path) => ({
+            path,
+            lazy: async () => {
+              const pages = await import('../routes/auth.js');
+              return {
+                Component: {
+                  login: pages.LoginPage,
+                  signup: pages.SignupPage,
+                  'verify-email': pages.VerifyPage,
+                  'reset-password': pages.ResetPage,
+                }[path],
+              };
+            },
+          }),
+        ),
+        {
+          path: '/onboarding',
+          lazy: async () => ({
+            Component: (await import('../routes/onboarding.js')).OnboardingPage,
+          }),
+        },
+        {
+          Component: PrivateBoundary,
+          children: [
+            { index: true, Component: HomePage },
+            ...foundationRoutes.map(([path, title]) => ({
+              path,
+              lazy: page(title),
+            })),
+          ],
+        },
         { path: '*', Component: NotFoundPage },
       ],
     },
