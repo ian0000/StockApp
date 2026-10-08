@@ -7,6 +7,7 @@ import {
 } from '../infrastructure/postgres/schema.js';
 import type { OwnershipDatabase } from './context.js';
 import { OwnershipError } from './errors.js';
+import { requireNotDeleting } from '../deletion/access.js';
 
 export type BootstrapInput = {
   inventoryName: string;
@@ -82,6 +83,7 @@ export async function bootstrapEmptyInventory(
         'Ya tienes un negocio.',
       );
     }
+    await requireNotDeleting(tx, userId);
     const [business] = await tx
       .insert(businesses)
       .values({

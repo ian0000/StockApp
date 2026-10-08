@@ -101,6 +101,8 @@ test('compiled VoidSale HTTP with PostgreSQL/auth/SMTP proves exact state and lo
         DATABASE_URL: pool.options.connectionString,
         AUTH_BASE_URL: baseURL,
         APP_ORIGIN: 'http://localhost:5173',
+        DELETION_SUPPRESSION_SECRET:
+          'fictional-deletion-suppression-test-secret',
         BETTER_AUTH_SECRET: 'fictional-api06-compiled-smoke-secret',
         SMTP_HOST: '127.0.0.1',
         SMTP_PORT: String(smtp.port),

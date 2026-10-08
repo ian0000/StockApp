@@ -1,5 +1,7 @@
 # Seguridad y threat model
 
+API-10 mantiene CSRF/Origin/rate/JSON/no-store/requestId y A/B. Acceptance tx: User lock, Business NO KEY UPDATE compatible con FKs, Inventory FOR UPDATE, DELETING/flagfalse, todas las sesiones eliminadas y job durable. Clave server-only DELETION_SUPPRESSION_SECRET separada de auth; ningún ID/key/email/dataset/progreso sensible en logs/HTTP. [Detalle](API-10.md).
+
 API-09 backup/export: sesión oficial verified/reciente, SESSION_NOT_FRESH403 inclusivo,
 Origin y bucket durable read120/60 compartido; JSON private/no-store/requestId. Sin contenido,
 PII o credenciales en logs. Ownership en snapshot y relectura actual antes de liberar bytes,

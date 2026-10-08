@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+API-10 marca requestAccountDeletion implemented,25 operaciones: body{} estricto, header UUIDv7 y202 AccountDeletionResult intactos; sessionsRevoked true solo tras acceptance commit. Sin status endpoint, commandKind deletion ni receipt financiero, sin bump de versiones. Retry con cookie revocada401; reautenticación oficial permite replay202 mientras exista User. [Detalle](API-10.md).
+
 API-08 registra ocho GET de lectura reales; disponibilidad actual22 implemented.
 SaleDetailItem es schema/type de lectura dedicado: campos financieros de SaleItem más
 productName/productVariant nullable y requeridos. Solo SaleDetail.items lo referencia.

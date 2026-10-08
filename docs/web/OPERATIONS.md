@@ -1,5 +1,7 @@
 # Operación, retención y recuperación
 
+API-10 implementa REQUESTED/PROCESSING/COMPLETED, leases recuperables, startup/wake/sweep5s y purge por fases transaccionales. Registro privado HMAC export/apply se prueba localmente contra restore antiguo. No pruning automático: DEV-02 debe custodiar copia independiente cifrada y demostrar last-backup+7d antes de podar; producción sigue bloqueada por DEV-02/REL. [Detalle](API-10.md).
+
 Objetivo futuro, no infraestructura configurada. Operador responsable: desarrollador del proyecto;
 permisos mínimos por entorno, procedimientos revisables y pruebas con datos ficticios.
 

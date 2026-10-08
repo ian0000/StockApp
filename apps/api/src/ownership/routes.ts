@@ -87,6 +87,8 @@ export function registerOwnershipRoutes(
         const { business, inventory } = await resolveOwnDataset(
           database,
           authenticated.user.id,
+          undefined,
+          true,
         );
         return {
           user: {

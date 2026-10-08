@@ -1,5 +1,7 @@
 # Contratos API V1
 
+POST /v1/me/deletion202 con body{} y Idempotency-Key UUIDv7 obligatorio. DeletionRequest.id es la key; misma identidad/key o distinta key durante deletion activa devuelve requestedAt original. Revoca todas las sesiones en la misma tx. Cookie revocada401; official sign-in mientras User existe permite recuperar/repetir202. Sin status endpoint. [Detalle](API-10.md).
+
 API-09 implementa backup/export propios con BackupV1 numérico canónico, snapshot PostgreSQL
 REPEATABLE READ READ ONLY y24 rutas implemented. CreatedAt oficial<=300000ms inclusivo;
 403 SESSION_NOT_FRESH conserva requestId. Account export ACTIVE ignora flag piloto,

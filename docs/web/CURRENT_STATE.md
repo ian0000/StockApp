@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+API-10 añade POST me/deletion y25 rutas implemented; borrado durable local, worker startup/wake/timer y CLI suppression registry export/apply. Sin migration/dependencias/Domain/Application/Mobile. Local/provider gates se registran en el reporte API-10, sin inferir infraestructura operativa ni release de privacy. [Detalle](API-10.md).
+
 Actualización API-09, base main a0fc46c: dos export GET propios con BackupV1 exacto,24 rutas
 implemented, snapshot RR/read-only y recencia inclusiva/session.createdAt. Decisiones humanas
 SESSION_NOT_FRESH403 y export completo sin cap heredado del import incorporadas. Materialización

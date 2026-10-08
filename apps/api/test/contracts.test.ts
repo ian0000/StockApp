@@ -19,6 +19,7 @@ import { registerReadRoutes } from '../src/read-models/routes.js';
 import { registerBackupRoutes } from '../src/backup/routes.js';
 import { registerProductRoutes } from '../src/products/routes.js';
 import { registerOwnershipRoutes } from '../src/ownership/routes.js';
+import { registerDeletionRoutes } from '../src/deletion/routes.js';
 
 test('implemented route schemas match the manifest and future routes remain absent without DB access', async (t) => {
   const pool = new Pool({
@@ -92,6 +93,12 @@ test('implemented route schemas match the manifest and future routes remain abse
     'fictional-contract-test-only-secret',
   );
   registerBackupRoutes(app, runtime.auth, database);
+  registerDeletionRoutes(
+    app,
+    runtime.auth,
+    database,
+    'fictional-contract-suppression-secret',
+  );
   await app.ready();
   assert.deepEqual(
     [...registered].sort(),
@@ -127,5 +134,14 @@ test('implemented route schemas match the manifest and future routes remain abse
     createSchemaValidator(contractSchemas.ApiError)(response.json());
     assert.equal(response.json().error.code, 'UNAUTHENTICATED');
   }
+  const deletion = await app.inject({
+    method: 'POST',
+    url: '/v1/me/deletion',
+    payload: {},
+    headers: { 'idempotency-key': '019a0000-0000-7000-8000-000000000001' },
+  });
+  assert.equal(deletion.statusCode, 401);
+  createSchemaValidator(contractSchemas.ApiError)(deletion.json());
+  assert.equal(deletion.json().error.code, 'UNAUTHENTICATED');
   assert.equal(connections, 0);
 });

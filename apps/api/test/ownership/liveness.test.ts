@@ -11,6 +11,7 @@ test('ownership composition with unreachable PostgreSQL/SMTP leaves /live 200 an
       DATABASE_URL: 'postgresql://postgres@127.0.0.1:1/stockapp_test',
       AUTH_BASE_URL: 'http://127.0.0.1:3001',
       APP_ORIGIN: 'http://localhost:5173',
+      DELETION_SUPPRESSION_SECRET: 'fictional-deletion-suppression-test-secret',
       BETTER_AUTH_SECRET: 'fictional-cloud04-unreachable-test-secret',
       SMTP_HOST: '127.0.0.1',
       SMTP_PORT: '1',

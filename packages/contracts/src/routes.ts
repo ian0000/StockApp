@@ -581,6 +581,8 @@ export const routeContracts: readonly RouteContract[] = [
       'AccountDeletionResult',
       { body: 'AccountDeletionRequest', idempotency: true },
     ),
+    implementationStatus: 'implemented',
+    query: 'NoQuery',
     responses: { ...mutationErrors, 202: 'AccountDeletionResult' },
   },
 ];
