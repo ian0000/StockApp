@@ -1,5 +1,9 @@
 # Pruebas y DoD futura
 
+La política operativa canónica de HUMAN STOP, AUTO-FIX y TEST/QA INFRASTRUCTURE está en
+[AGENTS.md, sección 65.1](../../AGENTS.md#651-política-operativa-human-stop-auto-fix-y-testqa-infrastructure).
+Las aplicaciones al QA descritas aquí deben conservar esa política.
+
 API-09 añade test/backup/*.test.ts al required test:db y focused test:backup, sin skips ni
 cambios de workflow/PG. Recencia299999/300000/300001, auth oficial, lifecycle, ocho tablas A/B,
 historial/restorabilidad/safe BIGINT/UUID legacy, snapshot multiproducto concurrente y compiled
