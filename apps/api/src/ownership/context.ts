@@ -5,6 +5,7 @@ import type { StockAppAuth } from '../auth/create-auth.js';
 import type { createDatabase } from '../infrastructure/postgres/client.js';
 import { businesses, inventories } from '../infrastructure/postgres/schema.js';
 import { OwnershipError } from './errors.js';
+import { requireNotDeleting } from '../deletion/access.js';
 
 export type OwnershipDatabase = ReturnType<typeof createDatabase>;
 
@@ -34,7 +35,9 @@ export async function resolveOwnDataset(
   database: OwnershipDatabase,
   userId: string,
   inventoryId?: string,
+  allowDeletingIdentity = false,
 ) {
+  if (!allowDeletingIdentity) await requireNotDeleting(database, userId);
   // Establish scope from the authenticated owner; never query a supplied inventory ID globally.
   const [result] = await database
     .select({ business: businesses, inventory: inventories })

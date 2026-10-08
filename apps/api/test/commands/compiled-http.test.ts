@@ -74,6 +74,8 @@ test('compiled API with real PostgreSQL/SMTP recovers the same durable receipt a
         DATABASE_URL: pool.options.connectionString,
         AUTH_BASE_URL: baseURL,
         APP_ORIGIN: 'http://localhost:5173',
+        DELETION_SUPPRESSION_SECRET:
+          'fictional-deletion-suppression-test-secret',
         BETTER_AUTH_SECRET: 'fictional-api01-compiled-smoke-secret',
         SMTP_HOST: '127.0.0.1',
         SMTP_PORT: String(smtp.port),

@@ -13,6 +13,7 @@ import { registerReadRoutes } from './read-models/routes.js';
 import { registerBackupRoutes } from './backup/routes.js';
 import { registerProductRoutes } from './products/routes.js';
 import { registerOwnershipRoutes } from './ownership/routes.js';
+import { registerDeletionRoutes } from './deletion/routes.js';
 
 export async function startServer(): Promise<void> {
   const app = buildApp({ logger: true });
@@ -34,12 +35,21 @@ export async function startServer(): Promise<void> {
   process.once('SIGTERM', shutdown);
   try {
     if (process.env.AUTH_BASE_URL) {
-      const runtime = createAuthRuntime(process.env, () => {
-        app.log.error(
-          { code: 'AUTH_EMAIL_FAILED' },
-          'Could not send authentication email.',
-        );
-      });
+      const runtime = createAuthRuntime(
+        process.env,
+        () => {
+          app.log.error(
+            { code: 'AUTH_EMAIL_FAILED' },
+            'Could not send authentication email.',
+          );
+        },
+        () => {
+          app.log.error(
+            { code: 'DELETION_JOB_FAILED' },
+            'Could not complete deletion maintenance.',
+          );
+        },
+      );
       app.addHook('onClose', () => runtime.close());
       registerAuthRoutes(app, runtime.auth, runtime.config);
       registerOwnershipRoutes(app, runtime.auth, runtime.database);
@@ -56,6 +66,14 @@ export async function startServer(): Promise<void> {
         runtime.config.secret,
       );
       registerBackupRoutes(app, runtime.auth, runtime.database);
+      registerDeletionRoutes(
+        app,
+        runtime.auth,
+        runtime.database,
+        runtime.suppressionSecret,
+        runtime.deletionRunner.wake,
+      );
+      runtime.deletionRunner.start();
     }
     await app.listen(readServerConfig(process.env));
   } catch {

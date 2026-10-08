@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+API-10 integra test/deletion en required test:db existente sin cambiar workflow, recursos, concurrency ni timeouts. Check/OpenAPI/build/generadores/regresiones y CI/GitGuardian del head final deben pasar antes de merge normal. API-10 no autoriza Web/Sync/MIG/DevOps/Mobile ni deploy. [Detalle](API-10.md).
+
 API-09 extiende test:db required con backup/export y24 rutas OpenAPI, sin CI relaxation, skips,
 workflows/dependencias/configuración PG nuevos. Local gates secuenciales y CI/GitGuardian del
 head final PASS antes de merge normal; main limpio0/0 y STOP final API-09, sin API-10/deploy.

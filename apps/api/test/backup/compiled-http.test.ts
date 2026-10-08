@@ -68,6 +68,8 @@ test('compiled BackupV1/account export with PostgreSQL, official auth and SMTP p
           DATABASE_URL: pool.options.connectionString,
           AUTH_BASE_URL: baseURL,
           APP_ORIGIN: 'http://localhost:5173',
+          DELETION_SUPPRESSION_SECRET:
+            'fictional-deletion-suppression-test-secret',
           BETTER_AUTH_SECRET: 'fictional-api09-compiled-smoke-secret',
           SMTP_HOST: '127.0.0.1',
           SMTP_PORT: String(smtp.port),

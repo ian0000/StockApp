@@ -13,14 +13,22 @@ export class SecurityError extends Error {
   }
 }
 
+export function createRateKeyHasher(secret: string) {
+  const rateKey = createHmac('sha256', secret)
+    .update('stockapp:rate-key:v1')
+    .digest();
+  return (scope: string, key: string) =>
+    createHmac('sha256', rateKey)
+      .update(JSON.stringify([scope, key]))
+      .digest('hex');
+}
+
 export function createSecurity(
   database: ReturnType<typeof createDatabase>,
   secret: string,
   clock: () => number = Date.now,
 ) {
-  const rateKey = createHmac('sha256', secret)
-    .update('stockapp:rate-key:v1')
-    .digest();
+  const rateHash = createRateKeyHasher(secret);
   const csrfKey = createHmac('sha256', secret)
     .update('stockapp:csrf-key:v1')
     .digest();
@@ -32,9 +40,7 @@ export function createSecurity(
       key: string,
       rule: { window: number; max: number },
     ) {
-      const keyHash = createHmac('sha256', rateKey)
-        .update(JSON.stringify([scope, key]))
-        .digest('hex');
+      const keyHash = rateHash(scope, key);
       const now = clock();
       if (
         !Number.isSafeInteger(now) ||

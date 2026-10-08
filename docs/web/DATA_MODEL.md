@@ -1,5 +1,7 @@
 # Modelo cloud conceptual
 
+API-10 usa deletion_requests existente sin migración: id=Idempotency-Key v7, User lock serializa intención activa, status REQUESTED/PROCESSING/COMPLETED y progress estricto server-only phase/attempts/lease temporal. COMPLETED userId=null, suppressionIdentifier64hex, requestedAt estable y updatedAt completion; no dataset/identidad en progress final. SyncDevice sin campos nuevos. [Detalle](API-10.md).
+
 API-06 utiliza Sale/SALE originales/SaleItems/State y REVERSAL existentes sin migración. Cambia solo Sale.status/updatedAt y States, añade reversals con sourceId=reversalOfMovementId=original.id y FK/unique existentes. State revision+1n/lastMovement nuevo; snapshots históricos intactos. Nuevo comando ya-voided/current se rechaza422 sin Inventory revision/ChangeSet; misma operationId hace replay. [Detalle](API-06.md).
 
 API-04 usa Purchase/Movement/State existentes: promedio/snapshots Domain, Movement con costo de compra, State con costo promedio/revision+1/lastMovement. ChangeSet incluye Product snapshot de aceptación aunque no hay Product SQL mutation/metadataRevision change. Sin schema/migration. [Evidencia](API-04.md).

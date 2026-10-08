@@ -1,5 +1,7 @@
 # Impacto de privacidad y publicación
 
+API-10 entrega el mecanismo local de deletion y supresión HMAC sin email/raw user ID después de completion. No borra remotamente exports ni dispositivos offline. Registro COMPLETED se conserva sin cutoff aproximado hasta que DEV-02 implemente la retención real; PRIV/REL y recovery de proveedor siguen bloqueando producción real. [Detalle](API-10.md).
+
 Fuente actual comprobada: checkout read-only `Apps/ian-k.dev/src/pages/stockapp/privacy.md`
 (2026-10-02) y `terms.md` (2026-10-01). URLs canónicas
 [Privacy](https://ian-k.dev/stockapp/privacy/) y [Terms](https://ian-k.dev/stockapp/terms/).

@@ -1,5 +1,7 @@
 # Identidad y autorización
 
+API-10 conserva official sign-in durante DELETING y recent-session<=300000ms inclusivo. Nueva sesión permite me/csrf/deletion recovery, no dataset/commands/export/import/sync. Identidad sin Business también puede borrar; request tx revoca todas las sesiones y worker purga auth. delete-user permanece deshabilitado. [Detalle](API-10.md).
+
 API-09 implementa recencia de export sobre session.createdAt oficial:<=300000ms inclusivo,
 >300000403 SESSION_NOT_FRESH con envelope /v1 sanitizado/requestId. Actividad/updatedAt no
 reautentican; nuevo sign-in oficial sí. Sin cambios TTL/cookies/schema/freshAge global.

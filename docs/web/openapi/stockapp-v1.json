@@ -9391,7 +9391,7 @@
       "post": {
         "operationId": "requestAccountDeletion",
         "summary": "Request durable account/cloud deletion and revoke sessions",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "recent-session",
         "x-stockapp-session-max-age-seconds": 300,
         "security": [
