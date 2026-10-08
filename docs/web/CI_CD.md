@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
+
 WEB-03 conserva gates/workflow/recursos/timeouts/concurrency existentes. Dos dependencias Web ya autorizadas/resueltas; frozen lockfile, builds, test:db y generadores requeridos. CI/GitGuardian PASS del head final antes de merge normal; main clean0/0 y STOP, sin WEB-04/deploy. [Detalle](WEB-03.md).
 
 WEB-02 usa required gates WEB-01 existentes, sin cambiar workflow/recursos/timeouts/concurrency. Better Auth1.7.7 Web ya resuelto backend; frozen lockfile/ambos builds/test:db/generadores/CI/GitGuardian del head final obligatorios antes de merge normal. STOP tras main limpio0/0; sin WEB-03/deploy. [Detalle](WEB-02.md).

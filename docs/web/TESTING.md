@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
+
 WEB-03 añade focused Product con Money exacto, Query real/keyset/scope, barcode/DTO, alta/CSRF/UUID, pérdida de respuesta/retry/reload/receipt y storage allowlist/A-B. Validators estáticos comprobados bajo CSP y bundle con Domain puro. Sin framework/E2E browser nuevo; regresión PostgreSQL completa requerida. [Detalle y conteos](WEB-03.md).
 
 WEB-02 extiende Web con focused auth/session isolation/guards/shell/onboarding/CSRF/DTO: cliente oficial con fake fetch, Query real, controllers y render ReactDOM. Sin nueva dependencia ni claim E2E browser. Gates existentes y regresión PG/auth/ownership/security/compiled HTTP se conservan. [Detalle](WEB-02.md).

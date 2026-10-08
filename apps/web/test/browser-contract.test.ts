@@ -15,6 +15,11 @@ import {
   initialProductForm,
 } from '../src/products/input.js';
 import { product, strictResult, receipt } from './product-fixtures.js';
+import {
+  buildUpdateCommand,
+  buildArchiveCommand,
+  initialEditDraft,
+} from '../src/products/edit.js';
 
 test('standalone browser validation follows the shared schema and runs with dynamic code generation prohibited', async () => {
   const shared = createSchemaValidator(apiErrorSchema);
@@ -73,6 +78,21 @@ test('all Product/recovery standalone validators retain shared strict schemas un
       { items: [product], nextCursor: null },
     ],
     ['product-read', contractSchemas.ProductRead, product],
+    [
+      'update-product-command',
+      contractSchemas.UpdateProductCommand,
+      buildUpdateCommand(initialEditDraft(product.product)),
+    ],
+    [
+      'archive-product-command',
+      contractSchemas.ArchiveProductCommand,
+      buildArchiveCommand(product.product),
+    ],
+    [
+      'product-mutation-result',
+      contractSchemas.ProductMutationResult,
+      { product: product.product, committedRevision: '1', serverRecordedAt: 1 },
+    ],
     ['create-product-command', contractSchemas.CreateProductCommand, command],
     [
       'create-product-result',

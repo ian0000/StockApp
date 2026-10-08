@@ -796,14 +796,23 @@ test('429 exposes only validated numeric retry-after', async (t) => {
 test('recovery receipt refetches an active Product list and leaves unrelated cache untouched', async (t) => {
   let pending = false,
     reads = 0;
-  const ctx = productsFixture(async (url) => {
+  let sentCommand: CreateProductCommand | null = null;
+  const ctx = productsFixture(async (url, options) => {
     if (String(url).endsWith('/csrf')) return json({ token: 'csrf' });
-    if (String(url).includes('/operations/'))
-      return json({
-        ...receipt('ACCEPTED'),
-        operationId: readPending(ctx.storage)!.operationId,
-      });
-    if (String(url).endsWith('/products') && pending) throw new Error('lost');
+    if (String(url).includes('/operations/')) {
+      assert.ok(sentCommand);
+      const accepted = receipt('ACCEPTED');
+      assert.equal(accepted.status, 'ACCEPTED');
+      if (accepted.status !== 'ACCEPTED') throw new Error('Fixture status');
+      const created = strictResult(sentCommand);
+      accepted.changeSet.upserts.products = [created.product];
+      accepted.changeSet.upserts.inventoryStates = [created.state];
+      return json({ ...accepted, operationId: sentCommand.operationId });
+    }
+    if (String(url).endsWith('/products') && pending) {
+      sentCommand = JSON.parse(String(options?.body));
+      throw new Error('lost');
+    }
     reads++;
     return json({ items: pending ? [product] : [], nextCursor: null });
   });

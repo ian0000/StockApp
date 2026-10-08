@@ -29,7 +29,7 @@ export class ProductFormError extends Error {
     super(message);
   }
 }
-function integer(text: string, field: keyof ProductForm) {
+export function integer(text: string, field: keyof ProductForm) {
   if (!/^\d+$/.test(text.trim()))
     throw new ProductFormError(
       field,
@@ -40,7 +40,7 @@ function integer(text: string, field: keyof ProductForm) {
     throw new ProductFormError(field, 'La cantidad es demasiado grande.');
   return value;
 }
-function amount(text: string, field: keyof ProductForm) {
+export function amount(text: string, field: keyof ProductForm) {
   try {
     const value = Money.fromDecimal(text.trim());
     if (value.compare(Money.zero()) < 0) throw new RangeError();

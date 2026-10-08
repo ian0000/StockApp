@@ -57,6 +57,11 @@ export function PendingProductStatus() {
       <p id="product-message" role="status" aria-live="polite">
         {view.message}
       </p>
+      {view.kind === 'ACCEPTED' && (
+        <button type="button" onClick={() => controller.acknowledge()}>
+          Continuar
+        </button>
+      )}
       {view.kind === 'UNCERTAIN' && (
         <>
           {view.canRetry && (
