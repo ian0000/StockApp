@@ -21,7 +21,7 @@ No usar path de landing como inventario ni alternar proveedores por familiaridad
 
 Un proyecto app-web independiente de la landing; repo StockApp, branch production main.
 Build working directory raíz del monorepo para resolver workspace deps y lockfile.
-Comandos OBJETIVO, scripts aún inexistentes: instalación `pnpm install --frozen-lockfile`,
+Scripts implementados por WEB-01; configuración de hosting aún OBJETIVO: instalación `pnpm install --frozen-lockfile`,
 build `pnpm --filter @stock-app/web build`, output `apps/web/dist`. Vite empaqueta imports domain/contracts
 de source workspace; no obliga a publicar paquetes ni bundle Expo. No Pages Functions/SSR en V1.
 
@@ -30,7 +30,7 @@ Verificar deep links /products/id, refresh y auth redirect sin redirigir errores
 Assets fingerprinted cache long immutable; HTML/config no-cache/revalidate; auth/API no-store.
 Headers CSP/security en artefacto estático revisado; ningún dato de inventario embebido en build.
 
-VITE_API_BASE_URL y VITE_APP_ENV son públicos y embebidos durante build, no runtime secrets.
+VITE_API_URL y VITE_APP_ENV son públicos y embebidos durante build, no runtime secrets.
 Cambio de env requiere rebuild. Producción apunta API production; staging a API staging.
 Preview de ramas confiables: Pages preview estático/contratos ficticios por defecto, sin credenciales
 de prod. Para QA autenticada, usar branch staging y hostname staging mismo site, no wildcard pages.dev
@@ -84,7 +84,7 @@ Railway healthcheck de despliegue NO es monitor continuo; OBSERVABILITY exige se
 
 | Lugar | Variables previstas | Secreto |
 | --- | --- | --- |
-| Pages production/staging | VITE_API_BASE_URL, VITE_APP_ENV | No |
+| Pages production/staging | VITE_API_URL, VITE_APP_ENV | No |
 | Railway API | NODE_ENV, PORT, APP_ORIGIN, AUTH_BASE_URL, LOG_LEVEL | No (config restringida) |
 | Railway API | DATABASE_URL, BETTER_AUTH_SECRET, SMTP_HOST/PORT/USER/PASSWORD, SMTP_FROM | Password/secret/URL credencial sí |
 | API auth config | AUTH_BASE_URL, APP_ORIGIN, SMTP_SECURITY, NODE_ENV=production en despliegue | Origins/modo públicos, no secretos |

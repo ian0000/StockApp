@@ -13,10 +13,11 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "build:api": "pnpm --filter @stock-app/api build",
+    "build:web": "pnpm --filter @stock-app/web build",
     "test:db": "pnpm --filter @stock-app/api test:db",
     "contracts:openapi": "tsx packages/contracts/src/openapi-cli.ts",
     "contracts:openapi:check": "tsx packages/contracts/src/openapi-cli.ts --check",
-    "check": "pnpm contracts:openapi:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api"
+    "check": "pnpm contracts:openapi:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:api && pnpm build:web"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

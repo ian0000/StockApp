@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-01 añade build:web al final de pnpm check; lint/typecheck/test Web entran por workspace. CI conserva frozen install, API/PostgreSQL/generadores y sus recursos/timeouts, sin CD. [Detalle](WEB-01.md).
+
 API-10 integra test/deletion en required test:db existente sin cambiar workflow, recursos, concurrency ni timeouts. Check/OpenAPI/build/generadores/regresiones y CI/GitGuardian del head final deben pasar antes de merge normal. API-10 no autoriza Web/Sync/MIG/DevOps/Mobile ni deploy. [Detalle](API-10.md).
 
 API-09 extiende test:db required con backup/export y24 rutas OpenAPI, sin CI relaxation, skips,
@@ -61,7 +63,7 @@ Shared domain/contracts/lockfile/config changes disparan todos los consumidores.
 pueden omitir jobs ajenos con evidencia; required summary job no queda skipped por filtros.
 
 Scripts API dev/build/start existen en CLOUD-01; db:generate/db:migrate/test:db en CLOUD-02.
-Scripts Web y CD siguen pendientes. CI pin de runtime/acciones y permissions contents:read; secrets producción ausentes
+Scripts Web existen desde WEB-01; CD sigue pendiente. CI pin de runtime/acciones y permissions contents:read; secrets producción ausentes
 en PR/forks. Seguridad dependency review y scans sin imprimir .env ni usar datasets reales.
 
 ## Flujo

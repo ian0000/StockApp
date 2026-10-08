@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-01 integra tests node:test/tsx/ReactDOM y bundle Vite en workspace: rutas/loading/error/provider, config/fetch/ApiError/valores exactos y validator CSP-safe. Sin nueva dependencia de tests ni E2E browser certificado; required gates existentes intactos. [Detalle](WEB-01.md).
+
 API-10 añade focused test:deletion y grupo obligatorio a test:db: PG/auth reales, recencia, body/key/CSRF, sesiones revocadas, recovery, A/B, Inventory locks/FK-safe purge, claim/reclaim/fencing/restart, failure injection por write, restore con registro independiente y compiled HTTP/SMTP/CLI. Concurrency y pool/timeouts originales conservados. [Detalle](API-10.md).
 
 La política operativa canónica de HUMAN STOP, AUTO-FIX y TEST/QA INFRASTRUCTURE está en

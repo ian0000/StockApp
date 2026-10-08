@@ -12,6 +12,7 @@ web-build/
 
 # Generated dependency lockfile
 pnpm-lock.yaml
+apps/web/src/api/generated/
 
 # Canonical baseline documents retain their established formatting
 AGENTS.md
