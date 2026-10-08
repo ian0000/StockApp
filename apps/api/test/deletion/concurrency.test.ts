@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { sql } from 'drizzle-orm';
 import { deletionFixture, suppressionSecret } from './helpers.js';
 import { id } from '../postgres/helpers.js';
 import {
@@ -26,32 +27,48 @@ test('two official HTTP requests with distinct keys and same owner share one dur
   const f = await deletionFixture(t),
     a = await f.owner('two-requests'),
     token = await f.csrf(a.cookie);
-  const blocker = await f.pool.connect();
-  await blocker.query('BEGIN');
-  await blocker.query('SELECT id FROM "user" WHERE id=$1 FOR UPDATE', [
-    a.authenticated.user.id,
-  ]);
+  const bothStarted = barrier(),
+    proceed = barrier(),
+    backends = new Set<number>();
+  const originalTransaction = f.db.transaction,
+    transaction = originalTransaction.bind(f.db);
+  // Route auth/CSRF/recency have completed before these two real transactions begin.
+  // Hold both callbacks before either can revoke the other request's session.
+  f.db.transaction = (callback, config) =>
+    transaction(async (tx) => {
+      const backend = await tx.execute<{ pid: number }>(
+        sql`SELECT pg_backend_pid() AS pid`,
+      );
+      backends.add(backend.rows[0]!.pid);
+      if (backends.size === 2) bothStarted.release();
+      await proceed.wait;
+      return callback(tx);
+    }, config);
   const pending = Promise.all([
     f.request(a.cookie, id(), token),
     f.request(a.cookie, id(), token),
   ]);
-  let bothAuthenticated = false;
+  let guard: ReturnType<typeof setTimeout> | undefined;
   try {
-    for (let i = 0; i < 100; i++) {
-      const waiters = await f.pool.query(
-        "SELECT count(*)::int count FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%\"user\"%' AND query LIKE '%for update%'",
-      );
-      if (waiters.rows[0].count === 2) {
-        bothAuthenticated = true;
-        break;
-      }
-    }
+    await Promise.race([
+      bothStarted.wait,
+      new Promise<never>((_resolve, reject) => {
+        // Failure guard only, matching the existing per-operation concurrency harness.
+        guard = setTimeout(
+          () =>
+            reject(new Error('Both authenticated transactions did not begin.')),
+          5000,
+        );
+      }),
+    ]);
   } finally {
-    await blocker.query('ROLLBACK');
-    blocker.release();
+    clearTimeout(guard);
+    f.db.transaction = originalTransaction;
+    proceed.release();
+    await pending;
   }
   const responses = await pending;
-  assert.equal(bothAuthenticated, true);
+  assert.equal(backends.size, 2);
   assert.deepEqual(
     responses.map((r) => r.statusCode),
     [202, 202],

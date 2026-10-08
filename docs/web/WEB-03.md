@@ -100,7 +100,7 @@ conservando pending; controles de red se deshabilitan offline.
 
 ## Archivos cambiados
 
-30 archivos, solo scope Web/compiler/docs/lockfile:
+31 archivos: Web/compiler/docs/lockfile y un ajuste del harness PostgreSQL autorizado por AGENTS65.1:
 
 - Web runtime: package.json; src/api/csrf.ts y ownership.ts; src/app/app.tsx y router.tsx;
   src/auth/session.ts; src/main.tsx; src/styles/base.css; src/routes/products.tsx;
@@ -108,6 +108,7 @@ conservando pending; controles de red se deshabilitan offline.
 - Web tests: app.test.tsx, browser-contract.test.ts, product-fixtures.ts, product-input.test.ts,
   products.test.tsx.
 - Contracts linkage/compiler: packages/contracts/package.json y src/browser-error-cli.ts.
+- API test-only: apps/api/test/deletion/concurrency.test.ts; ningún archivo de producción API.
 - Lockfile: pnpm-lock.yaml, dos entradas directas Web existentes en la resolución global.
 - Docs: WEB-03.md, BACKLOG.md, CURRENT_STATE.md, WEB_UX.md, TESTING.md, CI_CD.md, DOMAIN_REUSE.md.
 
@@ -130,5 +131,22 @@ FILES: packages/contracts/package.json, src/browser-error-cli.ts.
 PRODUCTION BEHAVIOR CHANGED: NO en API/contracts; linkage aditivo y generación browser.
 
 Lockfile deriva únicamente dos entradas Web autorizadas; formatting limitado a archivos tocados.
+CI inicial del head87d917e: quality/generadores/GitGuardian PASS, DB1003PASS/1FAIL en
+test/deletion/concurrency.test.ts:54. Se corrige el setup y se revalidan gates antes de publicar.
+
+CAUSE: el test HTTP de dos deletion requests esperaba ambas autenticaciones tras100 consultas
+rápidas a pg_stat_activity; el número de roundtrips dependía de la velocidad del runner.
+SOURCE OF TRUTH: API-10, dos requests ya autenticados comparten una única solicitud durable;
+AGENTS65.1 permite coordinación del harness conservando PostgreSQL y concurrencia reales.
+FILES: apps/api/test/deletion/concurrency.test.ts, docs/web/WEB-03.md.
+PRODUCTION BEHAVIOR CHANGED: NO. Barrera después del middleware y BEGIN reales, antes de los
+callbacks de ambas transacciones; pg_backend_pid prueba dos conexiones independientes. Se conservan
+202/202, JSON idéntico y una fila durable. El guard de fallo5000ms sigue el harness per-operation
+existente, sin sleeps/retries de negocio, cambios de timeout global, pools, CI ni producción.
+Caso fallido focused1PASS y archivo completo8PASS,0fail/skip/cancelled; typecheck API PASS.
+Revalidación después del fix: pnpm check1605 y test:db1004 PASS completos,0fail/skip/cancelled,
+build:api separado PASS; db:generate/auth:generate/auth:check sin drift. CI del nuevo head se verifica
+antes de merge normal; no se reintenta el CI fallido sin corregir el setup.
+
 Domain/Application/Mobile/API runtime/DB/migrations/auth/CI no cambian. STOP después de entrega;
 sin WEB-04/Sync/MIG/DevOps/deploy.
