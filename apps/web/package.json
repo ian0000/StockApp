@@ -17,11 +17,13 @@
   },
   "dependencies": {
     "@stock-app/contracts": "workspace:*",
+    "@stock-app/domain": "workspace:*",
     "@tanstack/react-query": "5.104.1",
     "better-auth": "1.7.7",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-router": "7.18.4"
+    "react-router": "7.18.4",
+    "uuid": "14.0.1"
   },
   "devDependencies": {
     "@types/react": "19.2.18",

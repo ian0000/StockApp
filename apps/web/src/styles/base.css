@@ -108,7 +108,33 @@ a[aria-current='page'] {
 .skip-link:focus {
   top: 0;
 }
+.product-list {
+  list-style: none;
+  padding: 0;
+}
+.product-card {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1fr 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #c7d2da;
+}
+.product-card p {
+  margin: 0;
+}
+.stock-label {
+  display: block;
+}
+fieldset {
+  min-width: 0;
+  border: 1px solid #c7d2da;
+}
 @media (max-width: 48rem) {
+  .product-card {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
   .app-shell {
     grid-template-columns: 1fr;
   }

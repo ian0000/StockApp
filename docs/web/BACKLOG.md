@@ -1,5 +1,7 @@
 # Backlog de implementación Cloud/Web
 
+WEB-03 implementa lista/búsqueda/alta/barcode teclado y recuperación de incertidumbre; detalle/edit/archive siguen WEB-04. Gates y entrega remota del head final en [WEB-03](WEB-03.md).
+
 WEB-02 IMPLEMENTED: auth oficial, aislamiento de sesión/query, shell y onboarding vacío; gates locales PASS. CI/GitGuardian/merge se verifican en PR del head final. [Detalle](WEB-02.md). No autoriza WEB-03+ ni deploy.
 
 WEB-01 IMPLEMENTED sobre main API-10: apps/web foundation, cliente contracts/fetch y gates locales PASS. Entrega CI/GitGuardian/merge se verifica en PR; sin features/Auth/CD. [Detalle](WEB-01.md).
@@ -76,7 +78,7 @@ No integrar SYNC-06/MIG-02 si faltan pruebas de proyección/conflictos; outbox s
 | --- | --- | --- | --- |
 | WEB-01 | IMPLEMENTED — React/Vite/Router/Query foundation | CLOUD-06 | Build SPA workspace, routes/loading, contracts client sin endpoints inventados |
 | WEB-02 | IMPLEMENTED — Auth/app shell/onboarding vacío; [evidencia](WEB-02.md) | WEB-01, CLOUD-03, CLOUD-04, CLOUD-05 | Verify/login/reset/session, query isolation/logout, acceso cloud habilitado |
-| WEB-03 | Lista/búsqueda/alta/barcode teclado | WEB-02, API-02 | Fields actuales exactos, lector/string/unknown, inicial stock/costo |
+| WEB-03 | IMPLEMENTED — Lista/búsqueda/alta/barcode teclado; [evidencia](WEB-03.md) | WEB-02, API-02 | Fields actuales exactos, lector/string/unknown, inicial stock/costo; gates locales PASS |
 | WEB-04 | Product detalle/edit/archive/rentabilidad | WEB-03, API-08 | Metadata conflict visible, valores no editados exactos, history preserved |
 | WEB-05 | Carrito/registro/detalle Sale | WEB-04, API-03 | Multi líneas, warning negativo, uncertainty key/reload, no optimistic stock |
 | WEB-06 | Compra/detalle/margen editable/precio sugerido | WEB-04, API-04 | Un producto, costo correcto; fallo precio no repite compra; sin default arbitrario |

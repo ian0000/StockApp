@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+WEB-03 importa Money puro de @stock-app/domain para parsear hasta seis decimales y display exacto; codecs/contracts separados del compiler server. Ninguna fórmula financiera nueva ni dependencia Application/Mobile/DB en Web. Las reglas Product existentes guían validación/trim/null y stock/costo inicial. [Detalle](WEB-03.md).
+
 API-08 usa mappers existentes y reglas Domain de bajo stock/margin/markup y validación pura
 del ledger original con prepareSaleReversal/preparePurchaseReversal. No escribe reversals
 ni modifica use cases. Detalles VOIDED omiten simulación; enrichment Product actual solo en

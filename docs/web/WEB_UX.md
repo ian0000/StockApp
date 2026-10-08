@@ -1,5 +1,7 @@
 # Arquitectura UX Web
 
+WEB-03 materializa Products con búsqueda por form explícito/Enter autorizada en el ticket, keyset Cargar más y alta de siete campos incluyendo stock/costo inicial. Barcode teclado exacto y precarga por navigation state; incertidumbre bloquea edición/nuevo envío hasta resolución o descarte consciente. Detalle/edit/archive siguen WEB-04. [Detalle](WEB-03.md).
+
 WEB-02 materializa identidad, shell y creación vacía. Anonymous→login; no Business→onboarding; disabled/DELETING/sin Inventory→estado seguro+refresh/logout; enabled con Inventory→shell. No import funcional (MIG-03) ni comercio WEB-03+. [Detalle](WEB-02.md).
 
 SPA responsive optimizada para escritorio, usable con teclado y browser móvil. Paridad de capacidades

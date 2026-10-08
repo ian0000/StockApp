@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-03 conecta ProductPage/Barcode/CreateProduct/receipt a Web con Domain Money y uuid14.0.1. Solo descriptor mínimo de envío en sessionStorage; ninguna persistencia comercial. Local check1605/Web128/DB1004 y builds/generadores PASS,0fail/skips. API/DB/Domain/Application/Mobile intactos; CI/GitGuardian/merge se verifican en PR del head final. [Detalle y gates](WEB-03.md).
+
 WEB-02 implementa cliente React Better Auth1.7.7, guards/estados de acceso, shell responsive y bootstrap vacío con CSRF. Gates locales PASS: check1524/Web47/DB1004 y ambos builds,0fail/skips; generadores sin drift. CI/GitGuardian/merge se verifican en PR del head final. Sin cambios API/DB/Domain/Application/Mobile; features comerciales/hosting pendientes. [Detalle](WEB-02.md).
 
 WEB-01 añade apps/web SPA React/Vite/Router/Query y cliente fetch separado con contracts; rutas foundation sin llamadas comerciales. Gates locales PASS: check1492/Web15/DB1004 y ambos builds;0fail/skips. CI/GitGuardian/merge se verifican en PR del head final. [Detalle](WEB-01.md).

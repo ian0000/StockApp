@@ -4,6 +4,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import standaloneModule from 'ajv/dist/standalone/index.js';
 import ucs2lengthModule from 'ajv/dist/runtime/ucs2length.js';
 import { apiErrorSchema } from './http.js';
+import { contractSchemas } from './routes.js';
 import {
   meResponseSchema,
   csrfResponseSchema,
@@ -28,6 +29,19 @@ const schemas = [
   ['csrf', 'CsrfResponse', csrfResponseSchema],
   ['bootstrap-request', 'BootstrapRequest', bootstrapRequestSchema],
   ['bootstrap-response', 'BootstrapResponse', bootstrapResponseSchema],
+  ['product-page', 'ProductPage', contractSchemas.ProductPage],
+  ['product-read', 'ProductReadDto', contractSchemas.ProductRead],
+  [
+    'create-product-command',
+    'CreateProductCommand',
+    contractSchemas.CreateProductCommand,
+  ],
+  [
+    'create-product-result',
+    'CreateProductCommandResult',
+    contractSchemas.CreateProductResult,
+  ],
+  ['operation-receipt', 'OperationReceipt', contractSchemas.OperationReceipt],
 ] as const;
 await mkdir(resolve(output), { recursive: true });
 for (const [name, type, schema] of schemas) {

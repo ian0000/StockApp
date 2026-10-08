@@ -4,8 +4,17 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createContext, runInContext } from 'node:vm';
 import { build } from 'vite';
-import { apiErrorSchema, createSchemaValidator } from '@stock-app/contracts';
+import {
+  apiErrorSchema,
+  createSchemaValidator,
+  contractSchemas,
+} from '@stock-app/contracts';
 import validateBrowserError from '../src/api/generated/api-error.mjs';
+import {
+  buildProductCommand,
+  initialProductForm,
+} from '../src/products/input.js';
+import { product, strictResult, receipt } from './product-fixtures.js';
 
 test('standalone browser validation follows the shared schema and runs with dynamic code generation prohibited', async () => {
   const shared = createSchemaValidator(apiErrorSchema);
@@ -49,6 +58,103 @@ test('standalone browser validation follows the shared schema and runs with dyna
     assert.throws(() => shared(body));
     assert.equal(validateBrowserError(body), false);
   }
+});
+
+test('all Product/recovery standalone validators retain shared strict schemas under CSP', async () => {
+  const command = buildProductCommand({
+    ...initialProductForm(),
+    name: 'Agua',
+    regularSalePrice: '0',
+  });
+  for (const [name, schema, value] of [
+    [
+      'product-page',
+      contractSchemas.ProductPage,
+      { items: [product], nextCursor: null },
+    ],
+    ['product-read', contractSchemas.ProductRead, product],
+    ['create-product-command', contractSchemas.CreateProductCommand, command],
+    [
+      'create-product-result',
+      contractSchemas.CreateProductResult,
+      strictResult(command),
+    ],
+    [
+      'operation-receipt',
+      contractSchemas.OperationReceipt,
+      receipt('ACCEPTED'),
+    ],
+  ] as const) {
+    const shared = createSchemaValidator(schema);
+    shared(value);
+    const source = await readFile(
+      new URL(`../src/api/generated/${name}.mjs`, import.meta.url),
+      'utf8',
+    );
+    const functionName = source.match(/export default (validate\d+);/)?.[1];
+    assert.ok(functionName);
+    const executable =
+      source.replace(
+        /export (?:const validate = validate\d+;|default validate\d+;)/g,
+        '',
+      ) + `\n${functionName}(input)`;
+    for (const [input, expected] of [
+      [value, true],
+      [{ ...value, unrelated: true }, false],
+    ] as const) {
+      assert.equal(
+        runInContext(
+          executable,
+          createContext(
+            { input },
+            { codeGeneration: { strings: false, wasm: false } },
+          ),
+        ),
+        expected,
+      );
+      if (!expected) assert.throws(() => shared(input));
+    }
+  }
+});
+
+test('Product bundle contains approved pure Domain without Ajv/compiler or server/native infrastructure', async () => {
+  const output = await build({
+    configFile: false,
+    root: fileURLToPath(new URL('../', import.meta.url)),
+    logLevel: 'silent',
+    build: {
+      write: false,
+      minify: false,
+      lib: {
+        entry: fileURLToPath(
+          new URL('../src/products/controller.ts', import.meta.url),
+        ),
+        formats: ['es'],
+        fileName: 'products',
+      },
+    },
+  });
+  const results = Array.isArray(output) ? output : [output];
+  let domain = false;
+  let sourceTransport = false;
+  for (const result of results) {
+    assert.ok('output' in result);
+    for (const chunk of result.output) {
+      if (chunk.type !== 'chunk') continue;
+      assert.doesNotMatch(chunk.code, /new Function|\beval\s*\(/);
+      for (const module of Object.keys(chunk.modules)) {
+        if (/packages[\\/]domain/.test(module)) domain = true;
+        if (/packages[\\/]contracts[\\/]src[\\/]transport\.ts$/.test(module))
+          sourceTransport = true;
+        assert.doesNotMatch(
+          module,
+          /node_modules[\\/]ajv[\\/]|apps[\\/](api|mobile)|packages[\\/]application|expo|drizzle|pg[\\/]/,
+        );
+      }
+    }
+  }
+  assert.equal(domain, true);
+  assert.equal(sourceTransport, true);
 });
 
 test('Vite bundles the reusable client without Ajv compiler, dynamic eval, API/server or mobile/domain modules', async () => {
