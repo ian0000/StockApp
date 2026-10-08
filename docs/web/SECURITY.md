@@ -1,5 +1,11 @@
 # Seguridad y threat model
 
+API-09 backup/export: sesión oficial verified/reciente, SESSION_NOT_FRESH403 inclusivo,
+Origin y bucket durable read120/60 compartido; JSON private/no-store/requestId. Sin contenido,
+PII o credenciales en logs. Ownership en snapshot y relectura actual antes de liberar bytes,
+DELETING403 y account portability ACTIVE sin flag piloto. Sin export cap artificial; riesgo
+de materialización V1 pendiente de hardening medido. [Detalle](API-09.md).
+
 API-01 añade GET receipt con autorización/read limit/CORS/Origin/no-store/requestId existentes.
 Pruebas A/B incluyen Inventory v4/operation v7 y JSONB corrupto500 sanitizado; no payload/hash en logs.
 Motor revalida owner/verified/ACTIVE/flag tras lock Inventory, queries scoped, refs/ChangeSets allowlist.

@@ -1,10 +1,17 @@
 # Backlog de implementación Cloud/Web
 
+API-09 implementa dos export GET con BackupV1 canónico completo, snapshot RR/read-only,
+recencia inclusiva/session.createdAt y SESSION_NOT_FRESH403. DELETING403; account export ACTIVE
+permite piloto deshabilitado. Sin cap de export heredado de import. Validación local PASS;
+PR/CI/GitGuardian/merge se verifican por separado. Riesgo de memoria V1 pendiente de hardening
+medido futuro, sin ticket automático.
+No API-10/import/delete/Web/Sync/Mobile/deploy. [Detalle](API-09.md).
+
 ## Prioridad de ejecución humana — 2026-10-06
 
-Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-07→API-08→API-09, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, STOP ante cualquier fallo y STOP final API-09. No autoriza API-10/Web/Sync/Mobile/deploy.
+Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-07→API-08→API-09, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, Correcciones mecánicas/test-only con evidencia autorizadas; STOP ante decisiones humanas reales y STOP final API-09. No autoriza API-10/Web/Sync/Mobile/deploy.
 
-47 tickets: CLOUD-01..06 y API-01..08 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md)); 33 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01..06 y API-01..09 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md)); 32 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -38,7 +45,7 @@ WEB-01, otros comandos financieros/sync/import/lifecycle siguen planned; no come
 | API-06 | IMPLEMENTED — VoidSale server; [evidencia](API-06.md) | API-03 | Última inequívoca/todas líneas, estado exacto/distinta stale409/same-key replay; reversal unique/rollback |
 | API-07 | IMPLEMENTED — VoidPurchase server; [evidencia](API-07.md) | API-04 | Última inequívoca, stock/costo snapshots, archived allowed, ninguna compra antigua replay |
 | API-08 | IMPLEMENTED — Read models Home/products/detail/history/bajo; [evidencia](API-08.md) | API-03, API-04, API-05, API-06, API-07 | Scoping/keyset, métricas CONFIRMED y null completo; timezone consistente |
-| API-09 | Backup/export de seguridad consistente | API-08 | JSON V1 exacto + perfil separado, descarga privada/snapshot, no CSV/Excel |
+| API-09 | IMPLEMENTED — Backup/export de seguridad consistente | API-08 | JSON V1 exacto + perfil separado, descarga privada/snapshot, no CSV/Excel |
 | API-10 | Borrado cuenta/dataset durable | CLOUD-05, API-01 | Revocar/bloquear, purge idempotente, no bypass auth deleteUser, supresión restore |
 
 ## F2 — Sync e importación

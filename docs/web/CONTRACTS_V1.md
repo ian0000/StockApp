@@ -182,7 +182,8 @@ integridad, activación ni storage. BackupV1 referencia exactamente las ocho col
 local existente: números seguros escalados y IDs locales string; su validator Application sigue siendo
 la autoridad de integridad. No se transforma un fragmento en un objeto staging abierto.
 
-GET me/export y POST me/deletion tienen formas mínimas y recent authentication <=5min. Son planned;
+GET me/export es implemented por API-09, con recencia inclusiva/session.createdAt y SESSION_NOT_FRESH403.
+POST me/deletion conserva forma mínima/recent authentication <=5min y sigue planned;
 Better Auth delete-user permanece deshabilitado. No se crean workers ni procesos de borrado.
 
 ## OpenAPI y disponibilidad
@@ -191,9 +192,9 @@ Better Auth delete-user permanece deshabilitado. No se crean workers ni procesos
 Schemas conocidos se reutilizan mediante `$ref`. No lleva timestamps, servidores desplegados,
 Swagger UI ni cliente generado. Usa JSON Schema 2020-12 y no necesita un validator externo de red.
 
-Veintidós operaciones son implemented: las seis de foundation/ownership/receipt,
-los ocho comandos Product/Sale/Purchase/Adjustment/void y los ocho GET de API-08.
-routeContracts/OpenAPI son la lista ejecutable. Backup/export, Sync/import/lifecycle y /health
+Veinticuatro operaciones son implemented: las seis de foundation/ownership/receipt,
+los ocho comandos Product/Sale/Purchase/Adjustment/void, los ocho GET de API-08 y dos export GET de API-09.
+routeContracts/OpenAPI son la lista ejecutable. Sync/import/deletion y /health
 siguen planned.
 /health y los futuros endpoints continúan respondiendo 404. Auth `/api/auth/*` queda explícitamente
 fuera del contrato de negocio, bajo Better Auth 1.7.7; no se copian sus DTOs ni password handling.

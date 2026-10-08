@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { migrationsFolder } from '../../src/infrastructure/postgres/migrate.js';
 import { createPostgresPool } from '../../src/infrastructure/postgres/client.js';
 import { readTestDatabaseUrl } from '../../src/infrastructure/postgres/config.js';
+import { withProvisioningGate } from '../helpers/provisioning-gate.js';
 
 export function id(): string {
   return `019a0000-0000-7000-8000-${randomUUID().slice(-12)}`;
@@ -54,20 +55,35 @@ export async function disposableDatabase(t: TestContext) {
   const url = readTestDatabaseUrl(process.env);
   const admin = createPostgresPool(url);
   const name = `stockapp_test_${randomUUID().replaceAll('-', '')}`;
-  // Identifiers are generated locally; URL inputs never become SQL identifiers.
-  try {
-    await admin.query(`CREATE DATABASE "${name}"`);
-  } catch (error) {
-    await admin.end();
-    throw error;
-  }
   const target = new URL(url);
   target.pathname = `/${name}`;
   const pool = createPostgresPool(target.href);
-  t.after(async () => {
-    await pool.end();
+  let created = false;
+  // Identifiers are generated locally; URL inputs never become SQL identifiers.
+  try {
+    await withProvisioningGate(async () => {
+      await admin.query(`CREATE DATABASE "${name}"`);
+      created = true;
+      // Establish the fixture's first connection before another worker can DROP
+      // a database and force a synchronous cluster checkpoint. Business SQL stays concurrent.
+      await pool.query('SELECT 1');
+    });
+  } catch (error) {
     try {
-      await admin.query(`DROP DATABASE "${name}"`);
+      await pool.end();
+      if (created)
+        await withProvisioningGate(() =>
+          admin.query(`DROP DATABASE "${name}"`),
+        );
+    } finally {
+      await admin.end();
+    }
+    throw error;
+  }
+  t.after(async () => {
+    try {
+      await pool.end();
+      await withProvisioningGate(() => admin.query(`DROP DATABASE "${name}"`));
     } finally {
       await admin.end();
     }

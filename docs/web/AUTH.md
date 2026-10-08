@@ -1,5 +1,12 @@
 # Identidad y autorización
 
+API-09 implementa recencia de export sobre session.createdAt oficial:<=300000ms inclusivo,
+>300000403 SESSION_NOT_FRESH con envelope /v1 sanitizado/requestId. Actividad/updatedAt no
+reautentican; nuevo sign-in oficial sí. Sin cambios TTL/cookies/schema/freshAge global.
+Account export ACTIVE permite piloto deshabilitado; sin dataset200/null; DELETING403.
+Inventory backup exige ACTIVE/cloud enabled/own Inventory. Revalidación actual de sesión,
+ownership y lifecycle antes de liberar respuesta. [Detalle](API-09.md).
+
 Decisión: Better Auth alojado en la API Railway, adapter Drizzle PostgreSQL, email/password,
 sesiones opacas en DB, plugin Expo. No auth criptográfica casera, JWT ledger ni proveedor BaaS.
 SMTP estándar para verificación/reset; operador elige credenciales durante despliegue.

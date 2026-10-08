@@ -546,7 +546,7 @@ test('pagination, import metadata, lifecycle and backup V1 reject loose transpor
   );
 });
 
-test('OpenAPI is reproducible, references resolve, twenty-two routes are implemented and stale artifacts fail', async () => {
+test('OpenAPI is reproducible, references resolve, twenty-four routes are implemented and stale artifacts fail', async () => {
   const artifact = await readFile(
     new URL('../../../docs/web/openapi/stockapp-v1.json', import.meta.url),
     'utf8',
@@ -561,7 +561,7 @@ test('OpenAPI is reproducible, references resolve, twenty-two routes are impleme
     routeContracts.filter(
       (route) => route.implementationStatus === 'implemented',
     ).length,
-    22,
+    24,
   );
   assert.equal(
     document.paths['/health']?.get?.['x-stockapp-implementation-status'],

@@ -1,5 +1,13 @@
 # Pruebas y DoD futura
 
+API-09 añade test/backup/*.test.ts al required test:db y focused test:backup, sin skips ni
+cambios de workflow/PG. Recencia299999/300000/300001, auth oficial, lifecycle, ocho tablas A/B,
+historial/restorabilidad/safe BIGINT/UUID legacy, snapshot multiproducto concurrente y compiled
+PG/auth/SMTP/restart. Manifest401 anónimo/connections=0 y24 rutas. Gates secuenciales; fixes
+mecánicos/test-only con evidencia autorizados, STOP humano solo ante decisiones reales.
+Runner local serializa CREATE/DROP/primera conexión, no operaciones de negocio; bases reales
+independientes y concurrency2 global conservadas. [Detalle](API-09.md).
+
 API-08 integra read-models en required test:db y focused test:read-models: auth/A-B,
 cursor opaco scoped/filtros/keyset/límites, búsqueda/barcode exacto, costs null/cero/negative,
 detalles actuales/archived/VOIDED y snapshots, eligibility/corrupción, history, timezone/DST,

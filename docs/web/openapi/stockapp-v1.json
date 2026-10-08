@@ -8991,7 +8991,7 @@
       "get": {
         "operationId": "downloadBackup",
         "summary": "Consistent backup V1; existing numeric scaled-unit format",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "recent-cloud-inventory",
         "x-stockapp-session-max-age-seconds": 300,
         "security": [
@@ -9196,7 +9196,7 @@
       "get": {
         "operationId": "exportAccount",
         "summary": "Export own profile and consistent dataset with recent authentication",
-        "x-stockapp-implementation-status": "planned",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "recent-session",
         "x-stockapp-session-max-age-seconds": 300,
         "security": [
@@ -9828,6 +9828,7 @@
                   "INTERNAL_ERROR",
                   "UNAUTHENTICATED",
                   "EMAIL_NOT_VERIFIED",
+                  "SESSION_NOT_FRESH",
                   "CLOUD_ACCESS_DISABLED",
                   "BUSINESS_ALREADY_EXISTS",
                   "ORIGIN_NOT_ALLOWED",
@@ -13077,6 +13078,7 @@
                       "INTERNAL_ERROR",
                       "UNAUTHENTICATED",
                       "EMAIL_NOT_VERIFIED",
+                      "SESSION_NOT_FRESH",
                       "CLOUD_ACCESS_DISABLED",
                       "BUSINESS_ALREADY_EXISTS",
                       "ORIGIN_NOT_ALLOWED",
@@ -13182,6 +13184,7 @@
                       "INTERNAL_ERROR",
                       "UNAUTHENTICATED",
                       "EMAIL_NOT_VERIFIED",
+                      "SESSION_NOT_FRESH",
                       "CLOUD_ACCESS_DISABLED",
                       "BUSINESS_ALREADY_EXISTS",
                       "ORIGIN_NOT_ALLOWED",
@@ -13634,6 +13637,7 @@
                       "INTERNAL_ERROR",
                       "UNAUTHENTICATED",
                       "EMAIL_NOT_VERIFIED",
+                      "SESSION_NOT_FRESH",
                       "CLOUD_ACCESS_DISABLED",
                       "BUSINESS_ALREADY_EXISTS",
                       "ORIGIN_NOT_ALLOWED",

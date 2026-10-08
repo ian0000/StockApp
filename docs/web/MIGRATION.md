@@ -1,5 +1,10 @@
 # Primera conexión e importación
 
+API-09 materializa export/backup V1 exacto; no implementa import/restore cloud. La decisión
+humana conserva50MiB/100000movimientos exclusivamente para import inicial; no son límites del
+BackupV1, export o dataset cloud. Export completo sin truncar, en memoria V1 con riesgo documentado.
+[Detalle](API-09.md).
+
 La transición es opt-in. Instalar una versión con cloud, iniciar sesión o registrarse no sube SQLite.
 Antes del consentimiento se explica qué se enviará, destino, cuenta/negocio, privacy vigente,
 conflictos, respaldo y posibilidad de seguir local. Cuenta cloud no reemplaza cuenta de app store.
