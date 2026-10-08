@@ -1,0 +1,50 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #172b3a;
+  background: #f4f6f8;
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  box-sizing: border-box;
+  max-width: 48rem;
+  margin: clamp(1rem, 8vw, 5rem) auto;
+  padding: clamp(1rem, 5vw, 3rem);
+  background: white;
+  border: 1px solid #c7d2da;
+  border-radius: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  line-height: 1.2;
+}
+
+.eyebrow {
+  font-weight: 600;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #075e92;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 3px solid #075e92;
+  outline-offset: 4px;
+}

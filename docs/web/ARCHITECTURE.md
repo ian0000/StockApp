@@ -71,7 +71,7 @@ Un solo `ian0000/StockApp` pnpm workspace, despliegues independientes por app:
 
 ```text
 apps/mobile/                  EXISTENTE, UI + SQLite
-apps/web/                     OBJETIVO, SPA + API client
+apps/web/                     EXISTENTE foundation SPA + API client; features OBJETIVO
 apps/api/                     EXISTENTE HTTP + PostgreSQL + Better Auth/SMTP + ownership; sync OBJETIVO
 packages/domain/              EXISTENTE, reglas puras
 packages/application/         EXISTENTE, casos de uso/ports

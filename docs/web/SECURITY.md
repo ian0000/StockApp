@@ -111,7 +111,7 @@ injectado (no cambia TTL auth ni clock Domain). [Resultados](CLOUD-05.md).
 
 DEV-01/DEV-04: validar proxy sender/CIDR reales Railway; trustProxy permanece false. IP actual
 es del socket y puede agrupar usuarios detrás de proxy. No configurar forwarded trust por suposición.
-DEV-04: WAF/edge/TLS y HSTS después de verificar dominios; WEB-01: CSP de SPA.
+DEV-04: WAF/edge/TLS y HSTS después de verificar dominios; WEB-01: código compatible con CSP; headers CSP de hosting DEV-03/DEV-04.
 API-02..API-10/QA-01: seguridad por cada futura ruta financiera/deletion/export; SYNC-02/QA-01: abuso sync;
 MIG-01: límites de import; SYNC-06 y WEB-02: auth/CSRF/SecureStore clientes; DEV-05: monitoreo
 y mantenimiento periódico de rate store. No se declara release seguro/certificación ni despliegue.

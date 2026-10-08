@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-01 añade apps/web SPA React/Vite/Router/Query y cliente fetch separado con contracts; rutas foundation sin llamadas comerciales. Gates locales PASS: check1492/Web15/DB1004 y ambos builds;0fail/skips. CI/GitGuardian/merge se verifican en PR del head final. [Detalle](WEB-01.md).
+
 API-10 añade POST me/deletion y25 rutas implemented; borrado durable local, worker startup/wake/timer y CLI suppression registry export/apply. Sin migration/dependencias/Domain/Application/Mobile. Local/provider gates se registran en el reporte API-10, sin inferir infraestructura operativa ni release de privacy. [Detalle](API-10.md).
 
 Actualización API-09, base main a0fc46c: dos export GET propios con BackupV1 exacto,24 rutas
@@ -54,7 +56,7 @@ verify/reset/revoke y SMTP estándar local, documentados en [CLOUD-03](CLOUD-03.
 | pnpm monorepo `apps/*`, `packages/*` | `pnpm-workspace.yaml` |
 | Node mínimo 22.16.0, pnpm 11.0.9 | raíz `package.json`; CI fija Node 22.16.0 |
 | TypeScript strict y noEmit | `tsconfig.base.json`, tsconfig de paquetes |
-| apps/mobile/api; domain/application/shared/contracts | directorios y sus package.json |
+| apps/mobile/api/web; domain/application/shared/contracts | directorios y sus package.json |
 | Expo ~57.0.26, RN 0.86.3, React 19.2.3, Expo Router ~57.0.24 | `apps/mobile/package.json` |
 | Drizzle 0.45.2 + expo-sqlite ~57.0.3 | mismo archivo |
 | Domain puro, sin deps de plataforma | `packages/domain/src`, package.json |
@@ -133,7 +135,7 @@ integraciones reales SQLite mediante `node:sqlite`/Drizzle sqlite-proxy (por eje
 y backup-restore); también doubles en otras pruebas. No equivalen a E2E físico.
 Suite reportada históricamente: 1402 tests; resultado fresco en [VALIDATION](VALIDATION.md).
 
-Gate canónico `pnpm check` = format:check → lint → typecheck → test → build:api. `docs/` está excluido de
+Gate canónico `pnpm check` = format:check → lint → typecheck → test → build:api → build:web. `docs/` está excluido de
 Prettier: gate de formato no comprueba estos Markdown. Hay `build:api`; no hay script raíz `build`.
 CI GitHub Actions quality, en PR a main y pushes main; sin CD ni deploy EAS.
 EAS alpha APK internal y production AAB store están configurados; no se ejecutaron aquí.
