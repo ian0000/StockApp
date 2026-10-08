@@ -10,6 +10,8 @@ import { createWebAuth } from './auth/client.js';
 import { SessionController } from './auth/session.js';
 import { ProductsController } from './products/controller.js';
 import { createProductsClient } from './products/client.js';
+import { createSalesClient } from './sales/client.js';
+import { SalesController } from './sales/controller.js';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root.');
@@ -29,12 +31,20 @@ try {
     queryClient,
     window.sessionStorage,
   );
+  const sales = new SalesController(
+    createSalesClient(api),
+    products.client,
+    session,
+    queryClient,
+    window.sessionStorage,
+  );
   root.render(
     <App
       router={createAppRouter()}
       queryClient={queryClient}
       session={session}
       products={products}
+      sales={sales}
     />,
   );
 } catch {

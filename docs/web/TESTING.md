@@ -1,5 +1,10 @@
 # Pruebas y DoD futura
 
+WEB-05 añade test-first Money/cart, command/retry/reload/receipt/storage, scope/cache e historia/
+timezone/DTO y validators CSP/bundle. QueryObserver verifica refetch sin stock optimista;
+regresión Product intacta. Sin nuevas dependencias ni certificado E2E físico; gates completos
+secuenciales y PostgreSQL obligatorio. [Detalle y conteos](WEB-05.md).
+
 WEB-04 implementa Product detail/edit/archive/rentabilidad, dirty semántico exacto, conflicto explícito y recuperación CREATE/UPDATE/ARCHIVE con descriptor mínimo. Sin cambios API/Domain/DB/dependencias. Gates y entrega del head final en [WEB-04](WEB-04.md).
 
 WEB-03 añade focused Product con Money exacto, Query real/keyset/scope, barcode/DTO, alta/CSRF/UUID, pérdida de respuesta/retry/reload/receipt y storage allowlist/A-B. Validators estáticos comprobados bajo CSP y bundle con Domain puro. Sin framework/E2E browser nuevo; regresión PostgreSQL completa requerida. [Detalle y conteos](WEB-03.md).
