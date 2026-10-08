@@ -8,6 +8,10 @@ import { createAppRoutes } from '../src/app/router.js';
 import { FoundationPage } from '../src/routes/foundation.js';
 import { fixture, me, deferred } from './session-fixtures.js';
 import { PrivateBoundary } from '../src/routes/access.js';
+import { createProductsClient } from '../src/products/client.js';
+import { ProductsController } from '../src/products/controller.js';
+import { createApiClient } from '../src/api/client.js';
+import { memoryStorage, json } from './product-fixtures.js';
 
 async function initialized(router: ReturnType<typeof createMemoryRouter>) {
   if (router.state.initialized) return;
@@ -22,6 +26,18 @@ async function initialized(router: ReturnType<typeof createMemoryRouter>) {
 }
 async function renderPath(path: string, context = fixture()) {
   await context.controller.refresh();
+  const products = new ProductsController(
+    createProductsClient(
+      createApiClient({
+        baseUrl: 'https://api.example.test',
+        fetcher: async () => json({ items: [], nextCursor: null }),
+      }),
+    ),
+    context.controller,
+    context.queries,
+    memoryStorage().storage,
+    () => true,
+  );
   const router = createMemoryRouter(createAppRoutes(), {
     initialEntries: [path],
   });
@@ -31,9 +47,11 @@ async function renderPath(path: string, context = fixture()) {
       router={router}
       queryClient={context.queries}
       session={context.controller}
+      products={products}
     />,
   );
   router.dispose();
+  products.dispose();
   context.controller.dispose();
   context.queries.clear();
   return html;
@@ -62,8 +80,6 @@ test('enabled root shows real inventory metadata, semantic navigation, active st
 });
 test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
   for (const path of [
-    '/products',
-    '/products/new',
     '/products/fixture',
     '/products/fixture/edit',
     '/sales/new',
@@ -78,9 +94,15 @@ test('private commercial placeholders render inside authenticated shell includin
     const html = await renderPath(path);
     assert.ok(html.includes('Navegación principal'));
     assert.ok(html.includes('Las pantallas se incorporarán por etapas'));
-    if (path === '/products/new') assert.ok(html.includes('Nuevo producto'));
     if (path.endsWith('/edit')) assert.ok(html.includes('Editar producto'));
   }
+});
+test('WEB-03 list/new are real forms while product details remain authenticated placeholders', async () => {
+  assert.ok((await renderPath('/products')).includes('Buscar productos'));
+  const create = await renderPath('/products/new');
+  assert.ok(create.includes('Nuevo producto'));
+  assert.ok(create.includes('Stock inicial'));
+  assert.ok(!create.includes('Las pantallas se incorporarán por etapas'));
 });
 test('public auth screens expose labeled usable forms and no private shell', async () => {
   for (const path of [

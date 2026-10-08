@@ -56,6 +56,7 @@ export class SessionController {
   private view: SessionView = { kind: 'LOADING_SESSION', generation: 0 };
   private identity: SessionIdentity | null = null;
   private listeners = new Set<() => void>();
+  private boundaryListeners = new Set<() => void>();
   private pending?: AbortController;
   private epoch = 0;
   private authBusy = false;
@@ -71,11 +72,18 @@ export class SessionController {
       this.listeners.delete(listener);
     };
   };
+  onBoundary = (listener: () => void) => {
+    this.boundaryListeners.add(listener);
+    return () => {
+      this.boundaryListeners.delete(listener);
+    };
+  };
   private publish(view: SessionView) {
     this.view = view;
     for (const listener of this.listeners) listener();
   }
   private boundary() {
+    for (const listener of this.boundaryListeners) listener();
     this.pending?.abort();
     this.epoch++;
     this.identity = null;
@@ -131,6 +139,9 @@ export class SessionController {
         this.identity?.userId !== next.userId ||
         this.identity?.sessionId !== next.sessionId
       ) {
+        // First hydration preserves the minimal reload descriptor; a known identity change clears it.
+        if (this.identity)
+          for (const listener of this.boundaryListeners) listener();
         this.queries.clear();
         this.view = {
           kind: 'AUTHENTICATED_LOADING_ME',
@@ -231,6 +242,21 @@ export class SessionController {
   }
   expire() {
     this.anonymous();
+  }
+  handleBusinessError(error: unknown) {
+    if (!(error instanceof ApiClientError)) return;
+    if (error.status === 401) this.anonymous();
+    else if (
+      error.status === 403 &&
+      [
+        'EMAIL_NOT_VERIFIED',
+        'CLOUD_ACCESS_DISABLED',
+        'BUSINESS_DELETING',
+      ].includes(error.apiError?.error.code ?? '')
+    ) {
+      this.queries.clear();
+      this.failed(error);
+    }
   }
   dispose() {
     this.pending?.abort();

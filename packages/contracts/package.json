@@ -8,6 +8,12 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./transport": {
+      "browser": "./src/transport.ts",
+      "development": "./src/transport.ts",
+      "types": "./dist/transport.d.ts",
+      "default": "./dist/transport.js"
     }
   },
   "scripts": {

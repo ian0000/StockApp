@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-03 añade focused Product con Money exacto, Query real/keyset/scope, barcode/DTO, alta/CSRF/UUID, pérdida de respuesta/retry/reload/receipt y storage allowlist/A-B. Validators estáticos comprobados bajo CSP y bundle con Domain puro. Sin framework/E2E browser nuevo; regresión PostgreSQL completa requerida. [Detalle y conteos](WEB-03.md).
+
 WEB-02 extiende Web con focused auth/session isolation/guards/shell/onboarding/CSRF/DTO: cliente oficial con fake fetch, Query real, controllers y render ReactDOM. Sin nueva dependencia ni claim E2E browser. Gates existentes y regresión PG/auth/ownership/security/compiled HTTP se conservan. [Detalle](WEB-02.md).
 
 WEB-01 integra tests node:test/tsx/ReactDOM y bundle Vite en workspace: rutas/loading/error/provider, config/fetch/ApiError/valores exactos y validator CSP-safe. Sin nueva dependencia de tests ni E2E browser certificado; required gates existentes intactos. [Detalle](WEB-01.md).
