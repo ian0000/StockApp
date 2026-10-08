@@ -1,5 +1,12 @@
 # Auditoría del estado actual
 
+Actualización API-09, base main a0fc46c: dos export GET propios con BackupV1 exacto,24 rutas
+implemented, snapshot RR/read-only y recencia inclusiva/session.createdAt. Decisiones humanas
+SESSION_NOT_FRESH403 y export completo sin cap heredado del import incorporadas. Materialización
+en memoria sigue como riesgo. Validación local PASS (1477unit/959DB,0fail/0skip); CI/GitGuardian/
+merge se verifican en el PR del head final. Provisioning test-only coordinado sin cambios de
+pool/timeout/concurrency global/schema/producción. [Detalle](API-09.md).
+
 Actualización API-08 (2026-10-07), base main `726d9de`: ocho GET scoped PostgreSQL reales,
 keyset opaco, dashboard por timezone y detalles históricos con metadata Product actual nullable.
 Veintidós rutas implemented; Domain/Application/Mobile/schema/migrations intactos.

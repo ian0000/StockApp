@@ -1,5 +1,12 @@
 # CI/CD futuro
 
+API-09 extiende test:db required con backup/export y24 rutas OpenAPI, sin CI relaxation, skips,
+workflows/dependencias/configuración PG nuevos. Local gates secuenciales y CI/GitGuardian del
+head final PASS antes de merge normal; main limpio0/0 y STOP final API-09, sin API-10/deploy.
+Correcciones mecánicas/test-only autorizadas con evidencia; STOP humano ante decisiones reales.
+El runner coordina solo provisioning de disposable DB; workers y carreras de negocio permanecen
+concurrentes, sin retries ni cambios de recursos/timeouts CI. [Detalle](API-09.md).
+
 API-08 añade test/read-models/*.test.ts al test:db required existente, sin cambiar workflow,
 continue-on-error, skips, dependencias ni parámetros PG. OpenAPI incluye ocho GET reales,
 SaleDetailItem reutilizable y22 rutas implemented; check detecta drift. Gates locales pesados

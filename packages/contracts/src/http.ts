@@ -23,6 +23,7 @@ export const apiErrorSchema = {
             'INTERNAL_ERROR',
             'UNAUTHENTICATED',
             'EMAIL_NOT_VERIFIED',
+            'SESSION_NOT_FRESH',
             'CLOUD_ACCESS_DISABLED',
             'BUSINESS_ALREADY_EXISTS',
             'ORIGIN_NOT_ALLOWED',

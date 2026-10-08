@@ -10,6 +10,7 @@ import { registerAdjustmentRoutes } from './adjustments/routes.js';
 import { registerVoidSaleRoutes } from './void-sales/routes.js';
 import { registerVoidPurchaseRoutes } from './void-purchases/routes.js';
 import { registerReadRoutes } from './read-models/routes.js';
+import { registerBackupRoutes } from './backup/routes.js';
 import { registerProductRoutes } from './products/routes.js';
 import { registerOwnershipRoutes } from './ownership/routes.js';
 
@@ -54,6 +55,7 @@ export async function startServer(): Promise<void> {
         runtime.database,
         runtime.config.secret,
       );
+      registerBackupRoutes(app, runtime.auth, runtime.database);
     }
     await app.listen(readServerConfig(process.env));
   } catch {

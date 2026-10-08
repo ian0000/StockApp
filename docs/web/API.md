@@ -1,5 +1,11 @@
 # Contratos API V1
 
+API-09 implementa backup/export propios con BackupV1 numérico canónico, snapshot PostgreSQL
+REPEATABLE READ READ ONLY y24 rutas implemented. CreatedAt oficial<=300000ms inclusivo;
+403 SESSION_NOT_FRESH conserva requestId. Account export ACTIVE ignora flag piloto,
+no dataset200/null y DELETING403 CLOUD_ACCESS_DISABLED. Sin export cap heredado del import;
+materialización en memoria y riesgo pendiente de hardening. [Detalle](API-09.md).
+
 API-08 implementa ocho GET de inventario: dashboard, products, by-barcode, Product detail,
 stock-low, Sale/Purchase detail e history. Veintidós rutas implemented; lista viva keyset,
 request snapshot READ ONLY/REPEATABLE READ, auth/ownership/rate/no-store existentes.
@@ -139,7 +145,7 @@ Respuestas auth/dataset `Cache-Control: no-store`; error incluye requestId.
 | GET | /v1/imports/:id | Progreso/validación | U propietaria | Lectura | Query scoped |
 | POST | /v1/imports/:id/commit | Activar dataset validado | U propietaria | Key/hash | Única tx de activación; ver MIGRATION |
 | DELETE | /v1/imports/:id | Cancelar staging | U propietaria | Sí | Nunca elimina dataset activo |
-| GET | /v1/inventories/I/backup | JSON de seguridad consistente | R + ownership | Lectura | Snapshot repeatable read, stream/download |
+| GET | /v1/inventories/I/backup | JSON de seguridad consistente | R + ownership | Lectura | Snapshot repeatable read, descarga canónica en memoria |
 | GET | /v1/me/export | Perfil + dataset propio | R | Lectura | Export consistente |
 | POST | /v1/me/deletion | Solicitar borrar cuenta y cloud | R | Key | Desactivar/revocar + job durable |
 | GET | /health | Readiness Railway | No | Lectura | Ping DB + versión schema mínima, timeout |
@@ -167,7 +173,7 @@ mensajes UI simples. requestId server-generated se retorna también en cabecera.
 | --- | --- | --- |
 | 400 | VALIDATION_ERROR / UNSUPPORTED_PROTOCOL | Corregir input/actualizar cliente; cero writes |
 | 401 | UNAUTHENTICATED | Login; Mobile conserva pending |
-| 403 | CLOUD_ACCESS_DISABLED / EMAIL_NOT_VERIFIED | Informar habilitación/verificación |
+| 403 | CLOUD_ACCESS_DISABLED / EMAIL_NOT_VERIFIED / SESSION_NOT_FRESH | Informar habilitación/verificación o volver a autenticar |
 | 404 | NOT_FOUND | Sin revelar pertenencia ajena |
 | 409 | REVISION_CONFLICT / COST_SNAPSHOT_CONFLICT / IDEMPOTENCY_KEY_REUSED / IMPORT_NOT_EMPTY | Revisión explícita, nunca retry nuevo ID automático |
 | 410 | SYNC_RESET_REQUIRED / SNAPSHOT_EXPIRED | Snapshot coherente preservando pendientes |
