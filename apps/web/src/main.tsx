@@ -12,6 +12,8 @@ import { ProductsController } from './products/controller.js';
 import { createProductsClient } from './products/client.js';
 import { createSalesClient } from './sales/client.js';
 import { SalesController } from './sales/controller.js';
+import { createPurchasesClient } from './purchases/client.js';
+import { PurchasesController } from './purchases/controller.js';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root.');
@@ -38,6 +40,13 @@ try {
     queryClient,
     window.sessionStorage,
   );
+  const purchases = new PurchasesController(
+    createPurchasesClient(api),
+    products,
+    session,
+    queryClient,
+    window.sessionStorage,
+  );
   root.render(
     <App
       router={createAppRouter()}
@@ -45,6 +54,7 @@ try {
       session={session}
       products={products}
       sales={sales}
+      purchases={purchases}
     />,
   );
 } catch {

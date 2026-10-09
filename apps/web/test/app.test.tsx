@@ -14,6 +14,8 @@ import { createApiClient } from '../src/api/client.js';
 import { memoryStorage, json } from './product-fixtures.js';
 import { SalesController } from '../src/sales/controller.js';
 import { createSalesClient } from '../src/sales/client.js';
+import { createPurchasesClient } from '../src/purchases/client.js';
+import { PurchasesController } from '../src/purchases/controller.js';
 
 async function initialized(router: ReturnType<typeof createMemoryRouter>) {
   if (router.state.initialized) return;
@@ -57,6 +59,19 @@ async function renderPath(path: string, context = fixture()) {
     () => true,
   );
   await initialized(router);
+  const purchases = new PurchasesController(
+    createPurchasesClient(
+      createApiClient({
+        baseUrl: 'https://api.example.test',
+        fetcher: async () => json({}),
+      }),
+    ),
+    products,
+    context.controller,
+    context.queries,
+    memoryStorage().storage,
+    () => true,
+  );
   const html = renderToStaticMarkup(
     <App
       router={router}
@@ -64,11 +79,13 @@ async function renderPath(path: string, context = fixture()) {
       session={context.controller}
       products={products}
       sales={sales}
+      purchases={purchases}
     />,
   );
   router.dispose();
   products.dispose();
   sales.dispose();
+  purchases.dispose();
   context.controller.dispose();
   context.queries.clear();
   return html;
@@ -97,8 +114,6 @@ test('enabled root shows real inventory metadata, semantic navigation, active st
 });
 test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
   for (const path of [
-    '/purchases/new',
-    '/purchases/fixture',
     '/adjustments/new',
     '/history',
     '/settings',
@@ -136,6 +151,21 @@ test('Sale new/detail replace placeholders with a real cart and scoped loading s
   const detail = await renderPath('/sales/fixture');
   assert.ok(detail.includes('Cargando venta'));
   assert.ok(!detail.includes('Las pantallas se incorporarán por etapas'));
+});
+test('Purchase new/detail replace placeholders with empty cost and real loading routes', async () => {
+  const html = await renderPath('/purchases/new');
+  for (const label of [
+    'Nueva compra',
+    'Buscar productos',
+    'Costo de compra por unidad',
+    'Registrar compra',
+  ])
+    assert.ok(html.includes(label));
+  assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
+  assert.match(html, /id="purchase-unit-cost"[^>]*value=""/);
+  assert.ok(
+    (await renderPath('/purchases/fixture')).includes('Cargando compra'),
+  );
 });
 test('public auth screens expose labeled usable forms and no private shell', async () => {
   for (const path of [

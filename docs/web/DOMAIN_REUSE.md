@@ -1,5 +1,10 @@
 # Reutilización del dominio
 
+WEB-06 añade únicamente @stock-app/application workspace autorizado para canEditPurchaseMargin,
+getInitialPurchaseMargin y recommendPurchasePrice. Adaptación DTO con Money/Percentage existentes;
+sin políticas ni promedio duplicados en Web. Bundle tree-shakes root a pricing puro sin use cases/
+repositories/infraestructura; Application source intacta. [Evidencia](WEB-06.md).
+
 WEB-03 importa Money puro de @stock-app/domain para parsear hasta seis decimales y display exacto; codecs/contracts separados del compiler server. Ninguna fórmula financiera nueva ni dependencia Application/Mobile/DB en Web. Las reglas Product existentes guían validación/trim/null y stock/costo inicial. [Detalle](WEB-03.md).
 
 API-08 usa mappers existentes y reglas Domain de bajo stock/margin/markup y validación pura

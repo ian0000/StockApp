@@ -1,5 +1,10 @@
 # Auditoría del estado actual
 
+WEB-06 implementa compra de un Product con State exacto, confirmación autoritativa, margen exacto
+y Product UPDATE separado. Reload accepted no reconstruye analysis/editor; sin costo/default arbitrario.
+Única dependencia interna Application autorizada; fuentes API/Domain/Application/Mobile intactas.
+[Detalle y gates](WEB-06.md). WEB-07 pendiente.
+
 WEB-05 implementa Sale cart/register/detail, Money semántico exacto, pre-submit Product refresh,
 cost evidence y warning negativo. Ciclo pending común conserva Products; sin stock optimista ni
 storage comercial. Gates y entrega del head final en [WEB-05](WEB-05.md). WEB-06 pendiente.

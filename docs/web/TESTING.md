@@ -1,5 +1,10 @@
 # Pruebas y DoD futura
 
+WEB-06 añade test-first Money/form/Percentage y focused State exacto/retry/reload/price-update
+separado/historia/DTO/scoping/storage. Application pricing bundle puro y revalidación de la misma
+sesión vs navegación real verificados. Regresiones Product/Sale y PostgreSQL completas requeridas.
+[Conteos y límites del smoke local](WEB-06.md).
+
 WEB-05 añade test-first Money/cart, command/retry/reload/receipt/storage, scope/cache e historia/
 timezone/DTO y validators CSP/bundle. QueryObserver verifica refetch sin stock optimista;
 regresión Product intacta. Sin nuevas dependencias ni certificado E2E físico; gates completos

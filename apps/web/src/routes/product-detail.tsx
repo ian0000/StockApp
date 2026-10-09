@@ -227,6 +227,9 @@ function ProductDetail({
       {message && <p role="status">{message}</p>}
       <nav aria-label="Acciones del producto">
         <Link to={`/products/${item.product.id}/edit`}>Editar producto</Link>
+        <Link to="/purchases/new" state={{ productId: item.product.id }}>
+          Registrar compra
+        </Link>
         <Link
           to={`/adjustments/new?productId=${encodeURIComponent(item.product.id)}`}
         >

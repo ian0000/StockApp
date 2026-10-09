@@ -8,8 +8,6 @@ import { PrivateBoundary, HomePage } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
 const foundationRoutes = [
-  ['/purchases/new', 'Nueva compra'],
-  ['/purchases/:id', 'Detalle de compra'],
   ['/adjustments/new', 'Ajuste de stock'],
   ['/history', 'Historial'],
   ['/settings', 'Configuración'],
@@ -98,6 +96,16 @@ export function createAppRoutes(): RouteObject[] {
                   path === '/sales/new'
                     ? (await import('../routes/sales.js')).NewSalePage
                     : (await import('../routes/sales.js')).SaleDetailPage,
+              }),
+            })),
+            ...(['/purchases/new', '/purchases/:id'] as const).map((path) => ({
+              path,
+              lazy: async () => ({
+                Component:
+                  path === '/purchases/new'
+                    ? (await import('../routes/purchases.js')).NewPurchasePage
+                    : (await import('../routes/purchases.js'))
+                        .PurchaseDetailPage,
               }),
             })),
             ...foundationRoutes.map(([path, title]) => ({
