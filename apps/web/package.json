@@ -16,6 +16,7 @@
     "test": "pnpm generate:client && tsx --conditions=development --test test/*.test.ts test/*.test.tsx"
   },
   "dependencies": {
+    "@stock-app/application": "workspace:*",
     "@stock-app/contracts": "workspace:*",
     "@stock-app/domain": "workspace:*",
     "@tanstack/react-query": "5.104.1",

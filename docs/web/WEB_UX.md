@@ -1,5 +1,10 @@
 # Arquitectura UX Web
 
+WEB-06 materializa Nueva compra (Product/quantity/costo explícito vacío por defecto), barcode teclado,
+confirmación Compra registrada y margen editable sin default. Mantener no escribe; Actualizar envía
+solo Product, sin repetir compra aunque falle. Detalle histórico sin editor reconstruido tras reload.
+[Precisión, incertidumbre y lifecycle](WEB-06.md).
+
 WEB-05 materializa Nueva venta y detalle: búsqueda/Enter/barcode teclado, carrito único por Product,
 precio exacto editable, qty±/Quitar, warning Tienes/Venderás/Quedará con confirmación explícita,
 retry/check/descarte consciente e historia nullable/VOIDED sin anulación. Cart React en memoria

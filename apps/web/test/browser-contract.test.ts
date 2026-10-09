@@ -16,6 +16,13 @@ import {
 } from '../src/products/input.js';
 import { product, strictResult, receipt } from './product-fixtures.js';
 import { prepareSale } from '../src/sales/cart.js';
+import { buildPurchase } from '../src/purchases/input.js';
+import {
+  purchaseProduct,
+  purchaseForm,
+  purchaseResult,
+  purchaseDetail,
+} from './purchase-fixtures.js';
 import {
   initialCart,
   saleProduct,
@@ -79,6 +86,7 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
     regularSalePrice: '0',
   });
   const sale = prepareSale(initialCart(), [saleProduct]).command;
+  const purchase = buildPurchase(purchaseForm(), purchaseProduct);
   for (const [name, schema, value] of [
     [
       'product-page',
@@ -93,6 +101,21 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
       saleResult(sale),
     ],
     ['sale-detail', contractSchemas.SaleDetail, saleDetail(sale)],
+    [
+      'register-purchase-command',
+      contractSchemas.RegisterPurchaseCommand,
+      purchase,
+    ],
+    [
+      'register-purchase-result',
+      contractSchemas.RegisterPurchaseResult,
+      purchaseResult(purchase),
+    ],
+    [
+      'purchase-detail',
+      contractSchemas.PurchaseDetail,
+      purchaseDetail(purchase),
+    ],
     [
       'update-product-command',
       contractSchemas.UpdateProductCommand,
@@ -221,4 +244,45 @@ test('Vite bundles the reusable client without Ajv compiler, dynamic eval, API/s
         );
     }
   }
+});
+test('Purchase bundle tree-shakes Application root to pure pricing policy without use cases, repositories, API, Mobile or native modules', async () => {
+  const output = await build({
+    configFile: false,
+    root: fileURLToPath(new URL('../', import.meta.url)),
+    logLevel: 'silent',
+    build: {
+      write: false,
+      minify: false,
+      lib: {
+        entry: fileURLToPath(
+          new URL('../src/purchases/controller.ts', import.meta.url),
+        ),
+        formats: ['es'],
+        fileName: 'purchases',
+      },
+    },
+  });
+  let pricing = false;
+  for (const result of Array.isArray(output) ? output : [output]) {
+    assert.ok('output' in result);
+    for (const chunk of result.output) {
+      if (chunk.type !== 'chunk') continue;
+      assert.doesNotMatch(
+        chunk.code,
+        /new Function|\beval\s*\(|class RegisterPurchaseUseCase|class UpdateProductUseCase/,
+      );
+      for (const [module, info] of Object.entries(chunk.modules)) {
+        if (!info.renderedLength) continue;
+        if (/packages[\\/]application/.test(module)) {
+          assert.match(module, /purchase-price-analysis\.ts$/);
+          pricing = true;
+        }
+        assert.doesNotMatch(
+          module,
+          /node_modules[\\/]ajv[\\/]|apps[\\/](api|mobile)|expo|drizzle|pg[\\/]/,
+        );
+      }
+    }
+  }
+  assert.equal(pricing, true);
 });
