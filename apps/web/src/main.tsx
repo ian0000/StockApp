@@ -19,6 +19,8 @@ import { AdjustmentsController } from './adjustments/controller.js';
 import { createReadsClient } from './reads/client.js';
 import { createVoidsClient } from './voids/client.js';
 import { VoidController } from './voids/controller.js';
+import { AccountController } from './account/controller.js';
+import { createAccountClient } from './account/client.js';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root.');
@@ -64,6 +66,7 @@ try {
       router={createAppRouter()}
       queryClient={queryClient}
       session={session}
+      account={new AccountController(createAccountClient(api), session)}
       products={products}
       sales={sales}
       purchases={purchases}

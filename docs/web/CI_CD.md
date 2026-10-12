@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-10 mantiene workflow/PG/recursos/pools/timeouts/concurrency y CI/GitGuardian/reviews obligatorios antes de merge normal/main clean0/0. DEV→UAT→aprobación humana→PROD; no provisioning/deployment ni continuación automática. [Detalle](WEB-10.md).
+
 WEB-09 conserva CI/resources/PG/pools/timeouts/concurrency/gates y GitGuardian antes de merge normal/main clean0/0. GET State es excepción API/route-contract aprobada, sin deployment. DEV→UAT→aceptación humana→PROD sigue separado; STOP tras WEB-09. [Detalle](WEB-09.md).
 
 WEB-08 conserva CI/workflow/recursos/pools/timeouts/concurrency, gates secuenciales y CI/GitGuardian del head final antes de merge/main clean0/0. DEV sigue local+GitHub CI; cualquier actualización arquitectónica UAT-first o deployment requiere tarea separada. [Detalle](WEB-08.md).

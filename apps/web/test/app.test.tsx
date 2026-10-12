@@ -19,6 +19,8 @@ import { PurchasesController } from '../src/purchases/controller.js';
 import { createAdjustmentsClient } from '../src/adjustments/client.js';
 import { AdjustmentsController } from '../src/adjustments/controller.js';
 import { createReadsClient } from '../src/reads/client.js';
+import { AccountController } from '../src/account/controller.js';
+import { createAccountClient } from '../src/account/client.js';
 
 async function initialized(router: ReturnType<typeof createMemoryRouter>) {
   if (router.state.initialized) return;
@@ -88,11 +90,21 @@ async function renderPath(path: string, context = fixture()) {
     memoryStorage().storage,
     () => true,
   );
+  const account = new AccountController(
+    createAccountClient(
+      createApiClient({
+        baseUrl: 'https://api.example.test',
+        fetcher: async () => json({}),
+      }),
+    ),
+    context.controller,
+  );
   const html = renderToStaticMarkup(
     <App
       router={router}
       queryClient={context.queries}
       session={context.controller}
+      account={account}
       products={products}
       sales={sales}
       purchases={purchases}
@@ -106,6 +118,7 @@ async function renderPath(path: string, context = fixture()) {
     />,
   );
   router.dispose();
+  account.dispose();
   products.dispose();
   sales.dispose();
   purchases.dispose();
@@ -138,12 +151,12 @@ test('enabled root shows Home route, metadata, semantic navigation, active state
   assert.ok(html.includes('href="#app-content"'));
   assert.ok(!html.includes('Rutas de demostración'));
 });
-test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
+test('Settings and Privacy replace placeholders inside their verified account boundary', async () => {
   for (const path of ['/settings', '/settings/privacy']) {
     const html = await renderPath(path);
-    assert.ok(html.includes('Navegación principal'));
-    assert.ok(html.includes('Las pantallas se incorporarán por etapas'));
-    if (path.endsWith('/edit')) assert.ok(html.includes('Editar producto'));
+    assert.ok(html.includes('Navegación de cuenta'));
+    assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
+    assert.ok(html.includes('Datos y privacidad'));
   }
 });
 test('History is a real scoped read route, no foundation placeholder', async () => {

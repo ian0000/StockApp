@@ -1158,8 +1158,10 @@ restaurado y ofrece volver a Inicio. Los errores de formato, versión y contenid
 comprensibles; solo se afirma que los datos anteriores no cambiaron cuando la transacción hizo
 rollback.
 
-En Web crear y restaurar se muestran como `Solo móvil`; no existe persistencia ficticia. Backup y
-restauración de seguridad no se presentan como exportaciones comerciales.
+Crear y restaurar copias locales siguen siendo capacidades Mobile. Web permite descargar el respaldo
+cloud existente y exportar la cuenta según [WEB-10](web/WEB-10.md), con recencia y acceso autorizados;
+no incorpora restore/import ni persistencia ficticia. Backup y restauración de seguridad no se
+presentan como exportaciones comerciales.
 
 ## Legal y soporte — STORE-READINESS-001
 
