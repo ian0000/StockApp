@@ -16,6 +16,8 @@ import { SalesController } from '../src/sales/controller.js';
 import { createSalesClient } from '../src/sales/client.js';
 import { createPurchasesClient } from '../src/purchases/client.js';
 import { PurchasesController } from '../src/purchases/controller.js';
+import { createAdjustmentsClient } from '../src/adjustments/client.js';
+import { AdjustmentsController } from '../src/adjustments/controller.js';
 
 async function initialized(router: ReturnType<typeof createMemoryRouter>) {
   if (router.state.initialized) return;
@@ -72,6 +74,19 @@ async function renderPath(path: string, context = fixture()) {
     memoryStorage().storage,
     () => true,
   );
+  const adjustments = new AdjustmentsController(
+    createAdjustmentsClient(
+      createApiClient({
+        baseUrl: 'https://api.example.test',
+        fetcher: async () => json({}),
+      }),
+    ),
+    products,
+    context.controller,
+    context.queries,
+    memoryStorage().storage,
+    () => true,
+  );
   const html = renderToStaticMarkup(
     <App
       router={router}
@@ -80,12 +95,14 @@ async function renderPath(path: string, context = fixture()) {
       products={products}
       sales={sales}
       purchases={purchases}
+      adjustments={adjustments}
     />,
   );
   router.dispose();
   products.dispose();
   sales.dispose();
   purchases.dispose();
+  adjustments.dispose();
   context.controller.dispose();
   context.queries.clear();
   return html;
@@ -113,12 +130,7 @@ test('enabled root shows real inventory metadata, semantic navigation, active st
   assert.ok(!html.includes('Rutas de demostración'));
 });
 test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
-  for (const path of [
-    '/adjustments/new',
-    '/history',
-    '/settings',
-    '/settings/privacy',
-  ]) {
+  for (const path of ['/history', '/settings', '/settings/privacy']) {
     const html = await renderPath(path);
     assert.ok(html.includes('Navegación principal'));
     assert.ok(html.includes('Las pantallas se incorporarán por etapas'));
@@ -136,6 +148,19 @@ test('Product list/new/detail/edit are real routes with distinct loading screens
     assert.ok(html.includes('Cargando producto'));
     assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
   }
+});
+test('Adjustment route replaces placeholder with physical count and review controls', async () => {
+  const html = await renderPath('/adjustments/new');
+  for (const label of [
+    'Ajustar stock',
+    'Conteo físico',
+    'Buscar productos',
+    'Código de barras',
+    'Revisar conteo',
+  ])
+    assert.ok(html.includes(label));
+  assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
+  assert.match(html, /id="adjustment-actualStock"[^>]*value=""/);
 });
 test('Sale new/detail replace placeholders with a real cart and scoped loading screen', async () => {
   const cart = await renderPath('/sales/new');

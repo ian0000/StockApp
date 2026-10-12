@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+WEB-07 reutiliza Money, createStockAdjustment y applyStockAdjustment puros para validar input/evidencia; ningún promedio alterno en React ni source Domain/Application modificado. [Detalle](WEB-07.md).
+
 WEB-06 añade únicamente @stock-app/application workspace autorizado para canEditPurchaseMargin,
 getInitialPurchaseMargin y recommendPurchasePrice. Adaptación DTO con Money/Percentage existentes;
 sin políticas ni promedio duplicados en Web. Bundle tree-shakes root a pricing puro sin use cases/

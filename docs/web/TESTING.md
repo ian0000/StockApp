@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-07 añade conteo/costo exacto, revisión fresca, command/result/receipt, privacidad/lifecycle/conflicto, CSP y regresiones. Smoke con fixture sintético local; no certificación QA-03. [Detalle y gates](WEB-07.md).
+
 WEB-06 añade test-first Money/form/Percentage y focused State exacto/retry/reload/price-update
 separado/historia/DTO/scoping/storage. Application pricing bundle puro y revalidación de la misma
 sesión vs navegación real verificados. Regresiones Product/Sale y PostgreSQL completas requeridas.

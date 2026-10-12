@@ -65,6 +65,16 @@ const schemas = [
   ],
   ['purchase-detail', 'PurchaseDetailDto', contractSchemas.PurchaseDetail],
   [
+    'adjust-stock-command',
+    'AdjustStockCommand',
+    contractSchemas.AdjustStockCommand,
+  ],
+  [
+    'adjust-stock-result',
+    'AdjustStockCommandResult',
+    contractSchemas.AdjustStockResult,
+  ],
+  [
     'update-product-command',
     'UpdateProductCommand',
     contractSchemas.UpdateProductCommand,

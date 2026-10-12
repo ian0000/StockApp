@@ -1,5 +1,7 @@
 # Arquitectura UX Web
 
+WEB-07 materializa conteo físico vacío, diferencia con signo, motivos según entrada/salida y costo aceptado. Revisar/Confirmar refrescan State; conflictos conservan el conteo. Sin Undo ni History nueva. [Detalle](WEB-07.md).
+
 WEB-06 materializa Nueva compra (Product/quantity/costo explícito vacío por defecto), barcode teclado,
 confirmación Compra registrada y margen editable sin default. Mantener no escribe; Actualizar envía
 solo Product, sin repetir compra aunque falle. Detalle histórico sin editor reconstruido tras reload.

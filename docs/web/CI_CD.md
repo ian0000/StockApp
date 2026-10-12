@@ -1,8 +1,10 @@
 # CI/CD futuro
 
+WEB-07 conserva workflow/recursos/pools/timeouts/concurrency y ejecuta gates secuenciales completos. CI y GitGuardian del head final requeridos antes de merge normal; main clean0/0 y STOP. [Detalle](WEB-07.md).
+
 WEB-06 conserva CI/recursos/timeout/concurrency. Importer interno Application autorizado y frozen
 lockfile; Web/OpenAPI/check/API build/PostgreSQL/generadores completos. Requiere CI/GitGuardian
-del head final PASS antes de merge normal, main limpio0/0 y STOP; WEB-07/deploy pendientes. [Detalle](WEB-06.md).
+del head final PASS antes de merge normal, main limpio0/0 y STOP; Deployment pendiente. [Detalle](WEB-06.md).
 
 WEB-05 conserva workflow/recursos/timeout/concurrency y gates existentes. Web/OpenAPI/check/
 API build/test:db/generadores completos; CI y GitGuardian PASS del head final antes de merge
