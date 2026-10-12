@@ -4,11 +4,10 @@ import {
   useNavigation,
   type RouteObject,
 } from 'react-router';
-import { PrivateBoundary, HomePage } from '../routes/access.js';
+import { PrivateBoundary } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
 const foundationRoutes = [
-  ['/history', 'Historial'],
   ['/settings', 'Configuración'],
   ['/settings/privacy', 'Privacidad'],
 ] as const;
@@ -62,7 +61,18 @@ export function createAppRoutes(): RouteObject[] {
         {
           Component: PrivateBoundary,
           children: [
-            { index: true, Component: HomePage },
+            {
+              index: true,
+              lazy: async () => ({
+                Component: (await import('../routes/home.js')).HomePage,
+              }),
+            },
+            {
+              path: '/history',
+              lazy: async () => ({
+                Component: (await import('../routes/history.js')).HistoryPage,
+              }),
+            },
             {
               path: '/products',
               lazy: async () => ({

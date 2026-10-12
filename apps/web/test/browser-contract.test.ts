@@ -18,6 +18,7 @@ import { product, strictResult, receipt } from './product-fixtures.js';
 import { prepareSale } from '../src/sales/cart.js';
 import { buildPurchase } from '../src/purchases/input.js';
 import { buildAdjustment } from '../src/adjustments/input.js';
+import { dashboard, historyEntries } from './read-fixtures.js';
 import {
   adjustmentForm,
   adjustmentProduct,
@@ -95,6 +96,12 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   const purchase = buildPurchase(purchaseForm(), purchaseProduct);
   const adjustment = buildAdjustment(adjustmentForm(), adjustmentProduct);
   for (const [name, schema, value] of [
+    ['dashboard', contractSchemas.Dashboard, dashboard],
+    [
+      'history-page',
+      contractSchemas.HistoryPage,
+      { items: historyEntries, nextCursor: null },
+    ],
     ['adjust-stock-command', contractSchemas.AdjustStockCommand, adjustment],
     [
       'adjust-stock-result',

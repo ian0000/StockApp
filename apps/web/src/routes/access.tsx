@@ -107,22 +107,3 @@ export function AppShell() {
     </div>
   );
 }
-export function HomePage() {
-  const view = useSessionView();
-  if (view.kind !== 'BUSINESS_ACTIVE_ENABLED' || !view.me.inventory)
-    return <AccessStatus />;
-  const inventory = view.me.inventory;
-  return (
-    <main>
-      <h1>Inventario conectado</h1>
-      <p>{inventory.name}</p>
-      <dl>
-        <dt>Moneda</dt>
-        <dd>{inventory.currency}</dd>
-        <dt>Zona de reportes</dt>
-        <dd>{inventory.reportingTimeZone}</dd>
-      </dl>
-      <p>Las pantallas comerciales se incorporarán por etapas.</p>
-    </main>
-  );
-}

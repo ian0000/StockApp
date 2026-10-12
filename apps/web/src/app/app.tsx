@@ -13,6 +13,8 @@ import { PurchasesContext } from '../purchases/context.js';
 import type { PurchasesController } from '../purchases/controller.js';
 import { AdjustmentsContext } from '../adjustments/context.js';
 import type { AdjustmentsController } from '../adjustments/controller.js';
+import { ReadsContext } from '../reads/context.js';
+import type { ReadsClient } from '../reads/client.js';
 
 export function App({
   router,
@@ -22,6 +24,7 @@ export function App({
   sales,
   purchases,
   adjustments,
+  reads,
 }: {
   router: ReturnType<typeof createBrowserRouter>;
   queryClient: QueryClient;
@@ -30,6 +33,7 @@ export function App({
   sales?: SalesController;
   purchases?: PurchasesController;
   adjustments?: AdjustmentsController;
+  reads?: ReadsClient;
 }) {
   useEffect(
     () =>
@@ -49,7 +53,9 @@ export function App({
             <SaleDraftProvider session={session} sales={sales ?? null}>
               <PurchasesContext.Provider value={purchases ?? null}>
                 <AdjustmentsContext.Provider value={adjustments ?? null}>
-                  <RouterProvider router={router} />
+                  <ReadsContext.Provider value={reads ?? null}>
+                    <RouterProvider router={router} />
+                  </ReadsContext.Provider>
                 </AdjustmentsContext.Provider>
               </PurchasesContext.Provider>
             </SaleDraftProvider>

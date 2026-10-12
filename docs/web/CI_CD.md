@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-08 conserva CI/workflow/recursos/pools/timeouts/concurrency, gates secuenciales y CI/GitGuardian del head final antes de merge/main clean0/0. DEV sigue local+GitHub CI; cualquier actualización arquitectónica UAT-first o deployment requiere tarea separada. [Detalle](WEB-08.md).
+
 WEB-07 conserva workflow/recursos/pools/timeouts/concurrency y ejecuta gates secuenciales completos. CI y GitGuardian del head final requeridos antes de merge normal; main clean0/0 y STOP. [Detalle](WEB-07.md).
 
 WEB-06 conserva CI/recursos/timeout/concurrency. Importer interno Application autorizado y frozen

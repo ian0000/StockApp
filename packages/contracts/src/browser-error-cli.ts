@@ -31,6 +31,8 @@ const schemas = [
   ['bootstrap-response', 'BootstrapResponse', bootstrapResponseSchema],
   ['product-page', 'ProductPage', contractSchemas.ProductPage],
   ['product-read', 'ProductReadDto', contractSchemas.ProductRead],
+  ['dashboard', 'DashboardDto', contractSchemas.Dashboard],
+  ['history-page', 'HistoryPage', contractSchemas.HistoryPage],
   [
     'create-product-command',
     'CreateProductCommand',

@@ -18,6 +18,7 @@ import { createPurchasesClient } from '../src/purchases/client.js';
 import { PurchasesController } from '../src/purchases/controller.js';
 import { createAdjustmentsClient } from '../src/adjustments/client.js';
 import { AdjustmentsController } from '../src/adjustments/controller.js';
+import { createReadsClient } from '../src/reads/client.js';
 
 async function initialized(router: ReturnType<typeof createMemoryRouter>) {
   if (router.state.initialized) return;
@@ -96,6 +97,12 @@ async function renderPath(path: string, context = fixture()) {
       sales={sales}
       purchases={purchases}
       adjustments={adjustments}
+      reads={createReadsClient(
+        createApiClient({
+          baseUrl: 'https://api.example.test',
+          fetcher: async () => json({}),
+        }),
+      )}
     />,
   );
   router.dispose();
@@ -108,10 +115,12 @@ async function renderPath(path: string, context = fixture()) {
   return html;
 }
 
-test('enabled root shows real inventory metadata, semantic navigation, active state and logout without metrics', async () => {
+test('enabled root shows Home route, metadata, semantic navigation, active state and logout', async () => {
   const html = await renderPath('/');
-  assert.ok(html.includes('<main>'));
-  assert.ok(html.includes('Inventario conectado'));
+  assert.match(html, /<main(?:\s|>)/);
+  assert.ok(html.includes('Cargando datos'));
+  assert.ok(html.includes('+ Venta'));
+  assert.ok(html.includes('+ Compra'));
   assert.ok(html.includes('Inventario A'));
   for (const label of [
     'Inicio',
@@ -130,12 +139,18 @@ test('enabled root shows real inventory metadata, semantic navigation, active st
   assert.ok(!html.includes('Rutas de demostración'));
 });
 test('private commercial placeholders render inside authenticated shell including new/id/edit precedence', async () => {
-  for (const path of ['/history', '/settings', '/settings/privacy']) {
+  for (const path of ['/settings', '/settings/privacy']) {
     const html = await renderPath(path);
     assert.ok(html.includes('Navegación principal'));
     assert.ok(html.includes('Las pantallas se incorporarán por etapas'));
     if (path.endsWith('/edit')) assert.ok(html.includes('Editar producto'));
   }
+});
+test('History is a real scoped read route, no foundation placeholder', async () => {
+  const html = await renderPath('/history');
+  assert.ok(html.includes('Cargando datos'));
+  assert.ok(html.includes('Europe/Madrid'));
+  assert.ok(!html.includes('Las pantallas se incorporarán por etapas'));
 });
 test('Product list/new/detail/edit are real routes with distinct loading screens', async () => {
   assert.ok((await renderPath('/products')).includes('Buscar productos'));
