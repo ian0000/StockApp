@@ -11,6 +11,8 @@ import { SalesContext, SaleDraftProvider } from '../sales/context.js';
 import type { SalesController } from '../sales/controller.js';
 import { PurchasesContext } from '../purchases/context.js';
 import type { PurchasesController } from '../purchases/controller.js';
+import { AdjustmentsContext } from '../adjustments/context.js';
+import type { AdjustmentsController } from '../adjustments/controller.js';
 
 export function App({
   router,
@@ -19,6 +21,7 @@ export function App({
   products,
   sales,
   purchases,
+  adjustments,
 }: {
   router: ReturnType<typeof createBrowserRouter>;
   queryClient: QueryClient;
@@ -26,15 +29,17 @@ export function App({
   products?: ProductsController;
   sales?: SalesController;
   purchases?: PurchasesController;
+  adjustments?: AdjustmentsController;
 }) {
   useEffect(
     () =>
-      router.subscribe((state) =>
-        purchases?.routeChanged(
-          state.navigation.location?.pathname ?? state.location.pathname,
-        ),
-      ),
-    [router, purchases],
+      router.subscribe((state) => {
+        const pathname =
+          state.navigation.location?.pathname ?? state.location.pathname;
+        purchases?.routeChanged(pathname);
+        adjustments?.routeChanged(pathname);
+      }),
+    [router, purchases, adjustments],
   );
   return (
     <Providers client={queryClient}>
@@ -43,7 +48,9 @@ export function App({
           <SalesContext.Provider value={sales ?? null}>
             <SaleDraftProvider session={session} sales={sales ?? null}>
               <PurchasesContext.Provider value={purchases ?? null}>
-                <RouterProvider router={router} />
+                <AdjustmentsContext.Provider value={adjustments ?? null}>
+                  <RouterProvider router={router} />
+                </AdjustmentsContext.Provider>
               </PurchasesContext.Provider>
             </SaleDraftProvider>
           </SalesContext.Provider>

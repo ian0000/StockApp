@@ -1,9 +1,11 @@
 # Auditoría del estado actual
 
+WEB-07 implementa /adjustments/new, exact State, revisión explícita y recuperación scoped. Sin nuevos contratos/dependencias ni cambios API/Domain/Application/Mobile. [Detalle y gates](WEB-07.md).
+
 WEB-06 implementa compra de un Product con State exacto, confirmación autoritativa, margen exacto
 y Product UPDATE separado. Reload accepted no reconstruye analysis/editor; sin costo/default arbitrario.
 Única dependencia interna Application autorizada; fuentes API/Domain/Application/Mobile intactas.
-[Detalle y gates](WEB-06.md). WEB-07 pendiente.
+[Detalle y gates de WEB-06](WEB-06.md).
 
 WEB-05 implementa Sale cart/register/detail, Money semántico exacto, pre-submit Product refresh,
 cost evidence y warning negativo. Ciclo pending común conserva Products; sin stock optimista ni

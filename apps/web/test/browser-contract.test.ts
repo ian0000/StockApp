@@ -17,6 +17,12 @@ import {
 import { product, strictResult, receipt } from './product-fixtures.js';
 import { prepareSale } from '../src/sales/cart.js';
 import { buildPurchase } from '../src/purchases/input.js';
+import { buildAdjustment } from '../src/adjustments/input.js';
+import {
+  adjustmentForm,
+  adjustmentProduct,
+  adjustmentResult,
+} from './adjustment-fixtures.js';
 import {
   purchaseProduct,
   purchaseForm,
@@ -87,7 +93,14 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   });
   const sale = prepareSale(initialCart(), [saleProduct]).command;
   const purchase = buildPurchase(purchaseForm(), purchaseProduct);
+  const adjustment = buildAdjustment(adjustmentForm(), adjustmentProduct);
   for (const [name, schema, value] of [
+    ['adjust-stock-command', contractSchemas.AdjustStockCommand, adjustment],
+    [
+      'adjust-stock-result',
+      contractSchemas.AdjustStockResult,
+      adjustmentResult(adjustment),
+    ],
     [
       'product-page',
       contractSchemas.ProductPage,
@@ -175,7 +188,7 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   }
 });
 
-for (const feature of ['products', 'sales'])
+for (const feature of ['products', 'sales', 'adjustments'])
   test(`${feature} bundle contains approved pure Domain without Ajv/compiler or server/native infrastructure`, async () => {
     const output = await build({
       configFile: false,
