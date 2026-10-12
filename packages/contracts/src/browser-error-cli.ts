@@ -33,6 +33,19 @@ const schemas = [
   ['product-read', 'ProductReadDto', contractSchemas.ProductRead],
   ['dashboard', 'DashboardDto', contractSchemas.Dashboard],
   ['history-page', 'HistoryPage', contractSchemas.HistoryPage],
+  ['inventory-state', 'InventoryStateDto', contractSchemas.InventoryState],
+  ['void-sale-command', 'VoidSaleCommand', contractSchemas.VoidSaleCommand],
+  [
+    'void-purchase-command',
+    'VoidPurchaseCommand',
+    contractSchemas.VoidPurchaseCommand,
+  ],
+  ['void-sale-result', 'VoidSaleCommandResult', contractSchemas.VoidSaleResult],
+  [
+    'void-purchase-result',
+    'VoidPurchaseCommandResult',
+    contractSchemas.VoidPurchaseResult,
+  ],
   [
     'create-product-command',
     'CreateProductCommand',

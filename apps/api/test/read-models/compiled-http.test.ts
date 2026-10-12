@@ -393,14 +393,42 @@ test('compiled read models with PostgreSQL/auth/SMTP preserve enriched history a
     ).status,
     200,
   );
+  const stateResponse = await get(
+    `${productsPath}/${product.payload.productId}/state`,
+  );
+  assert.equal(stateResponse.status, 200);
+  const currentState: unknown = await stateResponse.json();
+  createSchemaValidator(contractSchemas.InventoryState)(currentState);
+  assert.ok(
+    currentState &&
+      typeof currentState === 'object' &&
+      'stateRevision' in currentState &&
+      typeof currentState.stateRevision === 'string' &&
+      'stock' in currentState &&
+      typeof currentState.stock === 'number' &&
+      'unitCost' in currentState &&
+      (currentState.unitCost === null ||
+        typeof currentState.unitCost === 'string') &&
+      'lastMovementId' in currentState &&
+      (currentState.lastMovementId === null ||
+        typeof currentState.lastMovementId === 'string'),
+  );
+  assert.deepEqual(currentState, {
+    inventoryId: a.context.inventory.id,
+    productId: product.payload.productId,
+    stateRevision: '3',
+    stock: 18,
+    unitCost: '10000000',
+    lastMovementId: sale.payload.items[0].movementId,
+  });
   const sv = voidCommand(sale.payload.saleId, [
     {
       productId: product.payload.productId,
-      expectedStateRevision: '3',
+      expectedStateRevision: currentState.stateRevision,
       expectedState: {
-        stock: 18,
-        unitCost: '10000000',
-        lastMovementId: sale.payload.items[0].movementId,
+        stock: currentState.stock,
+        unitCost: currentState.unitCost,
+        lastMovementId: currentState.lastMovementId,
       },
     },
   ]);

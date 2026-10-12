@@ -1,5 +1,7 @@
 # Reutilización del dominio
 
+WEB-09 usa elegibilidad y restauración autoritativas de API06/07, snapshots y schemas existentes; no nuevas fórmulas ni cambios Domain/Application. GET State aprobado resuelve evidencia active/archived; no reconstruye desde receipts. [Detalle](WEB-09.md).
+
 WEB-08 formatea Dashboard/History con formatMoney/codecs/Money existentes y reasonLabel WEB-07. Rango, ganancia, ranking y low-stock siguen siendo autoridad API/Domain; no agrega fórmulas/semántica nueva ni source Application/Mobile. [Detalle](WEB-08.md).
 
 WEB-07 reutiliza Money, createStockAdjustment y applyStockAdjustment puros para validar input/evidencia; ningún promedio alterno en React ni source Domain/Application modificado. [Detalle](WEB-07.md).

@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-09 añade matriz Void/refresco de evidencia/same-key/reload/privacidad/boundaries/cache accepted-only y UI. GET State aprobado se prueba PostgreSQL real con archived/A-B/legacy/BIGINT/null/zero/no-writes y regresión Product GET. Gates secuenciales sin relajación. [Detalle](WEB-09.md).
+
 WEB-08 añade focused Dashboard/History/nullable Money/timezone-DST/cursor/scoped cache y aceptación directa/retry/receipt. QueryObserver demuestra refetch solo accepted, sin cache optimista; browser fixture local no certifica QA-03. [Detalle y gates](WEB-08.md).
 
 WEB-07 añade conteo/costo exacto, revisión fresca, command/result/receipt, privacidad/lifecycle/conflicto, CSP y regresiones. Smoke con fixture sintético local; no certificación QA-03. [Detalle y gates](WEB-07.md).

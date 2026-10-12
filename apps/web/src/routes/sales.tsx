@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { SaleDetailDto } from '@stock-app/contracts';
+import { VoidAction } from '../voids/panel.js';
 import { useSessionView } from '../auth/context.js';
 import { useOnline, useProducts } from '../products/context.js';
 import {
@@ -631,11 +632,17 @@ function LoadedSale({
       ) : !query.data ? (
         <p role="status">Venta no disponible.</p>
       ) : (
-        <SaleFacts
-          detail={query.data}
-          currency={scope.currency}
-          timeZone={timeZone}
-        />
+        <>
+          <SaleFacts
+            detail={query.data}
+            currency={scope.currency}
+            timeZone={timeZone}
+          />
+          <VoidAction
+            read={{ commandKind: 'SALE_VOID', detail: query.data }}
+            currency={scope.currency}
+          />
+        </>
       )}
       <Link to="/sales/new">Nueva venta</Link>
       <Link to="/products">Volver a productos</Link>

@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-09 materializa anulación desde Sale/Purchase detail con elegibilidad servidor, evidencia exacta, confirmación y recovery. Excepción humana aditiva: GET Product State active/archived, sin cambiar Product GET ni Domain/Application/DB/Mobile. [Detalle y gates](WEB-09.md).
+
 WEB-08 materializa Home e History con Dashboard/HistoryPage existentes, profit nullable, low-stock preview y timezone Inventory; accepted/recovery invalidan consultas propias sin agregación optimista. [Detalle y gates](WEB-08.md).
 
 WEB-07 implementa /adjustments/new, exact State, revisión explícita y recuperación scoped. Sin nuevos contratos/dependencias ni cambios API/Domain/Application/Mobile. [Detalle y gates](WEB-07.md).

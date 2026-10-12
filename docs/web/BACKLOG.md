@@ -1,5 +1,7 @@
 # Backlog de implementación Cloud/Web
 
+WEB-09 implementa anulación desde detalles con eligibility servidor, State fresco, confirmación y recovery. Excepción humana: GET State scoped para active/archived reutiliza InventoryState; no modifica Product GET ni reglas financieras. [Detalle y gates](WEB-09.md). WEB-10 pendiente; STOP tras WEB-09.
+
 WEB-08 implementa Home/History/stock bajo con métricas nullable, timezone y refresh scoped en accepted/receipt. WEB-09 permanece pendiente; STOP tras entrega. [Detalle y gates](WEB-08.md).
 
 WEB-07 implementa conteo físico/Adjustment con revisión fresca, costo aceptado y recuperación mínima. WEB-08 permanece pendiente. [Detalle y gates](WEB-07.md).
@@ -33,7 +35,7 @@ Scope histórico API-09: sin API-10/import/delete/Web/Sync/Mobile/deploy. La aut
 
 Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-07→API-08→API-09, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, Correcciones mecánicas/test-only con evidencia autorizadas; STOP ante decisiones humanas reales y STOP final API-09. No autoriza API-10/Web/Sync/Mobile/deploy.
 
-47 tickets: CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01..08 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md)); 23 **PLANNED / NO IMPLEMENTADOS**.
+47 tickets: CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01..09 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md)); 22 **PLANNED / NO IMPLEMENTADOS**.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -53,7 +55,7 @@ API-06 y API-07 completaron gate/merge (PR #87/#88), main limpio0/0. API-08 impl
 
 CLOUD-06 y CLOUD-06-FIX fueron solicitados explícitamente y tienen implementación/validación documentadas.
 OpenAPI/DTO/envelopes V1, engine/GET receipt API-01 y runtime Product/Sale/Purchase API-02/03/04 existen.
-WEB-01..08 existen como foundation/auth/Products/Sales/Purchases/Adjustments/Home/History; features WEB-09+, sync/import e infraestructura siguen planned y requieren ticket autorizado.
+WEB-01..09 existen como foundation/auth/Products/Sales/Purchases/Adjustments/Home/History/Void; WEB-10, sync/import e infraestructura siguen planned y requieren ticket autorizado.
 
 ## F1 — Comandos y consultas server
 
@@ -98,7 +100,7 @@ No integrar SYNC-06/MIG-02 si faltan pruebas de proyección/conflictos; outbox s
 | WEB-06 | IMPLEMENTED — Compra/detalle/margen editable/precio sugerido; [evidencia](WEB-06.md) | WEB-04, API-04 | Un producto, costo correcto; fallo precio no repite compra; sin default arbitrario |
 | WEB-07 | IMPLEMENTED — Conteo físico/Adjustment; [evidencia](WEB-07.md) | WEB-04, API-05 | Motivo/costo/diferencia, stale state explicación, no Undo ajuste |
 | WEB-08 | IMPLEMENTED — Home/History/stock bajo; [evidencia](WEB-08.md) | WEB-05, WEB-06, WEB-07, API-08 | Métricas, null, cronología/recientes sin REVERSAL, query refresh |
-| WEB-09 | VoidSale/VoidPurchase desde detalles | WEB-05, WEB-06, API-06, API-07 | Eligibility/confirmación; conflicto bloquea todo; no Undo temporal |
+| WEB-09 | IMPLEMENTED — VoidSale/VoidPurchase desde detalles; [evidencia](WEB-09.md) | WEB-05, WEB-06, API-06, API-07 | Eligibility/confirmación; State active/archived aprobado, conflicto bloquea todo; no Undo temporal |
 | WEB-10 | Settings/privacy/export/delete | WEB-02, API-09, API-10 | Moneda visible, timezone, export/borrado recent auth y legal/support |
 
 Después de CLOUD-06, WEB-01 puede avanzar paralelo a backend/sync usando contratos congelados

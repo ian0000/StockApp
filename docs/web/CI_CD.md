@@ -1,5 +1,7 @@
 # CI/CD futuro
 
+WEB-09 conserva CI/resources/PG/pools/timeouts/concurrency/gates y GitGuardian antes de merge normal/main clean0/0. GET State es excepción API/route-contract aprobada, sin deployment. DEV→UAT→aceptación humana→PROD sigue separado; STOP tras WEB-09. [Detalle](WEB-09.md).
+
 WEB-08 conserva CI/workflow/recursos/pools/timeouts/concurrency, gates secuenciales y CI/GitGuardian del head final antes de merge/main clean0/0. DEV sigue local+GitHub CI; cualquier actualización arquitectónica UAT-first o deployment requiere tarea separada. [Detalle](WEB-08.md).
 
 WEB-07 conserva workflow/recursos/pools/timeouts/concurrency y ejecuta gates secuenciales completos. CI y GitGuardian del head final requeridos antes de merge normal; main clean0/0 y STOP. [Detalle](WEB-07.md).

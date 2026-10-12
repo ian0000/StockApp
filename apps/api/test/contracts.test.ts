@@ -126,6 +126,7 @@ test('implemented route schemas match the manifest and future routes remain abse
   createSchemaValidator(contractSchemas.ApiError)(products.json());
   assert.equal(products.json().error.code, 'UNAUTHENTICATED');
   for (const path of [
+    '/v1/inventories/019a0000-0000-7000-8000-000000000001/products/019a0000-0000-7000-8000-000000000002/state',
     '/v1/me/export',
     '/v1/inventories/019a0000-0000-7000-8000-000000000001/backup',
   ]) {

@@ -1,5 +1,7 @@
 # Arquitectura UX Web
 
+WEB-09 añade Anular desde detalles, confirmación humana, explicación de ineligibilidad y VOIDED histórico. Same-session conserva review; incertidumbre reintenta la misma intención, sin Undo temporal/partial/Adjustment. [Detalle](WEB-09.md).
+
 WEB-08 materializa Inicio (hoy/acciones/stock bajo/más vendido/recientes) e History comercial con Hoy/Ayer/fechas en zona Inventory, VOIDED histórico y Cargar más keyset. Unknown profit muestra —; sin gráficos, filtros nuevos, Adjustment detail ni anulación. [Detalle](WEB-08.md).
 
 WEB-07 materializa conteo físico vacío, diferencia con signo, motivos según entrada/salida y costo aceptado. Revisar/Confirmar refrescan State; conflictos conservan el conteo. Sin Undo ni History nueva. [Detalle](WEB-07.md).

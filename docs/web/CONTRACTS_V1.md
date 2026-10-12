@@ -1,5 +1,7 @@
 # Contratos StockApp V1 — CLOUD-06
 
+WEB-09 — excepción humana read-only aprobada: GET /v1/inventories/{inventoryId}/products/{productId}/state devuelve InventoryState existente para propios active/archived. ProductParams/NoQuery/cloud-inventory/no-store,404 missing/foreign y500 integridad State ausente. Sin CSRF GET ni write/revision; Product GET actual sigue active-only. Veintiséis operaciones implemented, sin cambios de entidad/envelope/version ni schema DB. State puede cambiar antes de POST; void conserva preconditions exactas y409 stale. [Detalle](WEB-09.md).
+
 WEB-01 consume ApiError/type shared con compiler privado standalone en build: schema y HTTP V1 intactos; browser sin Ajv compiler ni unsafe-eval. [Detalle](WEB-01.md).
 
 API-10 marca requestAccountDeletion implemented,25 operaciones: body{} estricto, header UUIDv7 y202 AccountDeletionResult intactos; sessionsRevoked true solo tras acceptance commit. Sin status endpoint, commandKind deletion ni receipt financiero, sin bump de versiones. Retry con cookie revocada401; reautenticación oficial permite replay202 mientras exista User. [Detalle](API-10.md).

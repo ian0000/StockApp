@@ -17,6 +17,8 @@ import { PurchasesController } from './purchases/controller.js';
 import { createAdjustmentsClient } from './adjustments/client.js';
 import { AdjustmentsController } from './adjustments/controller.js';
 import { createReadsClient } from './reads/client.js';
+import { createVoidsClient } from './voids/client.js';
+import { VoidController } from './voids/controller.js';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root.');
@@ -67,6 +69,22 @@ try {
       purchases={purchases}
       adjustments={adjustments}
       reads={createReadsClient(api)}
+      voids={{
+        sale: new VoidController(
+          'SALE_VOID',
+          createVoidsClient(api),
+          session,
+          queryClient,
+          window.sessionStorage,
+        ),
+        purchase: new VoidController(
+          'PURCHASE_VOID',
+          createVoidsClient(api),
+          session,
+          queryClient,
+          window.sessionStorage,
+        ),
+      }}
     />,
   );
 } catch {
