@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router';
+import { Navigate, Link } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { suggestedTimeZone } from '../api/ownership.js';
 import { useSubmit } from './auth.js';
@@ -82,6 +82,7 @@ export function OnboardingPage() {
         </p>
       </form>
       <p>Importar un respaldo estará disponible más adelante.</p>
+      <Link to="/settings/privacy">Datos y privacidad de mi cuenta</Link>
       <LogoutButton />
     </main>
   );

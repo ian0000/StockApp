@@ -24,6 +24,13 @@ const compiler = new Ajv2020({
   code: { source: true, esm: true, lines: true },
 });
 const schemas = [
+  ['backup-v1', 'BackupV1Transport', contractSchemas.BackupV1],
+  ['account-export', 'AccountExport', contractSchemas.AccountExport],
+  [
+    'account-deletion-result',
+    'AccountDeletionResult',
+    contractSchemas.AccountDeletionResult,
+  ],
   ['api-error', 'ApiErrorEnvelope', apiErrorSchema],
   ['me', 'MeResponse', meResponseSchema],
   ['csrf', 'CsrfResponse', csrfResponseSchema],

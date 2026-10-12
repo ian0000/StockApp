@@ -21,6 +21,7 @@ import { buildAdjustment } from '../src/adjustments/input.js';
 import { dashboard, historyEntries } from './read-fixtures.js';
 import { voidReview, voidResult } from './void-fixtures.js';
 import { buildVoid } from '../src/voids/input.js';
+import { backup, accountExport, acceptedDeletion } from './account-fixtures.js';
 import {
   adjustmentForm,
   adjustmentProduct,
@@ -102,6 +103,13 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   const saleVoid = buildVoid(saleVoidReview),
     purchaseVoid = buildVoid(purchaseVoidReview);
   for (const [name, schema, value] of [
+    ['backup-v1', contractSchemas.BackupV1, backup()],
+    ['account-export', contractSchemas.AccountExport, accountExport()],
+    [
+      'account-deletion-result',
+      contractSchemas.AccountDeletionResult,
+      acceptedDeletion,
+    ],
     [
       'inventory-state',
       contractSchemas.InventoryState,

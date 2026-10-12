@@ -7,25 +7,9 @@ import {
 import { PrivateBoundary } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
-const foundationRoutes = [
-  ['/settings', 'Configuración'],
-  ['/settings/privacy', 'Privacidad'],
-] as const;
-
 function RouteContent() {
   const navigation = useNavigation();
   return navigation.state === 'loading' ? <LoadingPage /> : <Outlet />;
-}
-
-function page(title: string, home = false) {
-  return async () => {
-    const { FoundationPage } = await import('../routes/foundation.js');
-    return {
-      Component: function FoundationRoute() {
-        return <FoundationPage title={title} home={home} />;
-      },
-    };
-  };
 }
 
 export function createAppRoutes(): RouteObject[] {
@@ -36,6 +20,32 @@ export function createAppRoutes(): RouteObject[] {
       HydrateFallback: LoadingPage,
       ErrorBoundary: RouteErrorPage,
       children: [
+        {
+          path: '/settings/reauthenticate',
+          lazy: async () => ({
+            Component: (await import('../routes/settings.js'))
+              .ReauthenticatePage,
+          }),
+        },
+        {
+          lazy: async () => ({
+            Component: (await import('../routes/settings.js')).AccountBoundary,
+          }),
+          children: [
+            {
+              path: '/settings',
+              lazy: async () => ({
+                Component: (await import('../routes/settings.js')).SettingsPage,
+              }),
+            },
+            {
+              path: '/settings/privacy',
+              lazy: async () => ({
+                Component: (await import('../routes/settings.js')).PrivacyPage,
+              }),
+            },
+          ],
+        },
         ...(['login', 'signup', 'verify-email', 'reset-password'] as const).map(
           (path) => ({
             path,
@@ -124,10 +134,6 @@ export function createAppRoutes(): RouteObject[] {
                   .NewAdjustmentPage,
               }),
             },
-            ...foundationRoutes.map(([path, title]) => ({
-              path,
-              lazy: page(title),
-            })),
           ],
         },
         { path: '*', Component: NotFoundPage },

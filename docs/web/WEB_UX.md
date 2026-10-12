@@ -1,5 +1,7 @@
 # Arquitectura UX Web
 
+WEB-10 reemplaza Settings/Privacy placeholders: metadata real read-only, downloads explícitos y confirmación irreversible. AccountBoundary permite cuentas verified sin Business/Inventory/Cloud, sin conceder comercio; reauth oficial necesita nueva acción. Unknown no equivale a fallo tras revocación. [Detalle](WEB-10.md).
+
 WEB-09 añade Anular desde detalles, confirmación humana, explicación de ineligibilidad y VOIDED histórico. Same-session conserva review; incertidumbre reintenta la misma intención, sin Undo temporal/partial/Adjustment. [Detalle](WEB-09.md).
 
 WEB-08 materializa Inicio (hoy/acciones/stock bajo/más vendido/recientes) e History comercial con Hoy/Ayer/fechas en zona Inventory, VOIDED histórico y Cargar más keyset. Unknown profit muestra —; sin gráficos, filtros nuevos, Adjustment detail ni anulación. [Detalle](WEB-08.md).

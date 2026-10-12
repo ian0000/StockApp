@@ -112,6 +112,15 @@ a[aria-current='page'] {
   list-style: none;
   padding: 0;
 }
+
+.account-deletion {
+  border-top: 2px solid #8b2635;
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
+button.danger {
+  background: #8b2635;
+}
 .product-card {
   display: grid;
   grid-template-columns: minmax(0, 2fr) 1fr 1fr auto;

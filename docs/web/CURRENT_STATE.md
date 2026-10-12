@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-10 materializa Settings metadata read-only y Privacy account-level independiente de habilitación Inventory; backup/export explícitos, recent auth y deletion202/unknown/public notice. Sin cambios API/Domain/Application/DB/Mobile/deps/CI. [Detalle y gates](WEB-10.md).
+
 WEB-09 materializa anulación desde Sale/Purchase detail con elegibilidad servidor, evidencia exacta, confirmación y recovery. Excepción humana aditiva: GET Product State active/archived, sin cambiar Product GET ni Domain/Application/DB/Mobile. [Detalle y gates](WEB-09.md).
 
 WEB-08 materializa Home e History con Dashboard/HistoryPage existentes, profit nullable, low-stock preview y timezone Inventory; accepted/recovery invalidan consultas propias sin agregación optimista. [Detalle y gates](WEB-08.md).

@@ -17,6 +17,8 @@ import { ReadsContext } from '../reads/context.js';
 import type { ReadsClient } from '../reads/client.js';
 import { VoidsContext } from '../voids/context.js';
 import type { VoidController } from '../voids/controller.js';
+import { AccountContext } from '../account/context.js';
+import type { AccountController } from '../account/controller.js';
 
 export function App({
   router,
@@ -28,6 +30,7 @@ export function App({
   adjustments,
   reads,
   voids,
+  account,
 }: {
   router: ReturnType<typeof createBrowserRouter>;
   queryClient: QueryClient;
@@ -38,6 +41,7 @@ export function App({
   adjustments?: AdjustmentsController;
   reads?: ReadsClient;
   voids?: { sale: VoidController; purchase: VoidController };
+  account?: AccountController;
 }) {
   useEffect(
     () =>
@@ -48,8 +52,9 @@ export function App({
         adjustments?.routeChanged(pathname);
         voids?.sale.routeChanged(pathname);
         voids?.purchase.routeChanged(pathname);
+        account?.routeChanged(pathname);
       }),
-    [router, purchases, adjustments, voids],
+    [router, purchases, adjustments, voids, account],
   );
   return (
     <Providers client={queryClient}>
@@ -61,7 +66,9 @@ export function App({
                 <AdjustmentsContext.Provider value={adjustments ?? null}>
                   <ReadsContext.Provider value={reads ?? null}>
                     <VoidsContext.Provider value={voids ?? null}>
-                      <RouterProvider router={router} />
+                      <AccountContext.Provider value={account ?? null}>
+                        <RouterProvider router={router} />
+                      </AccountContext.Provider>
                     </VoidsContext.Provider>
                   </ReadsContext.Provider>
                 </AdjustmentsContext.Provider>

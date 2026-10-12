@@ -40,6 +40,9 @@ export function AccessStatus() {
           : (titles[view.kind] ?? 'Acceso a tu cuenta')}
       </h1>
       {'me' in view && <p>Cuenta: {view.me.user.email}</p>}
+      {'me' in view && view.me.user.emailVerified && (
+        <NavLink to="/settings/privacy">Datos y privacidad</NavLink>
+      )}
       {view.kind === 'BUSINESS_ACTIVE_DISABLED' && (
         <p>
           Tu acceso cloud aún no está habilitado. Puedes volver a comprobarlo

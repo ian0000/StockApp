@@ -1,5 +1,7 @@
 # Pruebas y DoD futura
 
+WEB-10 añade matriz account-access/reauth/download/cleanup/unknown202+revocation/no storage/lateA→B y rutas/validadores CSP. Smoke fixture local y descargas verificadas no equivalen a QA-03; PostgreSQL/generadores/gates completos requeridos. [Detalle](WEB-10.md).
+
 WEB-09 añade matriz Void/refresco de evidencia/same-key/reload/privacidad/boundaries/cache accepted-only y UI. GET State aprobado se prueba PostgreSQL real con archived/A-B/legacy/BIGINT/null/zero/no-writes y regresión Product GET. Gates secuenciales sin relajación. [Detalle](WEB-09.md).
 
 WEB-08 añade focused Dashboard/History/nullable Money/timezone-DST/cursor/scoped cache y aceptación directa/retry/receipt. QueryObserver demuestra refetch solo accepted, sin cache optimista; browser fixture local no certifica QA-03. [Detalle y gates](WEB-08.md).
