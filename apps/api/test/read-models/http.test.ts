@@ -11,7 +11,7 @@ import { bootstrapEmptyInventory } from '../../src/ownership/bootstrap.js';
 import { createCommand } from '../products/helpers.js';
 import { id } from '../postgres/helpers.js';
 
-test('all eight read routes enforce official auth/ownership/security, strict queries, private transport and no command writes', async (t) => {
+test('all read routes enforce official auth/ownership/security, strict queries, private transport and no command writes', async (t) => {
   let now = Date.now();
   const f = await authFixture(t, {}, () => now),
     db = createDatabase(f.pool);
@@ -88,6 +88,7 @@ test('all eight read routes enforce official auth/ownership/security, strict que
     '/products',
     '/products/by-barcode?code=001234',
     `/products/${own}`,
+    `/products/${own}/state`,
     '/stock-low',
     `/sales/${missing}`,
     `/purchases/${missing}`,
@@ -177,10 +178,42 @@ test('all eight read routes enforce official auth/ownership/security, strict que
     '/products/by-barcode?code=x&code=y',
     '/dashboard?extra=true',
     `/products/${own}?extra=true`,
+    `/products/${own}/state?extra=true`,
   ])
     await t.test(`strict read query ${suffix}`, async () => {
       assert.equal((await get(suffix)).statusCode, 400);
     });
+  await t.test(
+    'State GET has exact revision/cost/pointer, no CSRF and safe missing/foreign responses',
+    async () => {
+      await f.pool.query(
+        'UPDATE inventory_states SET state_revision=9007199254740993 WHERE product_id=$1',
+        [own],
+      );
+      const row = (
+        await f.pool.query(
+          'SELECT * FROM inventory_states WHERE product_id=$1',
+          [own],
+        )
+      ).rows[0];
+      const response = await get(`/products/${own}/state`);
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.json(), {
+        inventoryId: a.inventoryId,
+        productId: own,
+        stock: 20,
+        unitCost: '10000000',
+        stateRevision: '9007199254740993',
+        lastMovementId: row.last_movement_id,
+      });
+      assert.equal((await get(`/products/${foreign}/state`)).statusCode, 404);
+      assert.equal((await get(`/products/${missing}/state`)).statusCode, 404);
+      await f.pool.query(
+        'UPDATE inventory_states SET state_revision=0 WHERE product_id=$1',
+        [own],
+      );
+    },
+  );
   await t.test(
     'URL integer limits are validated at read boundary while body coercion remains disabled',
     async () => {
@@ -215,12 +248,14 @@ test('all eight read routes enforce official auth/ownership/security, strict que
       await f.pool.query('UPDATE "user" SET email_verified=false WHERE id=$1', [
         a.userId,
       ]);
-      assert.equal((await get('/products')).statusCode, 403);
+      for (const suffix of ['/products', `/products/${own}/state`])
+        assert.equal((await get(suffix)).statusCode, 403);
       await f.pool.query('UPDATE "user" SET email_verified=true WHERE id=$1', [
         a.userId,
       ]);
       for (const origin of ['null', 'https://evil.example.test'])
-        assert.equal((await get('/products', a, { origin })).statusCode, 403);
+        for (const suffix of ['/products', `/products/${own}/state`])
+          assert.equal((await get(suffix, a, { origin })).statusCode, 403);
     },
   );
   await t.test(
@@ -280,6 +315,10 @@ test('all eight read routes enforce official auth/ownership/security, strict que
         own,
       ]);
       assert.equal((await get(`/products/${own}`)).statusCode, 404);
+      const state = await get(`/products/${own}/state`);
+      assert.equal(state.statusCode, 200);
+      createSchemaValidator(contractSchemas.InventoryState)(state.json());
+      assert.equal(state.json().stock, 20);
       assert.equal(
         (await get('/products/by-barcode?code=001234')).statusCode,
         404,
@@ -291,6 +330,7 @@ test('all eight read routes enforce official auth/ownership/security, strict que
         own,
       ]);
       assert.equal((await get(`/products/${own}`)).statusCode, 500);
+      assert.equal((await get(`/products/${own}/state`)).statusCode, 500);
       await f.pool.query(
         'INSERT INTO inventory_states(inventory_id,product_id,stock,unit_cost_units,last_movement_id) SELECT inventory_id,id,20,10000000,(SELECT id FROM inventory_movements WHERE product_id=$1 LIMIT 1) FROM products WHERE id=$1',
         [own],
@@ -320,16 +360,48 @@ test('all eight read routes enforce official auth/ownership/security, strict que
       assert.equal(response.statusCode, 200);
       assert.equal(response.json().product.id, productId);
       assert.equal(response.json().state.inventoryId, inventoryId);
+      const state = await get(
+        `/products/${productId.toUpperCase()}/state`,
+        scope,
+      );
+      assert.equal(state.statusCode, 200);
+      assert.equal(state.json().productId, productId);
+      assert.equal(state.json().unitCost, null);
+      assert.equal(state.json().lastMovementId, null);
     },
   );
   await t.test('read bucket has durable120/121 with Retry-After', async () => {
     now += 60001;
     for (let i = 0; i < 120; i++)
-      assert.equal((await get('/products')).statusCode, 200);
-    const limited = await get('/products');
+      assert.equal((await get(`/products/${own}/state`)).statusCode, 200);
+    const limited = await get(`/products/${own}/state`);
     assert.equal(limited.statusCode, 429);
     assert.ok(limited.headers['retry-after']);
+    assert.equal((await get('/products')).statusCode, 429);
   });
+  await t.test(
+    'expired and revoked official sessions cannot read current State',
+    async () => {
+      await f.pool.query('UPDATE session SET expires_at=$1 WHERE user_id=$2', [
+        new Date(Date.now() - 1000),
+        a.userId,
+      ]);
+      assert.equal((await get(`/products/${own}/state`)).statusCode, 401);
+      now += 60001;
+      const renewed = await f.signin('read-a@example.test');
+      assert.equal(
+        (await get(`/products/${own}/state`, a, { cookie: renewed.cookie }))
+          .statusCode,
+        200,
+      );
+      await f.pool.query('DELETE FROM session WHERE user_id=$1', [a.userId]);
+      assert.equal(
+        (await get(`/products/${own}/state`, a, { cookie: renewed.cookie }))
+          .statusCode,
+        401,
+      );
+    },
+  );
   assert.equal(
     (
       await f.pool.query('SELECT revision FROM inventories WHERE id=$1', [

@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { ProductReadDto } from '@stock-app/contracts';
+import { VoidAction } from '../voids/panel.js';
 import { useSessionView } from '../auth/context.js';
 import { useOnline } from '../products/context.js';
 import {
@@ -458,6 +459,10 @@ function LoadedPurchase({
             purchase={query.data.purchase}
             currency={scope.currency}
             timeZone={timeZone}
+          />
+          <VoidAction
+            read={{ commandKind: 'PURCHASE_VOID', detail: query.data }}
+            currency={scope.currency}
           />
         </>
       )}

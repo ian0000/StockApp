@@ -19,6 +19,8 @@ import { prepareSale } from '../src/sales/cart.js';
 import { buildPurchase } from '../src/purchases/input.js';
 import { buildAdjustment } from '../src/adjustments/input.js';
 import { dashboard, historyEntries } from './read-fixtures.js';
+import { voidReview, voidResult } from './void-fixtures.js';
+import { buildVoid } from '../src/voids/input.js';
 import {
   adjustmentForm,
   adjustmentProduct,
@@ -95,7 +97,32 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   const sale = prepareSale(initialCart(), [saleProduct]).command;
   const purchase = buildPurchase(purchaseForm(), purchaseProduct);
   const adjustment = buildAdjustment(adjustmentForm(), adjustmentProduct);
+  const saleVoidReview = voidReview('SALE_VOID'),
+    purchaseVoidReview = voidReview('PURCHASE_VOID');
+  const saleVoid = buildVoid(saleVoidReview),
+    purchaseVoid = buildVoid(purchaseVoidReview);
   for (const [name, schema, value] of [
+    [
+      'inventory-state',
+      contractSchemas.InventoryState,
+      saleVoidReview.states[0],
+    ],
+    ['void-sale-command', contractSchemas.VoidSaleCommand, saleVoid],
+    [
+      'void-purchase-command',
+      contractSchemas.VoidPurchaseCommand,
+      purchaseVoid,
+    ],
+    [
+      'void-sale-result',
+      contractSchemas.VoidSaleResult,
+      voidResult(saleVoid, saleVoidReview),
+    ],
+    [
+      'void-purchase-result',
+      contractSchemas.VoidPurchaseResult,
+      voidResult(purchaseVoid, purchaseVoidReview),
+    ],
     ['dashboard', contractSchemas.Dashboard, dashboard],
     [
       'history-page',

@@ -290,6 +290,19 @@ export const routeContracts: readonly RouteContract[] = [
   },
   {
     ...planned(
+      'get',
+      `${inventoryPath}/products/{productId}/state`,
+      'getProductState',
+      'Current state evidence for own active or archived Product',
+      'cloud-inventory',
+      'InventoryState',
+    ),
+    params: 'ProductParams',
+    implementationStatus: 'implemented',
+    query: 'NoQuery',
+  },
+  {
+    ...planned(
       'post',
       `${inventoryPath}/products`,
       'createProduct',

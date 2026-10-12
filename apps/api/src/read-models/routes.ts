@@ -19,6 +19,7 @@ import { readProduct, readProductPage, type ReadDatabase } from './products.js';
 import { readSaleDetail, readPurchaseDetail } from './details.js';
 import { readHistory } from './history.js';
 import { readDashboard } from './dashboard.js';
+import { readProductState } from './state.js';
 
 export function registerReadRoutes(
   app: FastifyInstance,
@@ -67,6 +68,12 @@ export function registerReadRoutes(
       {
         suffix: '/products/:productId',
         response: 'ProductRead',
+        params: 'ProductParams',
+        query: 'NoQuery',
+      },
+      {
+        suffix: '/products/:productId/state',
+        response: 'InventoryState',
         params: 'ProductParams',
         query: 'NoQuery',
       },
@@ -160,6 +167,12 @@ export function registerReadRoutes(
               return readProduct(db, inventoryId, {
                 id: request.params.productId!,
               });
+            if (entry.suffix === '/products/:productId/state')
+              return readProductState(
+                db,
+                inventoryId,
+                request.params.productId!,
+              );
             if (entry.suffix === '/sales/:saleId')
               return readSaleDetail(db, inventoryId, request.params.saleId!);
             if (entry.suffix === '/purchases/:purchaseId')
