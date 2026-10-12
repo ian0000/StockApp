@@ -1,5 +1,17 @@
 # CI/CD futuro
 
+## Política vigente — DEV-00, 2026-10-12
+
+**DEV → UAT → aprobación humana → PROD.** Main validado puede alimentar el futuro UAT;
+no main→PROD automático. UAT es primer entorno online, PROD NUEVO independiente/no provisionado.
+La anterior interpretación production/staging queda supersedida; notas de entrega inferiores son
+históricas. [Decisión y secuencia](DEV-00.md), [entornos/hosts](DEPLOYMENT.md).
+
+Workflow real revisado: PR main/push main, permissions contents:read, install frozen, pnpm check,
+PostgreSQL18.6 real y generadores Drizzle/Auth reproducibles/auth:check; ningún CD/secrets externos.
+GitGuardian y required reviews/checks/reglas reales permanecen obligatorios, sin relajar CI.
+DEV-00 solo documenta: no cambia workflow ni configura provider-native autodeploy.
+
 WEB-10 mantiene workflow/PG/recursos/pools/timeouts/concurrency y CI/GitGuardian/reviews obligatorios antes de merge normal/main clean0/0. DEV→UAT→aprobación humana→PROD; no provisioning/deployment ni continuación automática. [Detalle](WEB-10.md).
 
 WEB-09 conserva CI/resources/PG/pools/timeouts/concurrency/gates y GitGuardian antes de merge normal/main clean0/0. GET State es excepción API/route-contract aprobada, sin deployment. DEV→UAT→aceptación humana→PROD sigue separado; STOP tras WEB-09. [Detalle](WEB-09.md).
@@ -94,12 +106,29 @@ main actualizado → rama ticket → cambio mínimo/tests → quality gates → 
 → push autorizado → PR → CI required → revisión → merge.
 Desde 2026-10-03 el usuario autorizó al agente crear PR y hacer merge, sin bypass de CI ni deploy;
 esta autorización sustituye la preferencia manual anterior, sin auto-merge bot.
-CD de commit aprobado, migración antes de promoción API, health y smoke web/API/sync; si falla,
-no anunciar release. No auto-merge ni force push. Un merge no fuerza nuevo binario móvil.
+Futuro CD UAT: commit main exacto validado → deployment provider controlado → health/readiness
+→smoke Web/API →aceptación UAT. Si merge genera otro SHA, CI del head PR no prueba CI del merge:
+registrar required CI/scan/review/artifact asociados al SHA que se despliega; revalidar si main avanza.
+No despliegue integrado de PR no validado, secrets de deploy en PR/forks ni datos reales en UAT inicial.
+No auto-merge ni force push. Un merge no fuerza nuevo binario móvil ni lanzamiento de producto.
 
-Staging branch para rehearsal con DB ficticia separada; actualizar desde commit revisable sin
-copiar datos production. Freeze contracts CLOUD-06 permite páginas Web en paralelo a sync,
-con mocks que satisfacen el mismo schema, no endpoints ad hoc. CD paths/config de monorepo en DEPLOYMENT.
+DEV-04 demuestra gate efectivo ante pending/fail/cancel/missing de CI/GitGuardian y carrera de
+commits; DEV-06 ensaya end-to-end. Railway Wait for CI documenta limitaciones (workflows Actions,
+otras apps ignoradas, skipped/neutral y algunos cancelled no bloquean); Pages branch controls no
+demuestran wait-for-required-CI. [Railway](https://docs.railway.com/deployments/github-autodeploys),
+[Pages](https://developers.cloudflare.com/pages/configuration/branch-build-controls/).
+Sin evidencia del gate completo, autodeploy integrado deshabilitado: deploy manual controlado del
+commit validado y comprobación de SHA efectivo. No se declara configuración efectiva ahora.
+
+Promoción PROD futura: aceptación UAT →release candidate→sign-off humano explícito→mismo
+source commit/artifact aprobado→deploy controlado→smoke PROD→monitoring. Config pública VITE_*
+puede requerir build separado: registrar commit/release/artifact/config y validarlo, sin source no revisado.
+Migración PROD revisada aparte; code rollback no revierte schema. DB UAT/PROD independientes,
+sin copiar datos/secretos. UAT acceptance no autoriza PROD ni resuelve PRIV/REL automáticamente.
+
+Staging queda como terminología histórica de QA/UAT; no exige rama nueva ni tercer entorno.
+Previews ficticios no acceden a cuentas/DB/secrets reales. Sync/Mobile/MIG y sus ensayos se difieren
+para este release Web-only, conservando contracts/backlog. CD paths/config en DEPLOYMENT.
 
 Cambios de contrato /v1 aditivos; incompatible se bloquea en CI y requiere /v2/coexistencia.
 API anterior disponible mientras la distribución Mobile instalada requiera su contrato;

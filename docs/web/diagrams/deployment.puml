@@ -1,37 +1,54 @@
 @startuml
-title TARGET deployment - Runtime separado de Delivery
-package "Runtime" {
+title DEV-00 TARGET - DEV -> UAT -> human approval -> PROD (no deployment applied)
+package "UAT - FIRST ONLINE TARGET / NOT PROVISIONED" {
   node "Browser" as browser {
     artifact "Web SPA" as spa
   }
+  cloud "Cloudflare edge / DNS / TLS" as cf
+  node "Cloudflare Pages UAT" as pages {
+    artifact "apps/web/dist" as assets
+  }
+  node "Railway API UAT" as rail {
+    artifact "Fastify Node API" as api
+  }
+  node "Railway PostgreSQL UAT" as storage {
+    database PostgreSQL as db
+  }
+}
+package "DEV local / Delivery" {
+  rectangle "Local Web + API + PostgreSQL" as local
+  rectangle "GitHub StockApp\nPR / required checks / review / normal merge" as github
+  rectangle "GitHub Actions\nCI ONLY" as ci
+  rectangle "Validated exact main SHA\nCI + GitGuardian + review" as validated
+}
+package "PROD FUTURE - NEW / INDEPENDENT / NOT PROVISIONED" {
+  node "New Pages deployment + Railway API + PostgreSQL" as prod
+  rectangle "UAT acceptance / release candidate\nExplicit human sign-off" as approval
+}
+package "Mobile EXISTING local / Sync DEFERRED" {
   node "Mobile device" as device {
     artifact "Expo Mobile" as mobile
     database "SQLite local" as sqlite
   }
-  cloud "Cloudflare edge / DNS / TLS" as cf
-  node "Cloudflare Pages" as pages {
-    artifact "apps/web/dist" as assets
-  }
-  node "Railway API" as rail {
-    artifact "Fastify Node API" as api
-  }
-  node "Railway database" as storage {
-    database PostgreSQL as db
-  }
-}
-package "Development / Delivery" {
-  rectangle "GitHub StockApp\nPR/review/merge MANUAL" as github
-  rectangle "GitHub Actions\nCI ONLY" as ci
 }
 browser --> cf : HTTPS static
 cf --> pages : Entrega SPA
 spa --> api : HTTPS API host
 mobile --> sqlite : Local tx
-mobile --> api : HTTPS sync
+mobile ..> api : FUTURE sync / outside Web-only release
 api --> db : Private connection
 github --> ci : Quality / build / tests
-github ..> pages : CD Web commit aprobado
-github ..> rail : CD API tras CI
+github --> validated : Exact SHA gate / no unchecked latest
+validated ..> pages : FUTURE UAT CD / proven gate or controlled manual
+validated ..> rail : FUTURE UAT CD / locked predeploy / fail-closed readiness
 ci ..> github : Required result (no deploy)
-note bottom of storage : Production/staging aislados; no creados en esta fase.
+pages ..> approval : UAT validation / smoke / rollback / recovery
+rail ..> approval
+approval ..> prod : Same approved commit/release / controlled deploy
+note bottom of storage
+  Synthetic test data only initially. UAT/PROD DB and secrets isolated.
+  Provider "production" label may mean StockApp UAT, not commercial launch.
+  No automatic main -> product PROD. DNS mapping approval pending DEV-04.
+end note
+note bottom of prod : No UAT DB copy. PROD migrations reviewed separately; smoke and monitoring required.
 @enduml

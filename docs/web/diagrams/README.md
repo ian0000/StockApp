@@ -10,7 +10,7 @@ componentes API/Web. Runtime y delivery separados. Todas las cajas TARGET son di
 | [c4-containers.puml](c4-containers.puml) | Mobile/SQLite, Web SPA, API y DB | Manual/estructural; render NOT RUN |
 | [c4-components-api.puml](c4-components-api.puml) | HTTP/auth/ownership/commands/domain/repos/sync | Manual/estructural; render NOT RUN |
 | [c4-components-web.puml](c4-components-web.puml) | Shell/query/forms/client/domain y API | Manual/estructural; render NOT RUN |
-| [deployment.puml](deployment.puml) | Runtime Railway/Pages/device y delivery GitHub/CI | Manual/estructural; render NOT RUN |
+| [deployment.puml](deployment.puml) | DEV local/CI, UAT primero y PROD independiente tras sign-off (DEV-00); Mobile Sync diferido | Manual/estructural; render NOT RUN |
 | [data-ownership.puml](data-ownership.puml) | Owner/Business/Inventory/dataset | Manual/estructural; render NOT RUN |
 | [sequence-login.puml](sequence-login.puml) | Web cookie y Mobile SecureStore | Manual/estructural; render NOT RUN |
 | [sequence-web-sale.puml](sequence-web-sale.puml) | Venta transaccional con receipt | Manual/estructural; render NOT RUN |

@@ -1,5 +1,9 @@
 # Auditoría del estado actual
 
+DEV-00 actualiza únicamente documentación/ADRs/diagrama a UAT-first: DEV local/CI→UAT primer
+entorno online→sign-off humano→PROD NUEVO independiente. Sin provisioning/DNS/deploy ni cambios
+runtime/CI; DEV-01..06/PRIV/REL siguen pendientes. [Decisión vigente](DEV-00.md).
+
 WEB-10 materializa Settings metadata read-only y Privacy account-level independiente de habilitación Inventory; backup/export explícitos, recent auth y deletion202/unknown/public notice. Sin cambios API/Domain/Application/DB/Mobile/deps/CI. [Detalle y gates](WEB-10.md).
 
 WEB-09 materializa anulación desde Sale/Purchase detail con elegibilidad servidor, evidencia exacta, confirmación y recovery. Excepción humana aditiva: GET Product State active/archived, sin cambiar Product GET ni Domain/Application/DB/Mobile. [Detalle y gates](WEB-09.md).

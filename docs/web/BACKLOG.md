@@ -1,5 +1,11 @@
 # Backlog de implementación Cloud/Web
 
+DEV-00 IMPLEMENTED — decisión documental UAT-first: DEV local/CI→UAT primer online→aprobación
+humana→PROD NUEVO independiente. Sin provisioning/DNS/deploy. DEV-01..06 siguen PLANNED;
+cada ejecución requiere autorización, STOP tras DEV-00. [Política y pendientes](DEV-00.md).
+Track actual Web-only: SYNC-01..06 y MIG-01..03 DIFERIDOS, no eliminados/completados; Mobile,
+EAS/stores/billing fuera de este release. La prioridad histórica inferior no autoriza continuarlos.
+
 WEB-10 implementa Settings/Privacy, downloads BackupV1/AccountExport y deletion con reauth oficial, cuenta sin Inventory/disabled y recovery DELETING. API/contratos/runtime financiero intactos; PRIV/REL y UAT-first DevOps siguen pendientes. [Detalle y gates](WEB-10.md). STOP tras WEB-10.
 
 WEB-09 implementa anulación desde detalles con eligibility servidor, State fresco, confirmación y recovery. Excepción humana: GET State scoped para active/archived reutiliza InventoryState; no modifica Product GET ni reglas financieras. [Detalle y gates](WEB-09.md). WEB-10 pendiente; STOP tras WEB-09.
@@ -37,7 +43,7 @@ Scope histórico API-09: sin API-10/import/delete/Web/Sync/Mobile/deploy. La aut
 
 Completar API F1 (API-04..10), después Web F3 (WEB-01..10); DevOps/API+Web/QA donde corresponda. SYNC/Mobile/MIG móvil se difieren intencionalmente hasta completar API + Web. Esta prioridad no elimina ni altera dependencias arquitectónicas: Sync no está cancelado y cada aceptación conserva sus gates. Batch humano vigente: API-07→API-08→API-09, cada uno con gates/PR/merge independientes; avanzar solo DONE/MERGED/main limpio0/0/BLOCKERS=NONE, Correcciones mecánicas/test-only con evidencia autorizadas; STOP ante decisiones humanas reales y STOP final API-09. No autoriza API-10/Web/Sync/Mobile/deploy.
 
-47 tickets: CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01..10 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md)); 21 **PLANNED / NO IMPLEMENTADOS**.
+48 tickets (incluido DEV-00): CLOUD-01..06 y API-01..10 **IMPLEMENTED** ([HTTP](CLOUD-01.md), [DB](CLOUD-02.md), [Auth](CLOUD-03.md), [Ownership](CLOUD-04.md), [Security](CLOUD-05.md), [Contracts y UUID](CLOUD-06.md), [Command engine](API-01.md), [Product commands](API-02.md), [Sales](API-03.md), [Purchases](API-04.md), [Adjustments](API-05.md), [VoidSale](API-06.md), [VoidPurchase](API-07.md), [Read models](API-08.md), [Backup/export](API-09.md), [Account deletion](API-10.md)); WEB-01..10 y DEV-00 **IMPLEMENTED** ([foundation](WEB-01.md), [auth/shell](WEB-02.md), [UAT-first](DEV-00.md)); 21 **PLANNED / NO IMPLEMENTADOS**, incluyendo Sync/MIG diferidos.
 Baseline revisada/aprobada y mergeada en PR #75. Cada ticket hereda [DoD](TESTING.md)
 y workflow autorizado de CI_CD.
 Las dependencias son AND salvo indicación. Sin ticket monolítico 'implementar toda la web'.
@@ -76,6 +82,9 @@ WEB-01..10 existen como foundation/auth/Products/Sales/Purchases/Adjustments/Hom
 
 ## F2 — Sync e importación
 
+**DIFERIDO para el release Web-only DEV-00.** Tabla/dependencias históricas conservadas;
+ningún ticket de esta sección está implementado ni autorizado por DEV-00.
+
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
 | SYNC-01 | Device registration y sync metadata migrations Mobile | API-01, CLOUD-06 | Upgrades SQLite datos actuales intactos, identity scoped, versions/capabilities |
@@ -110,14 +119,19 @@ y fixtures tipados. Cada feature requiere su endpoint real y gates antes de acep
 
 ## F4 — DevOps
 
+Secuencia futura, no autorización automática: DEV-00→DEV-01→DEV-02/DEV-03→DEV-04→DEV-05→DEV-06.
+La topología antes production/staging se destina primero a UAT; PROD se provisiona después en
+recursos nuevos/independientes con sign-off humano. Nombres staging son históricos/propuestos.
+
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
-| DEV-01 | Railway API topology/build/start/staging | CLOUD-01, CLOUD-05 | Root workspace/pnpm pin real, logs build/start, /health config, no copy de otro dominio |
+| DEV-00 | IMPLEMENTED — Arquitectura UAT-first/CI-CD documental | WEB-10 | DEV→UAT→sign-off→PROD; ADRs/hosts/gates alineados, sin provisioning/runtime/CI changes |
+| DEV-01 | PLANNED — Railway API topology/build/start UAT | DEV-00, CLOUD-01, CLOUD-05 | Root workspace/pnpm pin real, logs build/start, /health config, no copy de otro dominio |
 | DEV-02 | Railway PostgreSQL/migrations/backups/recovery | DEV-01, CLOUD-02, API-10 | Private DB, locked migrate, backups+copia independiente cifrada; restore/supresión probado |
-| DEV-03 | Pages proyecto Web/preview/build | WEB-01 | Output correcto/deep links/headers; preview ficticio, sin prod secrets |
-| DEV-04 | Hosts/DNS/TLS/CORS/env y gate CD | DEV-02, DEV-03, CLOUD-03 | App/API/staging, same-site auth, CI commit gate, no wildcard previews |
+| DEV-03 | Pages proyecto UAT Web/preview/build | DEV-00, WEB-01 | Output correcto/deep links/headers; preview ficticio, sin PROD secrets |
+| DEV-04 | Hosts/DNS/TLS/CORS/env y gate CD UAT | DEV-02, DEV-03, CLOUD-03 | Aprobar mapping hosts antes de DNS; same-site auth, required CI/GitGuardian exact-SHA gate o manual, no wildcard previews |
 | DEV-05 | Observabilidad/alertas/runtime jobs | DEV-02, API-01, API-10 | requestId/redaction, monitor externo, backup/deletion alerts probadas |
-| DEV-06 | CI required/SMTP/release CD rehearsal | DEV-04, DEV-05, CLOUD-06 | GitHub CI only, deploy provider, SMTP validado, aislamiento entornos, rollback ensayo |
+| DEV-06 | CI required/SMTP/CD rehearsal UAT | DEV-04, DEV-05, CLOUD-06 | GitHub CI only, exact-commit gate probado, SMTP/health/smoke/rollback/monitoring; PROD solo con sign-off posterior |
 
 ## F5 — QA, privacidad y release
 
@@ -131,6 +145,11 @@ y fixtures tipados. Cada feature requiere su endpoint real y gates antes de acep
 | REL-02 | Release readiness piloto controlado | QA-04, REL-01 | Consent, support/runbooks, habilitación cuentas explícita, documentación resultados; publicación humana |
 
 ## Camino crítico
+
+Track vigente Web-only: DEV-00→DEV-01..06→aceptación UAT/QA/PRIV/REL→sign-off humano→PROD.
+No omite blockers/dependencias: delimitar aceptación QA-03/QA-04/REL Web-only con el responsable
+antes de release (tabla histórica exige MIG-03/QA-02 diferidos); no declararlos cumplidos ni
+activar Sync/MIG automáticamente. Camino inferior corresponde a baseline integrada histórica.
 
 Baseline revisión → CLOUD-01 → CLOUD-02 → CLOUD-03/04 → CLOUD-05/06 → API-01 →
 API-02..08 → SYNC-01/02 → SYNC-03/04/05/06 → MIG-01/02 → QA-02 → QA-04 → REL-02.
