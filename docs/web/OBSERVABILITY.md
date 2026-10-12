@@ -1,5 +1,13 @@
 # Observabilidad V1
 
+DEV-00: [DEV local/CI→UAT→aprobación humana→PROD](DEV-00.md). Primer runtime online será
+UAT, no producción comercial; monitoring/proveedores aún NO configurados. DEV-05 debe verificar
+señal runtime/alertas mediante fallos controlados en UAT y DEV-06 incorporarlo a aceptación.
+PROD futuro requiere monitoring propio y sign-off; build/CI/health de deploy no sustituyen monitor
+continuo. Mantener commit/release identity y entorno en evidencia operativa sin payload/PII/secrets;
+accesos, retención y alertas aislados por entorno. Métricas Sync/outbox/import se difieren para
+el track Web-only, no se implementan por anticipación ni se marcan verificadas.
+
 Logs JSON de Fastify hacia Railway, requestId generado server y devuelto al cliente.
 Campos permitidos: timestamp UTC, level, route template (sin IDs/query), method, status,
 durationMs, errorCode, deployment commit y correlation requestId. No request/response body,

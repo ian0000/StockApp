@@ -1,5 +1,10 @@
 # Despliegue objetivo — sin configuración aplicada
 
+DEV-00 (2026-10-12) supersede el antiguo plan production/staging: **DEV → UAT → aprobación
+humana → PROD**. La topología inicial antes llamada producción es UAT, primer entorno online.
+PROD no está provisionado; será NUEVO e independiente tras aceptación y sign-off.
+No main→PROD automático. [Decisión, gates y pendientes](DEV-00.md).
+
 Normativa para hosts, entornos y secretos. Plataforma fija: frontend Cloudflare Pages;
 API y PostgreSQL Railway. Cloudflare conserva DNS/TLS/custom domains; Railway aloja ejecución.
 No proyecto/service/DB/DNS/env externos creados ni credenciales consultadas en esta fase.
@@ -9,17 +14,24 @@ No proyecto/service/DB/DNS/env externos creados ni credenciales consultadas en e
 | Uso | Host objetivo | Estado |
 | --- | --- | --- |
 | Landing/legales/support | https://ian-k.dev/stockapp/ | Sistema independiente existente; no modificado |
-| Web app | https://stockapp.ian-k.dev | Target, no provisionado aquí |
-| API | https://api-stockapp.ian-k.dev | Target, no provisionado aquí |
-| QA web | https://stockapp-staging.ian-k.dev | Target staging, antes de auth E2E |
-| QA API | https://api-stockapp-staging.ian-k.dev | Target staging, DB separada |
+| UAT Web propuesta | https://stockapp-staging.ian-k.dev | Nombre staging histórico; aprobación humana pendiente antes de DEV-04 |
+| UAT API propuesta | https://api-stockapp-staging.ian-k.dev | Aprobación humana pendiente; API/DB UAT propias |
+| Reserva propuesta PROD Web | https://stockapp.ian-k.dev | Host ya documentado; confirmar reserva/uso futuro, sin provisioning |
+| Reserva propuesta PROD API | https://api-stockapp.ian-k.dev | Host ya documentado; confirmar reserva/uso futuro, sin provisioning |
+
+Este mapeo es PROPUESTA, no DNS aprobado/aplicado. Reasignar la topología antigua a UAT no
+asigna automáticamente sus antiguos hosts PROD. No nuevo hostname PROD inventado ni staging
+como tercer entorno obligatorio. Landing independiente; UAT no se anuncia como lanzamiento oficial.
 
 Subdominios app/API del mismo site HTTPS simplifican cookies same-site y distinguen public/app/API.
 No usar path de landing como inventario ni alternar proveedores por familiaridad.
 
 ## Cloudflare Pages
 
-Un proyecto app-web independiente de la landing; repo StockApp, branch production main.
+Un proyecto UAT Web independiente de la landing; repo StockApp, rama candidata main validada.
+Pages puede llamarla `production branch`: etiqueta del proveedor, no PROD StockApp.
+Preferir stockapp-web-uat, sujeto a capacidades reales verificadas antes de crear recursos.
+PROD futuro requiere otro proyecto/deployment y configuración independiente, tras aprobación.
 Build working directory raíz del monorepo para resolver workspace deps y lockfile.
 Scripts implementados por WEB-01; configuración de hosting aún OBJETIVO: instalación `pnpm install --frozen-lockfile`,
 build `pnpm --filter @stock-app/web build`, output `apps/web/dist`. Vite empaqueta imports domain/contracts
@@ -31,9 +43,9 @@ Assets fingerprinted cache long immutable; HTML/config no-cache/revalidate; auth
 Headers CSP/security en artefacto estático revisado; ningún dato de inventario embebido en build.
 
 VITE_API_URL y VITE_APP_ENV son públicos y embebidos durante build, no runtime secrets.
-Cambio de env requiere rebuild. Producción apunta API production; staging a API staging.
+Cambio de env requiere rebuild. UAT apunta únicamente API UAT; PROD futuro solo API PROD.
 Preview de ramas confiables: Pages preview estático/contratos ficticios por defecto, sin credenciales
-de prod. Para QA autenticada, usar branch staging y hostname staging mismo site, no wildcard pages.dev
+de PROD. Para QA autenticada, usar UAT autorizado con commit validado y hostname aprobado mismo site, no wildcard pages.dev
 en CORS; preview arbitraria con datos ficticios puede funcionar sin login. No exponer cuenta real a PR
 de fork ni permitir cookies third-party como workaround. Branch controls/watches en DEV-03/DEV-04.
 
@@ -44,17 +56,21 @@ revisadas; comandos de paquete son diseño futuro, no comandos ejecutados hoy.
 
 ## Railway
 
-Proyecto con entorno production: api (una réplica V1), postgres (volumen persistente), tarea
-programada de mantenimiento/backups como comando del mismo código cuando necesario; sin broker/Redis.
-Staging aislado con API/DB propios y datos ficticios: justificado por sync, auth y migraciones
-destructivas que no se prueban contra producción. No crear una DB por cada PR.
+Proyecto/entorno UAT: API (una réplica V1), PostgreSQL propio con volumen persistente y futuro
+mantenimiento/backups bajo control operativo, sin broker/Redis. Si Railway expone `production`
+como nombre del entorno inicial, sigue siendo UAT StockApp, no lanzamiento comercial.
+Preferir stockapp-api-uat/stockapp-postgres-uat; verificar naming antes de provisioning.
+PROD futuro será independiente: API/DB/configuración/credenciales/secrets/cookies/origins propios,
+sin DB comercial compartida ni copia UAT→PROD. UAT inicial solo datos sintéticos/controlados
+de prueba. No crear DB por cada PR ni una DB DEV compartida permanente por suposición.
 
 Repo root `/` como shared monorepo; Railpack objetivo, toolchain explícito Node 22 compatible y
 pnpm 11.0.9. No copiar el Nixpacks bootstrap de otra app como garantía. DEV-01 debe demostrar
 instalación pnpm determinista y resolver cualquier fallo Corepack/Railpack con logs reales antes de
 llamarlo listo. Builds no llevan DB/secrets en frontend ni dependen de apps/mobile native.
 
-Scripts implementados CLOUD-01: `pnpm build:api` compila contracts y API con tsc, sin bundler.
+Snapshot histórico CLOUD-01/02 (API-02 supersede el empaquetado Domain/Application; estado en
+[CURRENT_STATE](CURRENT_STATE.md)): `pnpm build:api` compila contracts y API con tsc, sin bundler.
 Entry `apps/api/dist/server.js` consume `packages/contracts/dist` mediante workspace: ambos dist
 y node_modules deben conservarse. Start filtrado ejecuta `node dist/server.js` desde apps/api;
 `node apps/api/dist/server.js` desde raíz también funciona. Dev usa tsx/condition development.
@@ -65,6 +81,7 @@ Comando build Railway `pnpm --filter @stock-app/api build`; predeploy
 Migration es tarea única con advisory lock, falla y bloquea nuevo deploy si SQL falla;
 no correr auto migrations en cada request/start replica.
 
+Requisitos objetivo DEV-01/DEV-04, no prueba de runtime/config desplegados:
 API bind 0.0.0.0:$PORT. Healthcheck `/health` timeout de plataforma 300s y ping DB acotado 2s;
 200 solo DB accesible/schema compatible/config válido, 503 sin detalles. SIGTERM deja de aceptar
 requests, termina transacciones dentro de grace period y cierra pool; client retry misma key.
@@ -72,8 +89,10 @@ Pool inicial max 10, timeouts query 10s para comandos, límites especiales impor
 Postgres red privada, DATABASE_URL referencia servicio. Acceso público DB deshabilitado salvo
 intervención operativa temporal autorizada; ningún VITE_DATABASE_URL.
 
-GitHub autodeploy branch main para production, staging para QA; wait for required CI habilitado en
-Railway y comprobado. Watch paths apps/api, packages/domain/application/contracts, lockfile y config
+Futuro main validado→UAT, sin autodeploy PROD. DEV-04/DEV-06 deben demostrar que la integración
+espera todos los required CI/GitGuardian sobre el SHA exacto: `Wait for CI` por sí solo no prueba
+nuestro gate completo (otras apps/skipped/neutral/cancelled). Hasta verificarlo, autodeploy integrado
+deshabilitado y despliegue manual controlado del commit validado. Watch paths apps/api, packages/domain/application/contracts, lockfile y config
 raíz. Cambios mobile-only no redeploy API; shared sí. Logs de build no equivalen a health runtime.
 [Railway monorepos](https://docs.railway.com/deployments/monorepo),
 [healthchecks](https://docs.railway.com/deployments/healthchecks),
@@ -84,7 +103,7 @@ Railway healthcheck de despliegue NO es monitor continuo; OBSERVABILITY exige se
 
 | Lugar | Variables previstas | Secreto |
 | --- | --- | --- |
-| Pages production/staging | VITE_API_URL, VITE_APP_ENV | No |
+| Pages UAT / futuro PROD separados | VITE_API_URL, VITE_APP_ENV | No |
 | Railway API | NODE_ENV, PORT, APP_ORIGIN, AUTH_BASE_URL, LOG_LEVEL | No (config restringida) |
 | Railway API | DATABASE_URL, BETTER_AUTH_SECRET, SMTP_HOST/PORT/USER/PASSWORD, SMTP_FROM | Password/secret/URL credencial sí |
 | API auth config | AUTH_BASE_URL, APP_ORIGIN, SMTP_SECURITY, NODE_ENV=production en despliegue | Origins/modo públicos, no secretos |
@@ -98,14 +117,16 @@ Dependencias y env schema se validan al boot; default permisivo de auth/origins 
 CLOUD-03 implementa config server-side local, sin aplicar variables en Railway. AUTH_BASE_URL activa
 composición auth y exige DATABASE_URL/APP_ORIGIN/secret/SMTP completos. Sin AUTH_BASE_URL conserva
 foundation-only, /live 200 sin DB/SMTP, auth ausente y /health 404. No automigrations/ready ficticio.
-Producción exige HTTPS; cookie Secure también para HTTPS de QA. SMTP_SECURITY debe ser tls (TLS
+UAT/PROD exigen HTTPS; NODE_ENV=production es modo técnico server en ambos, no release PROD.
+Cookie Secure/host-only para cada API; sin compartir cookies entre entornos. SMTP_SECURITY debe ser tls (TLS
 inmediato) o starttls (upgrade obligatorio); local solo loopback no-production. FROM bare email,
 USER/PASSWORD ambos o ninguno según relay. TLS remoto/delivery externo no validados aquí.
 Generación CLI usa config ficticia offline independiente; nunca desplegar schema-config.ts como runtime.
 
 ## CORS/DNS/TLS
 
-Production allow-origin exacto https://stockapp.ian-k.dev con credentials; staging exacto host staging.
+UAT allow-origin exacto del host UAT aprobado; PROD futuro exacto del host PROD aprobado,
+cada uno con configuración/credenciales separadas. No aplicar los hosts propuestos antes de aprobación.
 OPTIONS antes de auth, métodos requeridos, headers Content-Type/Idempotency-Key/X-CSRF-Token;
 exponer X-Request-Id/Retry-After. Vary: Origin. No `*` con credenciales ni reflect Origin arbitrario.
 Native no depende de CORS, pero depende de sesión/ownership. Configuración de dev localhost separada.
@@ -116,10 +137,16 @@ verificado con certificados/origin. API privada no cacheable; no añadir CDN cac
 
 GitHub Actions valida, no despliega. Pages y Railway son CD; PR/revisión/merge siguen la autorización
 vigente de CI_CD (agente autorizado, checks verdes obligatorios, sin bypass).
-Pages auto-build no reemplaza CI: activar production deploy solo de commit main cuya CI pasó.
+Pages auto-build no reemplaza CI: activar deploy UAT solo del SHA main exacto con gates verdes.
 DEV-04 comprueba esa asociación; si integración no ofrece gate de CI efectivo, usar aprobación/deploy
-manual del artefacto de commit verde desde Pages hasta resolver, sin pasar CD a GitHub Actions.
+manual controlado del artefacto de commit verde desde Pages hasta resolver, sin pasar CD a GitHub Actions.
 No prometer wait-for-CI nativo de Pages sin comprobarlo.
+CI del head PR no prueba un SHA merge/main diferente: registrar resultados del commit desplegado
+y asociación de revisión/GitGuardian/artifact. Revalidar identidad si main avanza; no latest a ciegas.
+DEV-04 prueba pending/failing/cancelled/missing/scan/race; DEV-06 rehearsal integrado.
+UAT aceptado→release candidate→sign-off humano→mismo commit/artifact aprobado→PROD controlado
+→smoke/monitoring. VITE_* puede exigir build de entorno separado, conservando source/release identity
+y validando artifact/config. Migración PROD revisada aparte; aceptación UAT no autoriza PROD.
 Rollback frontend al artefacto anterior; API al build compatible con schema expand.
 Migración destructiva no se 'revierte' bajando código; plan restore aislado en OPERATIONS.
 

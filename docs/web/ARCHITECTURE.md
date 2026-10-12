@@ -1,5 +1,20 @@
 # Arquitectura objetivo
 
+## Entornos vigentes — enmienda DEV-00, 2026-10-12
+
+**DEV → UAT → aprobación humana → PROD.** [DEV-00](DEV-00.md) supersede el anterior
+plan de despliegue production/staging, sin cambiar stack ni arquitectura de dominio.
+DEV: Web/API/PostgreSQL locales y GitHub CI; no DB hosted compartida permanente obligatoria.
+UAT: primer entorno online FUTURO, Pages Web + Railway API/PostgreSQL con datos sintéticos
+de prueba. La topología inicial antes llamada producción se destina a UAT.
+PROD: NO PROVISIONADO; nuevo Pages/API/PostgreSQL independiente tras aceptación y sign-off.
+DB, secretos, credenciales, cookies y origins por entorno; no compartir ni copiar DB UAT→PROD.
+Provider `production branch`/entorno `production` puede corresponder a UAT, no release comercial.
+Main no despliega automáticamente a PROD. CI exact-commit→UAT solo con gate verificado o control
+manual; promoción PROD exige autorización humana aparte. Hosts propuestos/aprobación en DEPLOYMENT.
+Track actual exclusivamente Web/API/PostgreSQL; sync/replicación/outbox/MIG Mobile y EAS/stores
+se difieren, manteniendo contratos y diseño evolutivo inferiores. Ningún servicio desplegado aquí.
+
 API-01 materializa el límite transaccional en infrastructure/postgres: READ COMMITTED,
 FOR UPDATE de Inventory autorizado, callback en el mismo tx, revision bigint, receipt/ChangeSet
 atómicos. Savepoint revierte writes de callback para resultados terminales negativos. GET operation

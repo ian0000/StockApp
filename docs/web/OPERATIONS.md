@@ -1,5 +1,20 @@
 # Operación, retención y recuperación
 
+DEV-00 formaliza DEV local/CI→UAT primer entorno online→aprobación humana→PROD NUEVO
+independiente/no provisionado. [Política](DEV-00.md). Runbooks siguientes son requisitos, no
+evidencia de backups/restore configurados. UAT temprano solo datos sintéticos/controlados de prueba;
+no datos de clientes/negocios reales hasta verificar protecciones. DB/config/secrets por entorno,
+sin copiar DB UAT a PROD ni secretos PROD a UAT. Casos Sync/Mobile/import siguen diferidos en el
+track Web-only; no se implementan jobs/runbooks automáticos en esta actualización.
+
+DEV-02 debe ensayar restore UAT en DB aislada, custodiar copia independiente cifrada del backup
+y registro API-10 de supresión fuera del snapshot, verificar retención real y aplicar supresión
+ANTES de reabrir servicio restaurado. Browser BackupV1/AccountExport no sustituyen recovery
+PostgreSQL. Railway no se presume suficiente para todas las obligaciones. Evidencia UAT exigida
+antes de PROD; RPO/RTO/retención inferiores son objetivos, no cumplimiento/SLA comprobado.
+Predeploy Drizzle con advisory lock bajo control único; falla bloquea deploy, sin migrar requests.
+SQL destructivo/migración PROD requieren revisión; rollback de código no revierte schema.
+
 API-10 implementa REQUESTED/PROCESSING/COMPLETED, leases recuperables, startup/wake/sweep5s y purge por fases transaccionales. Registro privado HMAC export/apply se prueba localmente contra restore antiguo. No pruning automático: DEV-02 debe custodiar copia independiente cifrada y demostrar last-backup+7d antes de podar; producción sigue bloqueada por DEV-02/REL. [Detalle](API-10.md).
 
 Objetivo futuro, no infraestructura configurada. Operador responsable: desarrollador del proyecto;
