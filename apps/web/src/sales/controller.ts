@@ -1,6 +1,7 @@
 import type { RegisterSaleCommand, ProductReadDto } from '@stock-app/contracts';
 import type { QueryClient } from '@tanstack/react-query';
 import { SessionController } from '../auth/session.js';
+import { invalidateCommercialReads } from '../reads/queries.js';
 import { ApiClientError } from '../api/client.js';
 import {
   ScopedCommandController,
@@ -214,6 +215,7 @@ export class SalesController extends ScopedCommandController<
     await this.queries.invalidateQueries({
       queryKey: salesKey(scope, 'detail', saleId.toLowerCase()),
     });
+    await invalidateCommercialReads(this.queries, scope);
     if (this.current(epoch, scope))
       this.publish({
         kind: 'ACCEPTED',

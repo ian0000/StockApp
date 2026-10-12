@@ -9,6 +9,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { ApiClientError } from '../api/client.js';
 import { SessionController } from '../auth/session.js';
 import type { ProductsClient } from './client.js';
+import { invalidateCommercialReads } from '../reads/queries.js';
 import {
   buildUpdateCommand,
   buildArchiveCommand,
@@ -145,6 +146,7 @@ export class ProductsController extends ScopedCommandController<
             ? productsKey(scope, 'list')
             : productsKey(scope),
       });
+    await invalidateCommercialReads(this.queries, scope);
     if (this.current(epoch, scope))
       this.publish({
         kind: 'ACCEPTED',

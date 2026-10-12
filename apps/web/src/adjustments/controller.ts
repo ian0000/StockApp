@@ -4,6 +4,7 @@ import type {
   ProductReadDto,
 } from '@stock-app/contracts';
 import type { QueryClient } from '@tanstack/react-query';
+import { invalidateCommercialReads } from '../reads/queries.js';
 import type { SessionController } from '../auth/session.js';
 import { ApiClientError } from '../api/client.js';
 import {
@@ -270,6 +271,7 @@ export class AdjustmentsController extends ScopedCommandController<
     this.clearIntent();
     this.review = undefined;
     await this.queries.invalidateQueries({ queryKey: productsKey(scope) });
+    await invalidateCommercialReads(this.queries, scope);
     if (this.current(epoch, scope))
       this.publish({
         kind: 'ACCEPTED',

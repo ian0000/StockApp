@@ -126,6 +126,23 @@ a[aria-current='page'] {
 .stock-label {
   display: block;
 }
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem 1rem;
+}
+.dashboard-metrics dt {
+  font-weight: 600;
+}
+.dashboard-metrics dd {
+  margin: 0;
+}
+.primary-action {
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+}
 .product-detail dl,
 .sale-detail dl {
   display: grid;
@@ -160,6 +177,13 @@ fieldset {
   border: 1px solid #c7d2da;
 }
 @media (max-width: 48rem) {
+  .dashboard-metrics {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .dashboard-metrics dd {
+    margin-bottom: 0.75rem;
+  }
   .product-detail dl,
   .sale-detail dl {
     grid-template-columns: 1fr;

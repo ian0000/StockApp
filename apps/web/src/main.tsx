@@ -16,6 +16,7 @@ import { createPurchasesClient } from './purchases/client.js';
 import { PurchasesController } from './purchases/controller.js';
 import { createAdjustmentsClient } from './adjustments/client.js';
 import { AdjustmentsController } from './adjustments/controller.js';
+import { createReadsClient } from './reads/client.js';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root.');
@@ -65,6 +66,7 @@ try {
       sales={sales}
       purchases={purchases}
       adjustments={adjustments}
+      reads={createReadsClient(api)}
     />,
   );
 } catch {

@@ -1,5 +1,7 @@
 # Auditoría del estado actual
 
+WEB-08 materializa Home e History con Dashboard/HistoryPage existentes, profit nullable, low-stock preview y timezone Inventory; accepted/recovery invalidan consultas propias sin agregación optimista. [Detalle y gates](WEB-08.md).
+
 WEB-07 implementa /adjustments/new, exact State, revisión explícita y recuperación scoped. Sin nuevos contratos/dependencias ni cambios API/Domain/Application/Mobile. [Detalle y gates](WEB-07.md).
 
 WEB-06 implementa compra de un Product con State exacto, confirmación autoritativa, margen exacto
