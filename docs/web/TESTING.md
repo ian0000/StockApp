@@ -1,5 +1,13 @@
 # Pruebas y DoD futura
 
+Política prospectiva CI-OPT-01: focused durante implementación; antes de PR, checks por impacto y
+consumidores según [la matriz conservadora](CI-OPT-01.md). Docs/Web aislados no levantan PostgreSQL;
+API/Contracts requieren el suite DB completo; Domain/Application/global/QA/CI/unknown requieren
+full. `pnpm check`/`pnpm test:db` conservan todas sus validaciones. Quality checks verifica el plan,
+jobs y reports del mismo SHA; no considera un skipped requerido como éxito. Full programado/manual
+y release exact-SHA permanecen completos. Sin cambios en tests, pools/timeouts/concurrency global.
+Las entregas siguientes son evidencia histórica; no redefinen esta política prospectiva.
+
 WEB-10 añade matriz account-access/reauth/download/cleanup/unknown202+revocation/no storage/lateA→B y rutas/validadores CSP. Smoke fixture local y descargas verificadas no equivalen a QA-03; PostgreSQL/generadores/gates completos requeridos. [Detalle](WEB-10.md).
 
 WEB-09 añade matriz Void/refresco de evidencia/same-key/reload/privacidad/boundaries/cache accepted-only y UI. GET State aprobado se prueba PostgreSQL real con archived/A-B/legacy/BIGINT/null/zero/no-writes y regresión Product GET. Gates secuenciales sin relajación. [Detalle](WEB-09.md).

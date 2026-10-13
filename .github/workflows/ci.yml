@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -16,11 +14,103 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Quality checks
+  classify:
+    name: Classify changes
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      head: ${{ steps.plan.outputs.head }}
+      digest: ${{ steps.plan.outputs.digest }}
+      policy: ${{ steps.plan.outputs.policy }}
+      full: ${{ steps.plan.outputs.full }}
+      web: ${{ steps.plan.outputs.web }}
+      api: ${{ steps.plan.outputs.api }}
+      mobile: ${{ steps.plan.outputs.mobile }}
+      contracts: ${{ steps.plan.outputs.contracts }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+      - name: Build auditable dependency-aware plan
+        id: plan
+        run: node scripts/ci/classify.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-plan-${{ github.run_attempt }}
+          path: |
+            .ci/plan.json
+            .ci/classification-timing.json
+          include-hidden-files: true
+          if-no-files-found: error
 
+  policy:
+    name: Policy checks
+    needs: classify
+    if: ${{ needs.classify.outputs.policy == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run policy validation and measure stages
+        run: pnpm ci:run policy
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-policy-${{ github.run_attempt }}
+          path: .ci/report-policy.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  web:
+    name: Web checks
+    needs: classify
+    if: ${{ needs.classify.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run web validation and measure stages
+        run: pnpm ci:run web
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-web-${{ github.run_attempt }}
+          path: .ci/report-web.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  api:
+    name: Api checks
+    needs: classify
+    if: ${{ needs.classify.outputs.api == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:18.6
@@ -35,39 +125,128 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22.16.0
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Run quality checks
-        run: pnpm check
-
-      - name: Verify migration generation is reproducible
-        run: |
-          pnpm --filter @stock-app/api db:generate
-          test -z "$(git status --porcelain -- apps/api/drizzle)"
-
-      - name: Verify official Better Auth schema
-        run: |
-          pnpm --filter @stock-app/api auth:generate
-          test -z "$(git status --porcelain -- apps/api/src/infrastructure/postgres/auth-schema.ts)"
-          pnpm --filter @stock-app/api auth:check
-
-      - name: Test PostgreSQL migrations, auth, ownership, security and compiled HTTP with local SMTP
+      - name: Run api validation and measure stages
         env:
           TEST_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/stockapp_test
-        run: pnpm test:db
+        run: pnpm ci:run api
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-api-${{ github.run_attempt }}
+          path: .ci/report-api.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  mobile:
+    name: Mobile checks
+    needs: classify
+    if: ${{ needs.classify.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run mobile validation and measure stages
+        run: pnpm ci:run mobile
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-mobile-${{ github.run_attempt }}
+          path: .ci/report-mobile.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  contracts:
+    name: Contracts checks
+    needs: classify
+    if: ${{ needs.classify.outputs.contracts == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run contracts validation and measure stages
+        run: pnpm ci:run contracts
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-contracts-${{ github.run_attempt }}
+          path: .ci/report-contracts.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  full:
+    name: Full regression
+    needs: classify
+    if: ${{ needs.classify.outputs.full == 'true' }}
+    uses: ./.github/workflows/full-regression.yml
+    with:
+      candidate_sha: ${{ needs.classify.outputs.head }}
+
+  quality:
+    name: Quality checks
+    if: ${{ always() }}
+    needs: [classify, policy, web, api, mobile, contracts, full]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.classify.outputs.head || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-plan-${{ github.run_attempt }}
+          path: .ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ci-result-*-${{ github.run_attempt }}
+          path: .ci/results
+      - name: Verify exact plan, selected jobs and complete command reports
+        if: ${{ always() }}
+        env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/ci/aggregate.mjs
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-summary-${{ github.run_attempt }}
+          path: .ci/summary.json
+          include-hidden-files: true
+          if-no-files-found: error

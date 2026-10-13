@@ -1,5 +1,20 @@
 # CI/CD futuro
 
+## Política CI vigente — CI-OPT-01
+
+PR/main usan clasificación por diff real/dependencias, checks mínimos y jobs por impacto, con
+fallback full. El agregador siempre presente conserva el nombre protegido **Quality checks**;
+valida cada job seleccionado y su report del mismo SHA. GitGuardian/reviews siguen independientes.
+`pnpm check`/`pnpm test:db` completos, PostgreSQL18.6 y Node22.16.0/pnpm11.0.9 conservados.
+[Matriz, workflows, mediciones y límites](CI-OPT-01.md).
+
+Full regression diaria a las03:23 America/Guayaquil y manual con ref+SHA esperado; un candidato PROD
+requiere éxito full del SHA exacto y aprobación humana. El workflow de timings consulta únicamente
+metadata Actions con token read-only. Ningún workflow despliega ni recibe credenciales de hosting.
+Main→UAT sigue condicionado al gate completo DEV-04/exact-commit/artifact/GitGuardian/smoke;
+provider autodeploy permanece deshabilitado hasta demostrarlo. DEV-01..06 siguen PLANNED.
+Las descripciones inferiores del workflow anterior son baseline/evidencia histórica.
+
 ## Política vigente — DEV-00, 2026-10-12
 
 **DEV → UAT → aprobación humana → PROD.** Main validado puede alimentar el futuro UAT;

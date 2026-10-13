@@ -1,0 +1,40 @@
+name: CI timings
+
+on:
+  workflow_run:
+    workflows: [CI, Full regression]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  timings:
+    name: Record completed workflow timings
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Never check out or execute code from the triggering PR.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ci-summary*-${{ github.event.workflow_run.run_attempt }}
+          path: .ci/source-summaries
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Collect read-only job timestamps and measured stages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/timings.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-timings-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          path: .ci/timings.json
+          include-hidden-files: true
+          if-no-files-found: error

@@ -1,0 +1,140 @@
+name: Full regression
+
+on:
+  workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact classified commit
+        required: true
+        type: string
+  schedule:
+    # 03:23 America/Guayaquil (UTC-5); provider scheduling may be delayed.
+    - cron: '23 8 * * *'
+  workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: Commit, branch or tag to check out
+        required: true
+        type: string
+      expected_sha:
+        description: Required exact 40-character commit SHA of that ref
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-regression-${{ github.event_name }}-${{ inputs.candidate_sha || inputs.expected_sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve exact candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      head: ${{ steps.plan.outputs.head }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.candidate_sha || inputs.candidate_ref || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+      - name: Verify candidate and require full plan
+        id: plan
+        env:
+          CI_EXPECTED_SHA: ${{ inputs.candidate_sha || inputs.expected_sha }}
+          CI_CANDIDATE_SHA: ${{ inputs.candidate_sha || inputs.expected_sha || github.sha }}
+        run: node scripts/ci/resolve.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-plan-full-${{ github.run_attempt }}
+          path: |
+            .ci/plan.json
+            .ci/classification-timing.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  regression:
+    name: Full workspace and PostgreSQL
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: stockapp_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d stockapp_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.head }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run complete gates sequentially and measure stages
+        env:
+          TEST_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/stockapp_test
+          CI_CANDIDATE_SHA: ${{ needs.resolve.outputs.head }}
+        run: pnpm ci:run full
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-result-full-${{ github.run_attempt }}
+          path: .ci/report-full.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  verified:
+    name: Full regression checks
+    if: ${{ always() }}
+    needs: [resolve, regression]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.head || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-plan-full-${{ github.run_attempt }}
+          path: .ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-result-full-${{ github.run_attempt }}
+          path: .ci/results
+      - name: Verify full report belongs to exact candidate
+        if: ${{ always() }}
+        env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+          CI_CANDIDATE_SHA: ${{ needs.resolve.outputs.head }}
+        run: node scripts/ci/aggregate.mjs full
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ci-summary-full-${{ github.run_attempt }}
+          path: .ci/summary.json
+          include-hidden-files: true
+          if-no-files-found: error

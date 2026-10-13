@@ -1215,6 +1215,25 @@ dentro del scope autorizado.
 
 ---
 
+# 65.2. Quality gates por impacto — CI-OPT-01
+
+Durante implementación, ejecutar pruebas focused y checks del paquete relacionado. Antes de PR,
+usar el clasificador conservador de [CI-OPT-01](docs/web/CI-OPT-01.md): docs, Web, API, Contracts y
+Mobile seleccionan sus checks y consumidores reales. API conserva `test:db` completo mientras no
+exista un mapping focused demostrado. Domain/Application, infraestructura de QA/CI, configuración
+global, cambios inciertos y comparación unavailable requieren full regression.
+
+`pnpm check` y `pnpm test:db` siguen completos. No quitar pruebas, relajar assertions ni cambiar
+pools, concurrencia global o timeouts para reducir duración. El check obligatorio `Quality checks`
+valida el plan, todos los jobs seleccionados y sus reports del SHA exacto; skipped solo se admite
+para jobs explícitamente no seleccionados. GitGuardian/reviews se verifican independientemente.
+
+Full regression programada/manual y cualquier candidato de release conservan los gates completos;
+la aceptación es del SHA exacto, nunca de otro commit. No autorizan despliegue. Mantener la política
+65.1 para AUTO-FIX/HUMAN STOP y preservar entregas históricas.
+
+---
+
 # 66. Si encuentra deuda técnica
 
 No corregir automáticamente todo el proyecto.

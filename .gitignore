@@ -14,6 +14,7 @@ build/
 dist/
 web-build/
 coverage/
+.ci/
 *.tsbuildinfo
 
 # Logs and temporary files

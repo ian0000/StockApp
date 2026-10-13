@@ -1,5 +1,9 @@
 # Backlog de implementación Cloud/Web
 
+CI-OPT-01: CI selectivo conservador/dependency-aware, Quality checks estable y full regression
+programada/manual/exact-SHA. Cambia únicamente infraestructura de calidad y documentación;
+[implementación, gates y evidencia](CI-OPT-01.md). No implementa DEV-01..06 ni provisioning/CD.
+
 DEV-00 IMPLEMENTED — decisión documental UAT-first: DEV local/CI→UAT primer online→aprobación
 humana→PROD NUEVO independiente. Sin provisioning/DNS/deploy. DEV-01..06 siguen PLANNED;
 cada ejecución requiere autorización, STOP tras DEV-00. [Política y pendientes](DEV-00.md).
