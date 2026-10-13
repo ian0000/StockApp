@@ -1006,8 +1006,8 @@
     "/health": {
       "get": {
         "operationId": "getHealth",
-        "summary": "Database readiness; currently returns 404",
-        "x-stockapp-implementation-status": "planned",
+        "summary": "Configured database and schema readiness; fail-closed without diagnostics",
+        "x-stockapp-implementation-status": "implemented",
         "x-stockapp-auth-level": "public",
         "security": [],
         "parameters": [],
@@ -1030,104 +1030,25 @@
               }
             }
           },
-          "400": {
-            "description": "Sanitized API error",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server-generated correlation identifier",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Sanitized API error",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server-generated correlation identifier",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Sanitized API error",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server-generated correlation identifier",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Sanitized API error",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server-generated correlation identifier",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Sanitized API error",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server-generated correlation identifier",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Retry-After": {
-                "description": "Delay in seconds",
-                "schema": {
-                  "type": "string",
-                  "pattern": "^[0-9]+$"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
           "500": {
+            "description": "Sanitized API error",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated correlation identifier",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
             "description": "Sanitized API error",
             "headers": {
               "X-Request-Id": {

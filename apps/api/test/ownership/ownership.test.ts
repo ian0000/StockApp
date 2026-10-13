@@ -472,7 +472,6 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
         '/admin',
         '/v1/admin',
         '/v1/pilot',
-        '/health',
         '/v1/products',
         '/v1/sales',
         '/v1/purchases',
@@ -491,6 +490,7 @@ test('ownership HTTP with real PostgreSQL and Better Auth enforces scope and emp
           ).statusCode,
           404,
         );
+      assert.equal((await f.app.inject('/health')).statusCode, 503);
       assert.equal((await f.post('delete-user', {}, cookieA)).statusCode, 404);
       await f.pool.query(
         "UPDATE session SET expires_at=now()-interval '1 second' WHERE user_id=$1",

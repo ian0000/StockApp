@@ -106,7 +106,7 @@ test('implemented route schemas match the manifest and future routes remain abse
       .filter(
         (route) =>
           route.implementationStatus === 'implemented' &&
-          route.path !== '/live',
+          !['/live', '/health'].includes(route.path),
       )
       .map((route) => route.operationId)
       .sort(),
@@ -116,7 +116,7 @@ test('implemented route schemas match the manifest and future routes remain abse
   createSchemaValidator(contractSchemas.Live)(live.json());
   for (const path of ['/health']) {
     const response = await app.inject(path);
-    assert.equal(response.statusCode, 404);
+    assert.equal(response.statusCode, 503);
     createSchemaValidator(contractSchemas.ApiError)(response.json());
   }
   const products = await app.inject(

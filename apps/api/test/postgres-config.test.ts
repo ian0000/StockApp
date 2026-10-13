@@ -40,7 +40,7 @@ test('creating a pool or importing the migration runner does not connect or migr
   await pool.end();
 });
 
-test('liveness remains independent of unavailable or absent DB and readiness stays absent', async (t) => {
+test('liveness remains independent of unavailable or absent DB and readiness fails closed', async (t) => {
   const previous = process.env.DATABASE_URL;
   t.after(() => {
     if (previous === undefined) delete process.env.DATABASE_URL;
@@ -54,7 +54,7 @@ test('liveness remains independent of unavailable or absent DB and readiness sta
       const response = await app.inject('/live');
       assert.equal(response.statusCode, 200);
       assert.deepEqual(response.json(), { status: 'ok' });
-      assert.equal((await app.inject('/health')).statusCode, 404);
+      assert.equal((await app.inject('/health')).statusCode, 503);
     } finally {
       await app.close();
     }

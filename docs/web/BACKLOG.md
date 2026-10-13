@@ -1,5 +1,9 @@
 # Backlog de implementación Cloud/Web
 
+DEV-01 IN PROGRESS: runtime/readiness y gates locales PASS; API Railway staged; CI/GitGuardian y plan/región/
+activación pendientes. Sin DB/deployment público ni UAT acceptance; DEV-02+ no iniciados.
+[Reporte y límites](DEV-01.md). Las referencias PLANNED inferiores describen el snapshot DEV-00.
+
 CI-OPT-01: CI selectivo conservador/dependency-aware, Quality checks estable y full regression
 programada/manual/exact-SHA. Cambia únicamente infraestructura de calidad y documentación;
 [implementación, gates y evidencia](CI-OPT-01.md). No implementa DEV-01..06 ni provisioning/CD.
@@ -130,7 +134,7 @@ recursos nuevos/independientes con sign-off humano. Nombres staging son históri
 | ID | Ticket / alcance | Dependencias | Aceptación específica |
 | --- | --- | --- | --- |
 | DEV-00 | IMPLEMENTED — Arquitectura UAT-first/CI-CD documental | WEB-10 | DEV→UAT→sign-off→PROD; ADRs/hosts/gates alineados, sin provisioning/runtime/CI changes |
-| DEV-01 | PLANNED — Railway API topology/build/start UAT | DEV-00, CLOUD-01, CLOUD-05 | Root workspace/pnpm pin real, logs build/start, /health config, no copy de otro dominio |
+| DEV-01 | IN PROGRESS — runtime/readiness y gates locales PASS; Railway staged | DEV-00, CLOUD-01, CLOUD-05 | CI/GitGuardian, plan/región/activación y build del proveedor pendientes; no DONE |
 | DEV-02 | Railway PostgreSQL/migrations/backups/recovery | DEV-01, CLOUD-02, API-10 | Private DB, locked migrate, backups+copia independiente cifrada; restore/supresión probado |
 | DEV-03 | Pages proyecto UAT Web/preview/build | DEV-00, WEB-01 | Output correcto/deep links/headers; preview ficticio, sin PROD secrets |
 | DEV-04 | Hosts/DNS/TLS/CORS/env y gate CD UAT | DEV-02, DEV-03, CLOUD-03 | Aprobar mapping hosts antes de DNS; same-site auth, required CI/GitGuardian exact-SHA gate o manual, no wildcard previews |

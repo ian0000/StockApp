@@ -1,5 +1,10 @@
 # Contratos StockApp V1 — CLOUD-06
 
+DEV-01 implementa GET /health público: Health200 `{status:"ok"}` solo con configuración/DB/schema
+compatibles; ApiError503 `TEMPORARILY_UNAVAILABLE`, requestId y no-store al fallar. Decisión humana
+conserva ApiError existente; /live independiente. 27 operaciones implemented; sin cambio de entidades,
+versiones ni contratos financieros. [Readiness y límites](DEV-01.md).
+
 WEB-09 — excepción humana read-only aprobada: GET /v1/inventories/{inventoryId}/products/{productId}/state devuelve InventoryState existente para propios active/archived. ProductParams/NoQuery/cloud-inventory/no-store,404 missing/foreign y500 integridad State ausente. Sin CSRF GET ni write/revision; Product GET actual sigue active-only. Veintiséis operaciones implemented, sin cambios de entidad/envelope/version ni schema DB. State puede cambiar antes de POST; void conserva preconditions exactas y409 stale. [Detalle](WEB-09.md).
 
 WEB-01 consume ApiError/type shared con compiler privado standalone en build: schema y HTTP V1 intactos; browser sin Ajv compiler ni unsafe-eval. [Detalle](WEB-01.md).
@@ -193,6 +198,10 @@ POST me/deletion conserva forma mínima/recent authentication <=5min y sigue pla
 Better Auth delete-user permanece deshabilitado. No se crean workers ni procesos de borrado.
 
 ## OpenAPI y disponibilidad
+
+Disponibilidad vigente DEV-01:27 operaciones implemented, incluido /health200/503 y las adiciones
+API-10/WEB-09. Sync/import permanecen planned. El conteo y health404 inferiores son el snapshot
+histórico API-09; el manifest generado es la fuente vigente. [Health](DEV-01.md).
 
 [stockapp-v1.json](openapi/stockapp-v1.json) es OpenAPI 3.1.1 generado de schemas y `routeContracts`.
 Schemas conocidos se reutilizan mediante `$ref`. No lleva timestamps, servidores desplegados,

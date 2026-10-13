@@ -5,7 +5,7 @@ import { createAuthRuntime } from '../../src/auth/runtime.js';
 import { registerOwnershipRoutes } from '../../src/ownership/routes.js';
 import { registerAuthRoutes } from '../../src/auth/routes.js';
 
-test('ownership composition with unreachable PostgreSQL/SMTP leaves /live 200 and /health 404', async (t) => {
+test('ownership composition with unreachable PostgreSQL/SMTP leaves /live 200 and /health 503', async (t) => {
   const runtime = createAuthRuntime(
     {
       DATABASE_URL: 'postgresql://postgres@127.0.0.1:1/stockapp_test',
@@ -26,7 +26,7 @@ test('ownership composition with unreachable PostgreSQL/SMTP leaves /live 200 an
   registerOwnershipRoutes(app, runtime.auth, runtime.database);
   t.after(() => app.close());
   assert.equal((await app.inject('/live')).statusCode, 200);
-  assert.equal((await app.inject('/health')).statusCode, 404);
+  assert.equal((await app.inject('/health')).statusCode, 503);
   const preflight = await app.inject({
     method: 'OPTIONS',
     url: '/v1/business',

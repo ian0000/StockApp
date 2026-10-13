@@ -1,5 +1,9 @@
 # CI/CD futuro
 
+DEV-01 cambia únicamente API operacional/manifest/tests/docs: Quality checks y selección conservadora
+CI-OPT-01 intactos, test:db completo requerido. Railway UAT tiene settings staged, sin fuente live,
+autodeploy ni workflow CD. Este merge no autoriza accept-deploy. [Evidencia y pendientes](DEV-01.md).
+
 ## Política CI vigente — CI-OPT-01
 
 PR/main usan clasificación por diff real/dependencias, checks mínimos y jobs por impacto, con
@@ -12,7 +16,7 @@ Full regression diaria a las03:23 America/Guayaquil y manual con ref+SHA esperad
 requiere éxito full del SHA exacto y aprobación humana. El workflow de timings consulta únicamente
 metadata Actions con token read-only. Ningún workflow despliega ni recibe credenciales de hosting.
 Main→UAT sigue condicionado al gate completo DEV-04/exact-commit/artifact/GitGuardian/smoke;
-provider autodeploy permanece deshabilitado hasta demostrarlo. DEV-01..06 siguen PLANNED.
+provider autodeploy permanece deshabilitado hasta demostrarlo. DEV-01 en preparación; DEV-02..06 PLANNED.
 Las descripciones inferiores del workflow anterior son baseline/evidencia histórica.
 
 ## Política vigente — DEV-00, 2026-10-12

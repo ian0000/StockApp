@@ -235,5 +235,5 @@ test('compiled BackupV1/account export with PostgreSQL, official auth and SMTP p
       .status,
     200,
   );
-  assert.equal((await freshFetch(`${baseURL}/health`)).status, 404);
+  assert.equal((await freshFetch(`${baseURL}/health`)).status, 503);
 });

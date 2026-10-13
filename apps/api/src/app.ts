@@ -3,11 +3,16 @@ import type { Writable } from 'node:stream';
 import Fastify from 'fastify';
 import { apiErrorSchema, createApiError } from '@stock-app/contracts';
 import { registerLiveRoute } from './routes/live.js';
+import { registerHealthRoute } from './routes/health.js';
 import { SecurityError } from './security/policy.js';
 import { CommandError } from './commands/errors.js';
 
 export function buildApp(
-  options: { logger?: boolean; logStream?: Writable } = {},
+  options: {
+    logger?: boolean;
+    logStream?: Writable;
+    readiness?: () => Promise<boolean>;
+  } = {},
 ) {
   const app = Fastify({
     logger: options.logger
@@ -134,5 +139,6 @@ export function buildApp(
       );
   });
   registerLiveRoute(app);
+  registerHealthRoute(app, options.readiness ?? (() => Promise.resolve(false)));
   return app;
 }
