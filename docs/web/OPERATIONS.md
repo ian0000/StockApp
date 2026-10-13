@@ -1,5 +1,15 @@
 # Operación, retención y recuperación
 
+Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; incidentes nativos conservados.
+
+DEV-02 (2026-10-13) prepara [runbook y ensayo local PostgreSQL18.6](DEV-02.md): dump consistente,
+restore aislado e integridad/idempotencia, supresión COMPLETED independiente antes de promoción.
+Clave HMAC incorrecta puede dar exit0 en CLI existente; exige custodia/verificación independiente,
+no basta readiness200. Retención last-backup realmente retenido+7d, sin pruning por constante.
+Dos capas propuestas: snapshots Railway y dump cifrado independiente; destino/cifrado/custodia
+pendientes de aprobación, sin backups/schedules/alertas/restore remoto activados. RPO24h/RTO4h
+son objetivos. DB/volumen solo staged; no promoción ni reapertura automática. DEV-01 no DONE.
+
 DEV-01 materializa /health readiness200/503 ApiError/no-store y mantiene /live independiente.
 Probe read-only2s verifica migration ledger exacto y columnas/tipos/nulabilidad requeridos,
 sin migrar/escribir/ocupar pool de negocio. No sustituye restore/auditoría de integridad DEV-02.

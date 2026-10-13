@@ -1,5 +1,14 @@
 # Despliegue objetivo — sin configuración aplicada
 
+Actualización DEV-02 (2026-10-13): API y Postgres/volumen **staged-create**, sin deployment.
+Aceptación local reanudada en Docker18.6: test:db1040 PASS/0fail/skip/timeout, sin activación externa.
+StockApp UAT/uat, patch56 cambios no destructivo; defaults del template oficial, región DB/volumen
+us-west2 observada y capacidad default Hobby5GB autorizada solo staged (sizeMB aún null).
+API mantiene configuración efectiva DEV-01 y SHA5222ee82437dcff1c5e5a691c466ddf5eaebfe7e,
+preDeployCommand=[]; conexión privada/predeploy son plan, no cambios aplicados. Plan$5 confirmado,
+no techo de gasto. Sin DB activa/TCP público/DNS/PROD. [Detalles y revisión previa](DEV-02.md).
+Las notas inferiores conservan el inventario anterior a DEV-02; no aplicar el patch tras merge.
+
 DEV-01 prepara runtime/readiness local y proyecto StockApp UAT/uat privado; API está **staged-create**,
 sin deployment/DB/dominio. Build Railpack root `/`: install frozen + build filtrado; start
 `node apps/api/dist/server.js`; /health200 solo config/DB/schema compatibles,503 ApiError/no-store.

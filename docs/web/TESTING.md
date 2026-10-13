@@ -1,5 +1,14 @@
 # Pruebas y DoD futura
 
+Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; incidentes nativos conservados.
+
+DEV-02 añade3 casos de migrador compilado (vacío/concurrente/repeat/missing SQL/fallo rollback)
+y1 ensayo real pg_dump/pg_restore18.6: snapshot con writer, destino aislado, datos exactos,
+auth/ownership/receipts, supresión posterior a backup y clave incorrecta que no verifica recovery.
+[Matriz, harness y límites](DEV-02.md). En CI usa clientes del contenedor PostgreSQL existente;
+sin nuevos paquetes ni cambios de pool/concurrency/timeouts/workflows. QA infrastructure exige
+full regression y test:db completo; stage/local PASS no acreditan provider recovery ni cifrado externo.
+
 DEV-01 añade Health fail-closed/no-store/sanitizado/deadline/single-flight y PostgreSQL real con
 hashes de migraciones/estructura incompatible/no writes/fallo después de startup; compiled process
 con PORT/interfaces/SIGTERM/exit1 y cierre API-10. Tests bajo postgres entran en test:db completo
