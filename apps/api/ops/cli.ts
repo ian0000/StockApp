@@ -86,11 +86,7 @@ export async function runBackupCli(
     );
   const source = required(env, 'BACKUP_QA_SOURCE_URL');
   qaDatabase(source);
-  const options = {
-    sourceCommit: required(env, 'BACKUP_SOURCE_COMMIT'),
-    keyVersion: required(env, 'BACKUP_AGE_KEY_VERSION'),
-    suppressionKeyVersion: required(env, 'BACKUP_SUPPRESSION_KEY_VERSION'),
-  };
+  const suppressionKeyVersion = required(env, 'BACKUP_SUPPRESSION_KEY_VERSION');
   const pgOptions = {
     bin: env.TEST_POSTGRES_BIN,
     container: env.BACKUP_QA_POSTGRES_CONTAINER,
@@ -101,6 +97,11 @@ export async function runBackupCli(
   const transport = localTransport(store);
   return privateWorkspace(async (directory) => {
     if (action !== 'qa-recover') {
+      const options = {
+        sourceCommit: required(env, 'BACKUP_SOURCE_COMMIT'),
+        keyVersion: required(env, 'BACKUP_AGE_KEY_VERSION'),
+        suppressionKeyVersion,
+      };
       const plain = join(directory, 'input');
       if (action === 'qa-backup') {
         const pool = createPostgresPool(source);
@@ -159,11 +160,21 @@ export async function runBackupCli(
         ).sha256,
       };
     }
-    const identity = required(env, 'BACKUP_AGE_IDENTITY_FILE');
     const decode = async (
       name: 'POSTGRES' | 'SUPPRESSIONS',
       kind: 'postgres' | 'deletion-suppressions',
     ) => {
+      // An old snapshot and the latest independent registry can belong to
+      // different releases and age rotations. Select each from trusted custody.
+      const identity = required(env, `BACKUP_${name}_AGE_IDENTITY_FILE`);
+      const expectedSourceCommit = required(
+        env,
+        `BACKUP_${name}_SOURCE_COMMIT`,
+      );
+      const expectedKeyVersion = required(
+        env,
+        `BACKUP_${name}_AGE_KEY_VERSION`,
+      );
       const encryptedManifest = required(env, `BACKUP_${name}_MANIFEST_FILE`);
       const trustedDigest = required(env, `BACKUP_${name}_MANIFEST_SHA256`);
       if (
@@ -184,9 +195,9 @@ export async function runBackupCli(
       const manifest = await loadManifest(clearManifest);
       if (
         manifest.kind !== kind ||
-        manifest.sourceCommit !== options.sourceCommit ||
-        manifest.keyVersion !== options.keyVersion ||
-        manifest.suppressionKeyVersion !== options.suppressionKeyVersion
+        manifest.sourceCommit !== expectedSourceCommit ||
+        manifest.keyVersion !== expectedKeyVersion ||
+        manifest.suppressionKeyVersion !== suppressionKeyVersion
       )
         throw new Error('Backup origin or custody version mismatch.');
       const downloaded = join(directory, `${name}.age`);

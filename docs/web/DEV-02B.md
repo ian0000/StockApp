@@ -114,8 +114,12 @@ DELETION_SUPPRESSION_SECRET. Sin secretos como argumentos ni `.env` comprometido
 `qa-backup`/`qa-suppressions` solo usan almacén local simulado; ningún upload DB a R2/Railway.
 El resultado BYTE_VERIFIED_ONLY entrega object key y hash del manifest cifrado para custodia separada.
 
-Recovery exige BACKUP_AGE_IDENTITY_FILE privado, BACKUP_POSTGRES_MANIFEST_FILE/SHA256,
-BACKUP_SUPPRESSIONS_MANIFEST_FILE/SHA256 y BACKUP_VERIFY_SUPPRESSION_SECRET obtenido
+Recovery exige, para POSTGRES y SUPPRESSIONS por separado, `BACKUP_<kind>_MANIFEST_FILE/SHA256`,
+`BACKUP_<kind>_SOURCE_COMMIT`, `BACKUP_<kind>_AGE_KEY_VERSION` y `BACKUP_<kind>_AGE_IDENTITY_FILE` privado.
+Los dos artefactos pueden tener commits y recipients/versions/identities age diferentes:
+backup antiguo y registro reciente no se fuerzan al mismo release ni rotación. Cada selección
+debe coincidir con su descriptor confiable; no inferir esos valores del objeto remoto.
+Además BACKUP_VERIFY_SUPPRESSION_SECRET obtenido
 de la custodia original, sin default/alias al secret de apply. Elegir explícitamente el último
 export COMPLETED aplicable; no usar el registro embebido en el snapshot antiguo.
 Hashes/versions/origen se verifican antes de decrypt/restore/apply. El secret de apply debe
@@ -192,7 +196,7 @@ independiente, wrong HMAC exit0 rechazado, pérdida de sesión superviviente rec
 Sin retries-until-green/skips ni cambios pool/timeouts/concurrency/CI resources. Test CI simulado
 confirma que un binario PG explícito no se sustituye silenciosamente por Docker.
 Gates finales locales: pnpm check2592 PASS (77 CI +2515 workspace), build API/Web PASS;
-test:db1047 PASS/0fail/skip/cancelled/timeout failures,320844.5075ms TAP, incluyendo API01..10,
+test:db1047 PASS/0fail/skip/cancelled/timeout failures,324037.9307ms TAP, incluyendo API01..10,
 Auth/Ownership/Security/compiled HTTP y recovery cifrado. OpenAPI check PASS; db:generate sin
 cambios/nothing to migrate; auth:generate sin diff/auth:check PASS; actionlint1.7.12/workflows,
 docs/validators/diff check PASS. Warning Vite existente1883.48kB/284.92kB gzip conservado.
@@ -218,6 +222,10 @@ de plataforma; normalización para comparar versiones exactas. Mock S3 distingue
 de lectura posterior e implementa ListObjectsV2 limitado al UUID, requerido realmente por cat.
 Verifier usa operation_receipts.business_id según delivery.ts, en lugar de inventory_id inexistente.
 Elección explícita de PG binary tiene precedencia sobre discovery CI; prueba dedicada del guard.
+Revisión de recuperación separó el commit y identity/key version age de cada descriptor:
+un backup antiguo y el registro reciente pueden pertenecer a releases/rotaciones diferentes.
+Fuente: recuperación con registro independiente/latest del ticket y custodia histórica age;
+prueba CLI real con dos identities/commits, sin fallback a los settings comunes de export.
 Source of truth: binarios fijados, trace loopback y schema PostgreSQL vigente; solo tooling/QA nuevos,
 PRODUCTION BEHAVIOR CHANGED: NO. No se cambia expectativa financiera ni API-10.
 

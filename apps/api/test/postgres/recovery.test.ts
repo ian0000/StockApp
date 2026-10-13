@@ -223,7 +223,6 @@ test(
         BACKUP_AGE_RECIPIENT: recipient,
         BACKUP_AGE_KEY_VERSION: manifestOptions.keyVersion,
         BACKUP_SUPPRESSION_KEY_VERSION: manifestOptions.suppressionKeyVersion,
-        BACKUP_AGE_IDENTITY_FILE: identity,
         BETTER_AUTH_SECRET: f.keys.authSecret,
         DELETION_SUPPRESSION_SECRET: f.keys.suppressionSecret,
         BACKUP_VERIFY_SUPPRESSION_SECRET: f.keys.suppressionSecret,
@@ -258,11 +257,35 @@ test(
         });
       };
       await invoke('export');
+      const latestIdentity = join(
+        privateDirectory,
+        'ephemeral-latest-registry-identity',
+      );
+      const latestRecipient = await ephemeralIdentity(
+        encryptionTools,
+        latestIdentity,
+      );
+      const latestSourceCommit = '5222ee82437dcff1c5e5a691c466ddf5eaebfe7e';
+      const latestKeyVersion = 'ephemeral-registry-rotation';
       const suppressionReceipt = receipt(
-        await runBackupCli(['qa-suppressions'], operatorEnv),
+        await runBackupCli(['qa-suppressions'], {
+          ...operatorEnv,
+          BACKUP_SOURCE_COMMIT: latestSourceCommit,
+          BACKUP_AGE_KEY_VERSION: latestKeyVersion,
+          BACKUP_AGE_RECIPIENT: latestRecipient,
+        }),
       );
       const recoveryEnv = {
         ...operatorEnv,
+        BACKUP_SOURCE_COMMIT: undefined,
+        BACKUP_AGE_KEY_VERSION: undefined,
+        BACKUP_AGE_RECIPIENT: undefined,
+        BACKUP_POSTGRES_SOURCE_COMMIT: manifestOptions.sourceCommit,
+        BACKUP_POSTGRES_AGE_KEY_VERSION: manifestOptions.keyVersion,
+        BACKUP_POSTGRES_AGE_IDENTITY_FILE: identity,
+        BACKUP_SUPPRESSIONS_SOURCE_COMMIT: latestSourceCommit,
+        BACKUP_SUPPRESSIONS_AGE_KEY_VERSION: latestKeyVersion,
+        BACKUP_SUPPRESSIONS_AGE_IDENTITY_FILE: latestIdentity,
         BACKUP_POSTGRES_MANIFEST_FILE: postgresReceipt.file,
         BACKUP_POSTGRES_MANIFEST_SHA256: postgresReceipt.hash,
         BACKUP_SUPPRESSIONS_MANIFEST_FILE: suppressionReceipt.file,
@@ -286,10 +309,24 @@ test(
             }),
             /trusted original/,
           );
+          await assert.rejects(
+            runBackupCli(['qa-recover'], {
+              ...recoveryEnv,
+              BACKUP_SUPPRESSIONS_SOURCE_COMMIT: manifestOptions.sourceCommit,
+            }),
+            /origin or custody/,
+          );
+          await assert.rejects(
+            runBackupCli(['qa-recover'], {
+              ...recoveryEnv,
+              BACKUP_SUPPRESSIONS_AGE_KEY_VERSION: manifestOptions.keyVersion,
+            }),
+            /origin or custody/,
+          );
         },
       );
       await t.test(
-        'real QA CLI dump/export/recovery pipeline remains local and drops its isolated destination',
+        'real QA CLI restores an old backup with the latest registry across independent commits and age rotations',
         async () => {
           const result = await runBackupCli(
             ['qa-recover'],
