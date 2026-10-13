@@ -228,14 +228,16 @@ export const routeContracts: readonly RouteContract[] = [
     query: 'NoQuery',
     responses: { ...readErrors, 200: 'Inventory' },
   },
-  planned(
-    'get',
-    '/health',
-    'getHealth',
-    'Database readiness; currently returns 404',
-    'public',
-    'Health',
-  ),
+  {
+    method: 'get',
+    path: '/health',
+    operationId: 'getHealth',
+    summary:
+      'Configured database and schema readiness; fail-closed without diagnostics',
+    auth: 'public',
+    implementationStatus: 'implemented',
+    responses: { 200: 'Health', 503: 'ApiError', 500: 'ApiError' },
+  },
   {
     ...planned(
       'get',

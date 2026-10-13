@@ -386,7 +386,6 @@ test('real PostgreSQL auth identity, verification, sessions and security', async
         404,
       );
       for (const path of [
-        '/health',
         '/v1/me',
         '/v1/business',
         '/v1/products',
@@ -399,6 +398,7 @@ test('real PostgreSQL auth identity, verification, sessions and security', async
         assert.equal((await f.app.inject(path)).statusCode, 404);
       }
       assert.equal((await f.app.inject('/live')).statusCode, 200);
+      assert.equal((await f.app.inject('/health')).statusCode, 503);
       assert.equal(
         (
           await f.pool.query<{ count: string }>(

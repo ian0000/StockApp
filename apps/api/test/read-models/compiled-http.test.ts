@@ -539,6 +539,6 @@ test('compiled read models with PostgreSQL/auth/SMTP preserve enriched history a
     receipts,
   );
   assert.equal((await freshFetch(baseURL + '/live')).status, 200);
-  assert.equal((await freshFetch(baseURL + '/health')).status, 404);
+  assert.equal((await freshFetch(baseURL + '/health')).status, 503);
   await second.current.close();
 });

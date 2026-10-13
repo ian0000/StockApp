@@ -16,7 +16,11 @@ import { registerOwnershipRoutes } from './ownership/routes.js';
 import { registerDeletionRoutes } from './deletion/routes.js';
 
 export async function startServer(): Promise<void> {
-  const app = buildApp({ logger: true });
+  let readiness: (() => Promise<boolean>) | undefined;
+  const app = buildApp({
+    logger: true,
+    readiness: () => readiness?.() ?? Promise.resolve(false),
+  });
   let closing = false;
   async function shutdown(): Promise<void> {
     if (closing) return;
@@ -51,6 +55,7 @@ export async function startServer(): Promise<void> {
         },
       );
       app.addHook('onClose', () => runtime.close());
+      readiness = runtime.readiness.check;
       registerAuthRoutes(app, runtime.auth, runtime.config);
       registerOwnershipRoutes(app, runtime.auth, runtime.database);
       registerProductRoutes(app, runtime.auth, runtime.database);

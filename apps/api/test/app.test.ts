@@ -37,7 +37,6 @@ test('unknown and future routes use the 404 envelope with matching request ID', 
   t.after(() => app.close());
   for (const url of [
     '/unknown',
-    '/health',
     '/v1/products',
     '/api/auth',
     '/v1/sync',
@@ -56,6 +55,12 @@ test('unknown and future routes use the 404 envelope with matching request ID', 
       },
     });
   }
+  const health = await app.inject('/health');
+  assert.equal(health.statusCode, 503);
+  assert.equal(
+    health.json<ApiErrorEnvelope>().error.code,
+    'TEMPORARILY_UNAVAILABLE',
+  );
 });
 
 test('internal errors are sanitized, including errors with an untrusted statusCode', async (t) => {

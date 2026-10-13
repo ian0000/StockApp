@@ -375,7 +375,7 @@ test('GET operation receipt enforces real auth, ownership, v7 protocol IDs, secu
     },
   );
   assert.equal((await f.app.inject('/live')).statusCode, 200);
-  assert.equal((await f.app.inject('/health')).statusCode, 404);
+  assert.equal((await f.app.inject('/health')).statusCode, 503);
   assert.equal(
     (
       await f.app.inject({

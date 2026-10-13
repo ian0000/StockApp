@@ -16,6 +16,37 @@ const report = (job) => ({
     elapsedMs: 1,
   })),
 });
+
+test('isolated Web job builds Contracts before Vite and requires its successful report', () => {
+  const dependencyBuild = steps.web.findIndex(
+    (step) => step.name === 'contracts:build',
+  );
+  const webBuild = steps.web.findIndex((step) => step.name === 'build:web');
+  assert.ok(dependencyBuild >= 0 && dependencyBuild < webBuild);
+  assert.deepEqual(steps.web[dependencyBuild].args, [
+    '--filter',
+    '@stock-app/contracts',
+    'build',
+  ]);
+  for (const result of ['failure', 'skipped', 'cancelled'])
+    assert.throws(() =>
+      assertReport('web', head, {
+        ...report('web'),
+        steps: report('web').steps.map((step) =>
+          step.name === 'contracts:build' ? { ...step, result } : step,
+        ),
+      }),
+    );
+  assert.throws(() =>
+    assertReport('web', head, {
+      ...report('web'),
+      steps: report('web').steps.filter(
+        (step) => step.name !== 'contracts:build',
+      ),
+    }),
+  );
+});
+
 for (const job of Object.keys(steps))
   test(`complete command report required: ${job}`, () => {
     assert.doesNotThrow(() => assertReport(job, head, report(job)));

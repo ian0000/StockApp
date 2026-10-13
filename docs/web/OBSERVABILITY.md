@@ -21,7 +21,8 @@ No usar analytics de usuario para sustituir monitoreo operacional ni proveedor p
 Error tracking inicial por logs estructurados/requestId; proveedor dedicado es Future.
 
 GET /health = readiness: ping DB acotado + schema mínimo compatible, 200 `{status:ok}` o
-503 `{status:unavailable}`. No hostname DB, secrets, stack ni detalles de tenants. GET /live
+503 ApiError con `TEMPORARILY_UNAVAILABLE`, requestId y `Cache-Control: no-store`, según decisión
+humana DEV-01. No hostname DB, secrets, stack ni detalles de tenants. GET /live
 comprueba proceso sin DB. Railway consulta /health para activar deploy; no garantiza comprobación
 continua después del deploy, según [healthchecks Railway](https://docs.railway.com/deployments/healthchecks).
 

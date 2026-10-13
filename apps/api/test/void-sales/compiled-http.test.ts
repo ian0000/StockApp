@@ -441,7 +441,7 @@ test('compiled VoidSale HTTP with PostgreSQL/auth/SMTP proves exact state and lo
     '5',
   );
   assert.equal((await freshFetch(baseURL + '/live')).status, 200);
-  assert.equal((await freshFetch(baseURL + '/health')).status, 404);
+  assert.equal((await freshFetch(baseURL + '/health')).status, 503);
   assert.equal(
     (
       await freshFetch(baseURL + prefix + '/sales/' + sale.payload.saleId, {

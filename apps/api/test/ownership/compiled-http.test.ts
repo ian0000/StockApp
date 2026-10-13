@@ -300,7 +300,7 @@ test('compiled HTTP + real PostgreSQL + local SMTP + compiled operator CLI compl
     return { cookie, userId: identity.user.id, dataset, csrf: csrf.token };
   }
   assert.equal((await get('/live')).status, 200);
-  assert.equal((await get('/health')).status, 404);
+  assert.equal((await get('/health')).status, 503);
   await operator('missing-fictional-user', '--enable', 1);
   const a = await onboarding('a'),
     b = await onboarding('b');

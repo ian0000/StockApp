@@ -1,5 +1,10 @@
 # Pruebas y DoD futura
 
+DEV-01 añade Health fail-closed/no-store/sanitizado/deadline/single-flight y PostgreSQL real con
+hashes de migraciones/estructura incompatible/no writes/fallo después de startup; compiled process
+con PORT/interfaces/SIGTERM/exit1 y cierre API-10. Tests bajo postgres entran en test:db completo
+existente sin cambiar runner/concurrency/pool/timeouts/CI. [Evidencia local y límites provider](DEV-01.md).
+
 Política prospectiva CI-OPT-01: focused durante implementación; antes de PR, checks por impacto y
 consumidores según [la matriz conservadora](CI-OPT-01.md). Docs/Web aislados no levantan PostgreSQL;
 API/Contracts requieren el suite DB completo; Domain/Application/global/QA/CI/unknown requieren

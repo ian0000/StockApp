@@ -1,5 +1,12 @@
 # Despliegue objetivo — sin configuración aplicada
 
+DEV-01 prepara runtime/readiness local y proyecto StockApp UAT/uat privado; API está **staged-create**,
+sin deployment/DB/dominio. Build Railpack root `/`: install frozen + build filtrado; start
+`node apps/api/dist/server.js`; /health200 solo config/DB/schema compatibles,503 ApiError/no-store.
+Plan/región/activación y build del proveedor pendientes; sin fuente live/autodeploy/PROD.
+[Settings e identidad reales, límites y dependencias](DEV-01.md). Los snapshots inferiores conservan
+el comportamiento health404 anterior a DEV-01.
+
 DEV-00 (2026-10-12) supersede el antiguo plan production/staging: **DEV → UAT → aprobación
 humana → PROD**. La topología inicial antes llamada producción es UAT, primer entorno online.
 PROD no está provisionado; será NUEVO e independiente tras aceptación y sign-off.

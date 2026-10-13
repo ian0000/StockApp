@@ -11,6 +11,10 @@ OpenAPI 3.1.1 / JSON Schema 2020-12. Schemas y routeContracts son la única fuen
 se derivan. Check compara bytes contra generación determinista in-memory y está en `pnpm check`/CI.
 No exige dist previo, herramienta global, DB, credenciales ni validator externo.
 
+DEV-01 implementa /health (Health200 o ApiError503 sanitizado/no-store) con readiness fail-closed;
+/live sigue liveness independiente. Manifest actual:27 operaciones implemented. [Detalle](../DEV-01.md).
+La enumeración inferior conserva el snapshot histórico de API-01.
+
 `x-stockapp-implementation-status` distingue implemented/planned por operación. Solo /live,
 /v1/session/csrf, /v1/me, /v1/business, Inventory metadata y GET operation existen. OperationParams
 valida Inventory UUID genérico/operation UUIDv7. /health permanece planned/404.

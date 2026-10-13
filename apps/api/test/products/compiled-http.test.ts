@@ -317,7 +317,7 @@ test('compiled Product HTTP flow with PostgreSQL/SMTP/auth performs create/updat
   assert.deepEqual(await replay.json(), original);
   assert.deepEqual(await (await commandRequest(archive)).json(), archivedBody);
   assert.equal((await freshFetch(baseURL + '/live')).status, 200);
-  assert.equal((await freshFetch(baseURL + '/health')).status, 404);
+  assert.equal((await freshFetch(baseURL + '/health')).status, 503);
   assert.equal(
     (
       await pool.query('SELECT revision FROM inventories WHERE id=$1', [

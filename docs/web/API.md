@@ -1,5 +1,11 @@
 # Contratos API V1
 
+DEV-01 implementa GET /health público, sin cookie/CSRF:200 Health `{status:"ok"}` solo con
+configuración/DB/schema compatibles;503 ApiError `TEMPORARILY_UNAVAILABLE`/requestId/no-store.
+/live conserva liveness independiente. Manifest/OpenAPI actuales:27 operaciones implemented;
+las referencias health planned/404 inferiores son snapshots históricos supersedidos.
+[Readiness, pruebas y límites del setup UAT](DEV-01.md).
+
 POST /v1/me/deletion202 con body{} y Idempotency-Key UUIDv7 obligatorio. DeletionRequest.id es la key; misma identidad/key o distinta key durante deletion activa devuelve requestedAt original. Revoca todas las sesiones en la misma tx. Cookie revocada401; official sign-in mientras User existe permite recuperar/repetir202. Sin status endpoint. [Detalle](API-10.md).
 
 API-09 implementa backup/export propios con BackupV1 numérico canónico, snapshot PostgreSQL

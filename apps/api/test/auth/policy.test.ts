@@ -87,7 +87,7 @@ test('raw SQL/auth failures never reach HTTP or logs and liveness stays availabl
   );
   assert.ok(response.headers['x-request-id']);
   assert.equal((await f.app.inject('/live')).statusCode, 200);
-  assert.equal((await f.app.inject('/health')).statusCode, 404);
+  assert.equal((await f.app.inject('/health')).statusCode, 503);
 });
 
 test('configured auth with unreachable DB/SMTP keeps liveness independent and sanitizes auth failure', async (t) => {
@@ -111,7 +111,7 @@ test('configured auth with unreachable DB/SMTP keeps liveness independent and sa
   t.after(() => app.close());
   const consoleError = t.mock.method(console, 'error', () => {});
   assert.equal((await app.inject('/live')).statusCode, 200);
-  assert.equal((await app.inject('/health')).statusCode, 404);
+  assert.equal((await app.inject('/health')).statusCode, 503);
   const signin = await app.inject({
     method: 'POST',
     url: '/api/auth/sign-in/email',

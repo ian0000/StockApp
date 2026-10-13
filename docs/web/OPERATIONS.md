@@ -1,5 +1,11 @@
 # Operación, retención y recuperación
 
+DEV-01 materializa /health readiness200/503 ApiError/no-store y mantiene /live independiente.
+Probe read-only2s verifica migration ledger exacto y columnas/tipos/nulabilidad requeridos,
+sin migrar/escribir/ocupar pool de negocio. No sustituye restore/auditoría de integridad DEV-02.
+API-10 startup/worker/drain intactos; Railway UAT API staged/inactivo, sin DB ni monitor/backup
+configurado. [Detalles y límites](DEV-01.md). No aplicar patch ni desplegar por efecto del merge.
+
 DEV-00 formaliza DEV local/CI→UAT primer entorno online→aprobación humana→PROD NUEVO
 independiente/no provisionado. [Política](DEV-00.md). Runbooks siguientes son requisitos, no
 evidencia de backups/restore configurados. UAT temprano solo datos sintéticos/controlados de prueba;

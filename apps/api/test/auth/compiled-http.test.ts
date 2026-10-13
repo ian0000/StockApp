@@ -55,7 +55,7 @@ test('compiled API serves signup, verify, signin, session and logout over real H
         redirect: 'manual',
       });
     assert.equal((await fetch(`${baseURL}/live`)).status, 200);
-    assert.equal((await fetch(`${baseURL}/health`)).status, 404);
+    assert.equal((await fetch(`${baseURL}/health`)).status, 503);
     const signup = await post('sign-up/email', {
       name: 'Fictional',
       email: 'compiled@example.test',
@@ -121,6 +121,6 @@ test('compiled foundation-only HTTP needs no DB, auth or SMTP configuration', as
   assert.ok(address && typeof address !== 'string');
   const baseURL = `http://127.0.0.1:${address.port}`;
   assert.equal((await fetch(`${baseURL}/live`)).status, 200);
-  assert.equal((await fetch(`${baseURL}/health`)).status, 404);
+  assert.equal((await fetch(`${baseURL}/health`)).status, 503);
   assert.equal((await fetch(`${baseURL}/api/auth/get-session`)).status, 404);
 });

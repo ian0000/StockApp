@@ -247,7 +247,7 @@ test('compiled API with real PostgreSQL/SMTP recovers the same durable receipt a
     404,
   );
   assert.equal((await freshFetch(`${baseURL}/live`)).status, 200);
-  assert.equal((await freshFetch(`${baseURL}/health`)).status, 404);
+  assert.equal((await freshFetch(`${baseURL}/health`)).status, 503);
   const replay = await engineModule.createCommandExecutor(
     second.runtime.database,
   )({

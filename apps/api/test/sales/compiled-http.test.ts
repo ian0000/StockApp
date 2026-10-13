@@ -396,6 +396,6 @@ test('compiled Sale HTTP with PostgreSQL/auth/SMTP preserves mixed snapshots and
     '6',
   );
   assert.equal((await freshFetch(baseURL + '/live')).status, 200);
-  assert.equal((await freshFetch(baseURL + '/health')).status, 404);
+  assert.equal((await freshFetch(baseURL + '/health')).status, 503);
   await second.current.close();
 });
