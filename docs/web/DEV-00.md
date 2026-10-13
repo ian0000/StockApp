@@ -54,6 +54,10 @@ configurado; la propuesta no permite presentar UAT como producto oficialmente la
 
 ## CI actual y gate futuro main → UAT
 
+Actualización posterior CI-OPT-01: la descripción del workflow único inferior es baseline histórica.
+[La política vigente](CI-OPT-01.md) añade selección segura, Quality checks agregador y full
+programada/manual/exact-SHA. No cambia UAT-first ni permite autodeploy antes del gate DEV-04.
+
 Revisado `.github/workflows/ci.yml`: PR hacia main y push main, contents:read, install frozen,
 pnpm check (format/lint/types/Domain/Application/Mobile/contracts/API/Web/tests y builds),
 PostgreSQL18.6 real, db:generate reproducible, auth:generate/auth:check oficiales.

@@ -1,5 +1,10 @@
 # Auditoría del estado actual
 
+CI-OPT-01 implementa selección PR/main por diff/dependencias con fallback full, agregación estricta
+Quality checks y reports exact-SHA, full diaria/manual y mediciones. Gates completos preservados,
+GitGuardian independiente; sin cambios runtime financiero/API/UI/schema ni hosting/CD.
+[Política y validación](CI-OPT-01.md). DEV-01..06 siguen PLANNED; main no despliega por sí mismo.
+
 DEV-00 actualiza únicamente documentación/ADRs/diagrama a UAT-first: DEV local/CI→UAT primer
 entorno online→sign-off humano→PROD NUEVO independiente. Sin provisioning/DNS/deploy ni cambios
 runtime/CI; DEV-01..06/PRIV/REL siguen pendientes. [Decisión vigente](DEV-00.md).
