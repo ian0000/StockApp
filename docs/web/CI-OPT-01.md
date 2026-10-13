@@ -144,6 +144,17 @@ ticket. Solo scripts nuevos/tests de CI, comportamiento productivo unchanged.
 Primer full local (working tree, antes del commit): check141.052s, test:db310.935s de wrapper,
 309.036s TAP,1022 PASS/0fail/0skip/0timeout; format/lint/types/builds/OpenAPI/generadores/validators
 PASS, cero drift. Local Windows no es comparable al baseline Linux para medir mejora CI.
-Tras el hardening final: check2545 PASS (2473 workspace +72 CI), API/Web builds explícitos PASS;
+Tras el hardening de selección: check2545 PASS (2473 workspace +72 CI), API/Web builds explícitos PASS;
 warning Vite existente1883.57kB/285.01kB gzip preservado. Provider se verifica en PR.
+Primer run CI-OPT real38337651758: metadata GitHub de jobs skipped puede finalizar antes de su
+started_at (02:36:23→02:36:22 UTC). AUTO-FIX solo en medición: skipped/interval inválido → null,
+nunca -1 ni cero inventado. Cuatro tests adicionales; no cambia selección/gates ni producción.
+Ese run bloqueó correctamente Quality checks por un fixture de Git temporal que heredaba
+CI_CANDIDATE_SHA del repo real. Reproducido localmente con esa variable; AUTO-FIX test-only:
+candidate SHA del fixture y GITHUB_OUTPUT propio/aislado. Fuente: ownership del repositorio temporal
+y verificación de SHA existente. No relaja el comparador ni assertions; nueva ejecución completa
+del head corregido requerida antes de merge.
+Gates locales finales: check2549 PASS (2473 workspace +76 CI), focused CI con variable heredada
+reproducida PASS76/0fail/0skip, CI lint/format/workflows/docs/diff PASS. Full PostgreSQL1022/0/0
+con fuentes/runner DB intactos; generadores sin drift y builds API/Web PASS.
 Sin deuda pendiente que autorice iniciar DEV-01. STOP tras merge y main clean0/0.

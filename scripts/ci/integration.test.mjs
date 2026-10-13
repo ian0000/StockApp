@@ -102,6 +102,8 @@ test('real divergent PR and push diffs; CLI aggregation cannot accept missing/ca
           GITHUB_EVENT_NAME: 'push',
           GITHUB_EVENT_PATH: join(temporary, '.ci/event.json'),
           GITHUB_SHA: head,
+          CI_CANDIDATE_SHA: head,
+          GITHUB_OUTPUT: '',
           GITHUB_STEP_SUMMARY: '',
           CI_NEEDS: JSON.stringify(values),
         },
@@ -161,6 +163,7 @@ test('real divergent PR and push diffs; CLI aggregation cannot accept missing/ca
         GITHUB_EVENT_PATH: join(temporary, '.ci/event.json'),
         GITHUB_SHA: head,
         CI_CANDIDATE_SHA: head,
+        GITHUB_OUTPUT: '',
         GITHUB_STEP_SUMMARY: '',
         CI_EXPECTED_SHA: event === 'workflow_dispatch' ? head : '',
       };
