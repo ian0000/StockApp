@@ -26,6 +26,10 @@ export const steps = {
   ],
   web: [
     ...packageSteps('web'),
+    {
+      name: 'contracts:build',
+      args: ['--filter', '@stock-app/contracts', 'build'],
+    },
     { name: 'build:web', args: ['build:web'] },
     { name: 'ci:validators', args: ['ci:validators'] },
   ],

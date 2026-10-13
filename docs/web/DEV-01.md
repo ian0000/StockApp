@@ -143,17 +143,28 @@ tenían archivos faltantes; se conserva, detenido como estaba antes del ticket. 
 borrado ni reutilización de sus datos para pasar tests. Se inicializó cluster QA nuevo en
 C:/Users/USER/.codex/artifacts/stockapp-dev01-pg-qa/data con binarios18.6 completos previamente
 disponibles de stockapp-web07-postgres, bind127.0.0.1:65435 y stockapp_test. Cada suite crea/drop
-solo sus DBs disposable con el provisioning gate existente. Pools/global concurrency/timeouts/CI
-sin cambios. Sin descargas/dependencias nuevas ni reset de Docker/WSL/volúmenes.
+solo sus DBs disposable con el provisioning gate existente. Pools/global concurrency/timeouts y
+recursos/workflows CI sin cambios. Sin descargas/dependencias nuevas ni reset de Docker/WSL/volúmenes.
 
-Gates locales secuenciales PASS: OpenAPI check; pnpm check2553 tests (76 CI+2477 workspace),
+QA INFRASTRUCTURE: el primer job Web pasó sus996 tests pero Vite falló en checkout limpio porque
+faltaba packages/contracts/dist. Contracts se compila en otro job con checkout independiente;
+pnpm check local lo compilaba antes y ocultaba el defecto de setup selectivo. Reproducción local
+sin dist: mismo fallo de resolución. Se añade contracts:build antes de build:web en scripts/ci/steps.mjs;
+la prueba en aggregate.test.mjs exige ese paso, su orden y un report exitoso, rechazando ausencia,
+failure/skipped/cancelled. SOURCE OF TRUTH: exports existentes de Contracts y aislamiento de jobs.
+PRODUCTION BEHAVIOR CHANGED por este fix: NO. Sin cambios de selección, assertions, exports,
+dependencias, workflows, recursos ni límites. Este cambio de harness exige full regression del
+candidato final según AGENTS65.2; no se hereda CI/GitGuardian del primer SHA.
+
+Gates locales finales secuenciales PASS: OpenAPI check; pnpm check2554 tests (77 CI+2477 workspace),
 build:api; test:db1036 PASS,0fail/skip/cancelled/timeout failures; db:generate sin migración/drift;
 auth:generate sin diff y auth:check; ci:workflows/actionlint1.7.12 fijado+SHA256; diff check/review.
 Regresiones: Domain428/Application432/Mobile551/Contracts38/API32/Web996; PostgreSQL incluye
 API-01..10/Auth/Ownership/Security/compiled HTTP. Warning Vite1883.48kB/284.92kB gzip conservado,
-sin límites ni UI/code-splitting modificados. CI/GitGuardian del candidato final pendientes antes del PR.
-Clasificación conservadora real CI-OPT-01: nuevas pruebas bajo test/postgres/config operativa
-pueden forzar full; no modificar policy/CI para reducir checks. Source SHA final/PR/merge y gates
+sin límites ni UI/code-splitting modificados. Job Web aislado completo PASS sin Contracts dist inicial.
+CI/GitGuardian del candidato final del PR105 deben pasar antes del merge.
+Clasificación conservadora CI-OPT-01: el cambio de harness selecciona full regression,
+sin modificar policy para reducir checks. Source SHA final/PR/merge y gates
 remotos se registran en la entrega del candidato exacto, no se heredan del SHA base.
 
 Railway build/start logs: **NOT RUN**, latestDeployment null; sin source SHA desplegado.

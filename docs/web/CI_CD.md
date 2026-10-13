@@ -1,7 +1,8 @@
 # CI/CD futuro
 
-DEV-01 cambia únicamente API operacional/manifest/tests/docs: Quality checks y selección conservadora
-CI-OPT-01 intactos, test:db completo requerido. Railway UAT tiene settings staged, sin fuente live,
+DEV-01 cambia API operacional/manifest/tests/docs y corrige el setup Web aislado: compila Contracts
+antes de build:web. Quality checks y selección conservadora CI-OPT-01 intactos; el cambio de harness
+requiere full regression y test:db completo. Railway UAT tiene settings staged, sin fuente live,
 autodeploy ni workflow CD. Este merge no autoriza accept-deploy. [Evidencia y pendientes](DEV-01.md).
 
 ## Política CI vigente — CI-OPT-01
