@@ -10,7 +10,7 @@
     "dev": "tsx --conditions=development src/server.ts",
     "build": "pnpm --filter @stock-app/contracts build && tsc -p tsconfig.build.json && node build.mjs",
     "start": "node dist/server.js",
-    "lint": "eslint src test drizzle.config.ts --max-warnings=0",
+    "lint": "eslint src test ops drizzle.config.ts --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --conditions=development --test test/*.test.ts",
     "test:db": "tsx --conditions=development test/helpers/run-postgres-tests.ts --test-concurrency=2 test/postgres/*.test.ts test/auth/*.test.ts test/ownership/*.test.ts test/security/*.test.ts test/commands/*.test.ts test/products/*.test.ts test/sales/*.test.ts test/purchases/*.test.ts test/adjustments/*.test.ts test/void-sales/*.test.ts test/void-purchases/*.test.ts test/read-models/*.test.ts test/backup/*.test.ts test/deletion/*.test.ts",
@@ -32,7 +32,8 @@
     "test:read-models": "tsx --conditions=development test/helpers/run-postgres-tests.ts --test-concurrency=2 test/read-models/*.test.ts",
     "test:backup": "tsx --conditions=development test/helpers/run-postgres-tests.ts --test-concurrency=2 test/backup/*.test.ts",
     "test:deletion": "tsx --conditions=development test/helpers/run-postgres-tests.ts --test-concurrency=2 test/deletion/*.test.ts",
-    "deletion:suppressions": "tsx --conditions=development src/deletion/registry-cli.ts"
+    "deletion:suppressions": "tsx --conditions=development src/deletion/registry-cli.ts",
+    "backup:qa": "tsx --conditions=development ops/cli.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.7",

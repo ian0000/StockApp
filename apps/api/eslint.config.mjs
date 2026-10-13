@@ -3,7 +3,7 @@ import workspaceConfig from '../../eslint.config.mjs';
 export default [
   ...workspaceConfig,
   {
-    files: ['src/**/*.ts', 'test/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.ts', 'ops/**/*.ts'],
     settings: {
       'import/resolver': {
         typescript: {

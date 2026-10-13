@@ -1,5 +1,11 @@
 # Pruebas y DoD futura
 
+DEV-02B: `test/backup-ops.test.ts` usa age/rclone fijados, almacén/S3 mock loopback, condiciones
+PUT/multipart y failure guards. Recovery PostgreSQL18.6 existente añade cifrado y supresión
+independiente; [matriz/evidencia](DEV-02B.md). Sin R2 en CI ni secrets reales/artifacts sensibles.
+Binarios oficiales se preparan con SHA-256 verificado en temporal propio; no skips si faltan.
+QA/tooling exige regresión completa según CI-OPT-01, conservando runner/pools/timeouts/concurrency.
+
 Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; incidentes nativos conservados.
 
 DEV-02 añade3 casos de migrador compilado (vacío/concurrente/repeat/missing SQL/fallo rollback)
