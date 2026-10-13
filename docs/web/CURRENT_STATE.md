@@ -1,5 +1,14 @@
 # Auditoría del estado actual
 
+DEV-02 PREPARED / STAGED (2026-10-13): reanudación autorizada con Docker PostgreSQL18.6,
+test:db completo1040 PASS/0fail/skip/timeout. StockApp UAT/uat tiene API, template Postgres18 y
+volumen solo staged;56 cambios no destructivos, sin deployment. API settings/SHA5222... preservados.
+Plan Hobby$5/región API confirmados en DEV-01/PR105; capacidad default5GB aprobada solo staged.
+Ensayo local18.6 de migración/backup/restore/supresión, plan independiente y runbook documentados.
+[Estado actual y revisión pendiente](DEV-02.md). Destino/cifrado/custodia, activación/backups/restore
+provider y RPO/RTO sin verificar; DEV-01 no operacionalmente DONE. DEV-03+ no iniciados.
+Los párrafos inferiores conservan snapshots históricos anteriores a esta autorización.
+
 DEV-01 en preparación: GET /health operacional implementado,27 rutas implemented;
 readiness config/migration hash/column type/nullability fail-closed,503 ApiError/no-store y /live
 independiente. StockApp UAT/uat privado creado; API staged sin fuente/deployment/DB/dominio.

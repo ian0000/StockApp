@@ -1,5 +1,13 @@
 # Backlog de implementación Cloud/Web
 
+DEV-02 PREPARED / STAGED (2026-10-13): reanudación autorizada con Docker PostgreSQL18.6,
+test:db completo1040 PASS/0fail/skip/timeout. PostgreSQL/volumen UAT solo staged, ensayos locales
+de migración/restore/supresión y plan de backup independiente. Capacidad default Hobby5GB autorizada
+solo staged; destino/cifrado/custodia y activación requieren revisión. DEV-01 no está operacionalmente
+DONE; DEV-03+ no autorizados. [Inventario, runbook y límites actuales](DEV-02.md).
+DEV-01/PR105 integrado; plan Hobby$5 y región API us-west2 confirmados. Notas pendientes inferiores
+son snapshots anteriores, no autorización de activar ni conectar fuente live.
+
 DEV-01 IN PROGRESS: runtime/readiness y gates locales PASS; API Railway staged; CI/GitGuardian y plan/región/
 activación pendientes. Sin DB/deployment público ni UAT acceptance; DEV-02+ no iniciados.
 [Reporte y límites](DEV-01.md). Las referencias PLANNED inferiores describen el snapshot DEV-00.

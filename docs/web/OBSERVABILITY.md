@@ -1,5 +1,13 @@
 # Observabilidad V1
 
+Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; incidentes nativos conservados.
+
+DEV-02 (2026-10-13): [backup/recovery](DEV-02.md) requiere evidencia privada de antigüedad,
+checksum/completitud, expiración, versión/clave por referencia, restore y verificación de supresión.
+Exit0 de CLI y /health200 no certifican clave correcta ni recuperación de borrados.
+Alertas futuras: backup fallido/antiguo, espacio, restore/supresión fallida y RPO/RTO medidos.
+Sin dumps, PII, tokens, URLs DB ni claves en logs. No monitor/scheduler configurado; DEV-05 pendiente.
+
 DEV-00: [DEV local/CI→UAT→aprobación humana→PROD](DEV-00.md). Primer runtime online será
 UAT, no producción comercial; monitoring/proveedores aún NO configurados. DEV-05 debe verificar
 señal runtime/alertas mediante fallos controlados en UAT y DEV-06 incorporarlo a aceptación.

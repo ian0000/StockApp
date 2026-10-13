@@ -1,5 +1,13 @@
 # CI/CD futuro
 
+Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; CI/GitGuardian exact-head requeridos.
+
+DEV-02 (2026-10-13) cambia solo tests/helpers QA y documentación; requiere full regression
+con PostgreSQL18.6, pnpm check/test:db completos, generadores, Quality checks/GitGuardian/reviews
+del SHA exacto. [Evidencia y restricciones](DEV-02.md). No cambio de workflows, selección ni CD.
+API pin5222ee82437dcff1c5e5a691c466ddf5eaebfe7e preservado en patch Railway; merge DEV-02
+no repinea, aplica patch, conecta fuente live ni activa Postgres/volumen/API. DEV-03+ no autorizados.
+
 DEV-01 cambia API operacional/manifest/tests/docs y corrige el setup Web aislado: compila Contracts
 antes de build:web. Quality checks y selección conservadora CI-OPT-01 intactos; el cambio de harness
 requiere full regression y test:db completo. Railway UAT tiene settings staged, sin fuente live,
