@@ -55,9 +55,10 @@ Repositorio público `ian0000/StockApp`, acceso GitHub read/push/admin verificad
 la preparación de fuente se limita a staged/main+commitSha exacto, sin conexión live ni accept-deploy;
 el SHA y resultado de ese paso quedan en la entrega final. No inventar deploy ID/URL/logs ni afirmar
 autorización/build efectivo del proveedor por aceptar una fuente staged.
-Una réplica; región por defecto devuelta por Railway `us-west2`, **sin activar**.
-Plan vigente/costo efectivo y región aprobada pendientes de confirmación: el conector no expone
-billing de la cuenta. No upgrade ni recurso de ejecución pago autorizado/activado.
+El responsable confirmó plan de5USD/mes y autorizó `us-west2` (California), una réplica.
+Región fijada explícitamente en el patch staged, **sin activar**. El plan se registra según
+confirmación humana; el conector no expone billing ni verifica consumo/costo efectivo de la cuenta.
+No upgrade ni recurso de ejecución pago activado. Build/start real y dependencias DB/SMTP pendientes.
 
 Configuración siguiente existe **solo en el patch**, no como runtime efectivo desplegado:
 
