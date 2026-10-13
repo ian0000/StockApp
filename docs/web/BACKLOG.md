@@ -1,5 +1,10 @@
 # Backlog de implementación Cloud/Web
 
+DEV-02B CODE READY (2026-10-13): tooling operador R2/age y pruebas sintéticas de integridad y
+restore/supresión; [alcance y evidencia](DEV-02B.md). Bucket ENAM confirmado humanamente,
+sin validación remota ni custodia permanente completada. Activación de backup/Railway bloqueada;
+no live scheduler, DEV-03/PROD ni continuación automática. Estados inferiores conservan historia.
+
 DEV-02 PREPARED / STAGED (2026-10-13): reanudación autorizada con Docker PostgreSQL18.6,
 test:db completo1040 PASS/0fail/skip/timeout. PostgreSQL/volumen UAT solo staged, ensayos locales
 de migración/restore/supresión y plan de backup independiente. Capacidad default Hobby5GB autorizada

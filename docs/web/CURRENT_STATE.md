@@ -1,5 +1,12 @@
 # Auditoría del estado actual
 
+DEV-02B CODE READY (2026-10-13): [tooling R2/age y ensayo de recuperación](DEV-02B.md),
+sin cambios runtime comercial/contratos/schema/UI ni dependencias. Bucket R2 privado/ENAM según
+aprobación humana; remote smoke NOT RUN y custodia UAT pendiente. Railway56 staged/source5222...
+sin deployment, conservado. Local check2592/test:db1047 PASS/0fail/skip/timeout failures;
+generadores sin drift. CI/GitGuardian del PR exigidos antes de merge normal.
+Backups/retención/PROD no activados; estados inferiores son históricos.
+
 DEV-02 PREPARED / STAGED (2026-10-13): reanudación autorizada con Docker PostgreSQL18.6,
 test:db completo1040 PASS/0fail/skip/timeout. StockApp UAT/uat tiene API, template Postgres18 y
 volumen solo staged;56 cambios no destructivos, sin deployment. API settings/SHA5222... preservados.

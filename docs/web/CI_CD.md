@@ -1,5 +1,11 @@
 # CI/CD futuro
 
+DEV-02B incorpora checks de operadores `ops` al lint/typecheck API y pruebas sintéticas al
+test automático existente; [límites/evidencia](DEV-02B.md). Binarios oficiales portables fijados,
+sin dependencia app ni R2/deploy credentials. Comparación conservadora/full según CI-OPT-01;
+ningún workflow CD/scheduler/proveedor activado. CI/Quality checks, GitGuardian y reviews del
+head exacto se verifican antes de merge normal. Merge no altera source pin staged de Railway.
+
 Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; CI/GitGuardian exact-head requeridos.
 
 DEV-02 (2026-10-13) cambia solo tests/helpers QA y documentación; requiere full regression

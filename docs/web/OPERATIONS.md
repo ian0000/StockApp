@@ -1,5 +1,11 @@
 # Operación, retención y recuperación
 
+DEV-02B concreta la copia independiente aprobada con R2/age y [runbook QA](DEV-02B.md):
+dump18.6→cifrado→upload/download verificado→restore nuevo aislado→supresión independiente.
+Descriptor confiable y HMAC original se custodian fuera del objeto; age no autentica al emisor.
+No activación/scheduler/pruning/lifecycle/Bucket Lock; último backup realmente retenido+7d
+sigue siendo el cutoff de supresión. RPO/RTO y operación UAT real continúan sin verificar.
+
 Reanudación autorizada en Docker18.6: test:db1040 PASS/0fail/skip/timeout; incidentes nativos conservados.
 
 DEV-02 (2026-10-13) prepara [runbook y ensayo local PostgreSQL18.6](DEV-02.md): dump consistente,

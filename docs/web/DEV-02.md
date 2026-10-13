@@ -1,5 +1,10 @@
 # DEV-02 — PostgreSQL UAT, migraciones y recuperación
 
+Actualización DEV-02B: destino R2 `stockapp-uat-backups`/ENAM y age X25519 aprobados para
+tooling/QA; [transporte, custodia y runbook](DEV-02B.md). Esta aprobación concreta el plan
+independiente descrito abajo, sin activar DB/API/backup remoto ni retención. Custodia permanente,
+smoke R2 real y autorización operativa siguen pendientes. DEV-02 conserva PREPARED/STAGED.
+
 Estado: **PREPARED / STAGED — HUMAN REVIEW REQUIRED BEFORE ACTIVATION**.
 Gates locales completados; CI/GitGuardian del candidato exacto deben pasar antes del merge.
 La activación conserva su aprobación humana independiente.

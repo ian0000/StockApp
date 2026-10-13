@@ -1,5 +1,12 @@
 # Seguridad y threat model
 
+DEV-02B añade [tooling operador aislado](DEV-02B.md), sin acceso desde API/Web: age X25519,
+writer/reader R2 separados, secrets por env allowlist sin argv/logs, temporal privado/ACL y
+cleanup cooperativo. SHA-256 confiable del manifest se conserva independientemente de R2:
+cifrar al recipient público no prueba origen. Apply API-10 exit0 no acredita ausencia de borrados;
+verificación independiente usa HMAC original y compara supervivientes. Custodia permanente,
+smoke R2/retención efectiva/activación siguen pendientes; no certificación de seguridad PROD.
+
 API-10 mantiene CSRF/Origin/rate/JSON/no-store/requestId y A/B. Acceptance tx: User lock, Business NO KEY UPDATE compatible con FKs, Inventory FOR UPDATE, DELETING/flagfalse, todas las sesiones eliminadas y job durable. Clave server-only DELETION_SUPPRESSION_SECRET separada de auth; ningún ID/key/email/dataset/progreso sensible en logs/HTTP. [Detalle](API-10.md).
 
 API-09 backup/export: sesión oficial verified/reciente, SESSION_NOT_FRESH403 inclusivo,
