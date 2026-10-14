@@ -1,5 +1,10 @@
 # Backlog de implementación Cloud/Web
 
+DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED (2026-10-14): [runbook de custodia/retención](DEV-02D.md).
+Sin clave permanente generada, primaria/recovery/decrypt/descriptors/HMAC no verificados.
+Retención/lifecycle solo propuestos; Railway56 staged intactos. PR se creará manualmente por humano;
+sin activación/backup real/scheduler/PROD/DEV-03. Estados inferiores conservan evidencia histórica.
+
 DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [transporte remoto sintético](DEV-02C.md) probado
 una vez con writer/reader separados, integridad y decrypt exactos, borrado solo de su objeto.
 DEV-02B/PR107 merged. Railway sigue solo staged; custodia age permanente, retención,

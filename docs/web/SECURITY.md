@@ -1,5 +1,12 @@
 # Seguridad y threat model
 
+DEV-02D [prepara la ceremonia y custodia](DEV-02D.md): primaria local DACL privada,
+recovery Bitwarden independiente elegida humanamente, retrieval/decrypt pendientes.
+Solo recipient público/version documentables; identity privada fuera de Git/R2/Railway/CI/logs.
+Writer recibe recipient, jamás identity; claves históricas y HMAC original separados, sin rotación.
+Descriptor confiable fuera de R2; ausencia de registry/HMAC/copies/inventario verificables bloquea
+recovery/promoción. DEV-02C remote transport PASS conservado; no certificar custody/retención/PROD.
+
 DEV-02B añade [tooling operador aislado](DEV-02B.md), sin acceso desde API/Web: age X25519,
 writer/reader R2 separados, secrets por env allowlist sin argv/logs, temporal privado/ACL y
 cleanup cooperativo. SHA-256 confiable del manifest se conserva independientemente de R2:

@@ -1,5 +1,11 @@
 # Auditoría del estado actual
 
+DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED (2026-10-14): [ceremonia y retención propuestas](DEV-02D.md).
+Primaria local ACL privada propuesta, recovery Bitwarden elegida; no generación ni decrypt permanente.
+Custody/descriptors/HMAC/expiración efectiva pendientes; lifecycle R2 no aplicado, Railway56 staged
+sin cambios/deployments. Solo docs, PR manual humano. DEV-02B recovery local y DEV-02C transporte
+real PASS preservados; sin backups reales/scheduler/PROD/DEV-03.
+
 DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [evidencia de una única ejecución real](DEV-02C.md)
 sobre stockapp-uat-backups: writer/upload, reader/download, SHA-256/tamaño, decrypt y plaintext
 exactos PASS; solo su objeto eliminado. Identity QA efímera y temporales limpiados.

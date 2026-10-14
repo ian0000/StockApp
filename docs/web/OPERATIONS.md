@@ -1,5 +1,12 @@
 # Operación, retención y recuperación
 
+DEV-02D prepara [custodia age permanente, inventario y retención](DEV-02D.md). Generación
+requiere aprobación explícita y decrypt sintético con primaria y recovery independiente;
+ninguno ejecutado. Supresión se conserva hasta última copia efectiva+7d, sin pruning por
+constante ni inventario incompleto. Lifecycle propuesto solo uat/postgres/30d, no aplicado;
+demora de expiración efectiva exige verificación antes de datos reales. DEV-02C transporte
+R2 real PASS no acredita custodia/recovery Railway. Sin schedules/deployment/PROD.
+
 DEV-02B concreta la copia independiente aprobada con R2/age y [runbook QA](DEV-02B.md):
 dump18.6→cifrado→upload/download verificado→restore nuevo aislado→supresión independiente.
 Descriptor confiable y HMAC original se custodian fuera del objeto; age no autentica al emisor.
