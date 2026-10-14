@@ -2,6 +2,7 @@
 
 DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED (2026-10-14): [runbook de custodia/retención](DEV-02D.md).
 Sin clave permanente generada, primaria/recovery/decrypt/descriptors/HMAC no verificados.
+Checkpoint de ceremonia aprobado humanamente; ejecución/prueba aún pendientes.
 Retención/lifecycle solo propuestos; Railway56 staged intactos. PR se creará manualmente por humano;
 sin activación/backup real/scheduler/PROD/DEV-03. Estados inferiores conservan evidencia histórica.
 

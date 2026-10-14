@@ -2,6 +2,7 @@
 
 DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED (2026-10-14): [ceremonia y retención propuestas](DEV-02D.md).
 Primaria local ACL privada propuesta, recovery Bitwarden elegida; no generación ni decrypt permanente.
+Ceremonia exacta aprobada por humano; ejecución interactiva y evidencia pendientes.
 Custody/descriptors/HMAC/expiración efectiva pendientes; lifecycle R2 no aplicado, Railway56 staged
 sin cambios/deployments. Solo docs, PR manual humano. DEV-02B recovery local y DEV-02C transporte
 real PASS preservados; sin backups reales/scheduler/PROD/DEV-03.

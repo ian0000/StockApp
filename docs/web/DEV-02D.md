@@ -5,13 +5,15 @@ Base main después de [PR108](https://github.com/ian0000/StockApp/pull/108):
 `2a646f992500110c90c812c40d7d05ff02d491f6`, limpio, 0 ahead / 0 behind.
 Rama `docs/dev-02d-key-custody-retention`. El usuario crea el PR manualmente;
 Quality checks/GitGuardian/required checks del head exacto preceden a cualquier merge normal.
-Preparación documental autorizada; generar la clave exige el checkpoint adicional del ticket §5.
+Preparación documental autorizada; checkpoint adicional del ticket §5 aprobado explícitamente
+por el humano el2026-10-14: «Autorizar la ceremonia humana descrita». Ejecución humana pendiente.
 
 ## Estado independiente de cada gate
 
 | Gate | Estado verificado |
 | --- | --- |
-| KEY CEREMONY | NOT RUN; autorización explícita de generación pendiente |
+| Human approval checkpoint | APPROVED; ejecución exclusivamente humana, sin generación unattended |
+| KEY CEREMONY | NOT RUN; autorización recibida, ejecución interactiva pendiente |
 | Public age recipient / version | Recipient NOT GENERATED; versión reservada `stockapp-uat-age-v1` |
 | PRIMARY CUSTODY | NO; ubicación propuesta, sin directorio ni clave creados |
 | RECOVERY COPY | NO; Bitwarden elegido por el usuario, copia aún inexistente/no probada |
@@ -44,6 +46,19 @@ staged-create, latestDeployment null, sin cron; pin API
 Ninguna generación permanente, test con clave permanente, copia privada, backup real, escritura
 R2 o modificación del proveedor ejecutada. Runtime API/Domain/Application/Mobile/contratos/
 schema/migrations/BackupV1/AccountExport/registro API-10/dependencias/CI permanecen intactos.
+
+Tras autorización se preparó un auxiliar PowerShell interactivo fuera del repositorio, en
+`C:\Users\USER\.codex\artifacts\stockapp-dev02d-ceremony.ps1`, para ejecución humana.
+Contiene una única generación con output file, rechaza input redirigido y ubicación existente,
+verifica pins de los ejecutables, ACL/owner, recipients y digests sintéticos, pausa para custodia/
+retrieval Bitwarden, y elimina solo el subdirectorio temporal propio. Secret line pasa solo por
+clipboard local controlado y prompt oculto; reporte allowlist público, sin private hashes.
+Syntax/ACL existentes en lectura/simulación de grant ajeno en memoria PASS; no se ejecutó
+el auxiliar completo ni una generación. Una prueba de ACL ajena sobre fixture de disco fue
+rechazada por revisión automática (`blocked by policy`) antes de ejecutarse; se sustituyó
+por esa simulación en memoria, sin cambiar permisos de archivos ajenos ni relajar el guard.
+Estos checks del auxiliar no son decrypt permanente PASS. La evidencia de ejecución prevista es
+`stockapp-dev02d-ceremony-result.json` fuera del repo, aún no creada; solo recipient/resultados.
 
 ## Ceremonia exacta propuesta — solo tras aprobación humana
 
@@ -244,7 +259,7 @@ Este documento no habilita un comando de recovery sobre Railway ni acepta un dep
 
 ## Revisión humana consolidada y cierre documental
 
-Pendientes razonablemente detectables: aprobación de ceremonia exacta/ubicaciones; evidencia de
+Pendientes razonablemente detectables: ejecución humana de ceremonia/ubicaciones aprobadas; evidencia de
 acceso independiente Bitwarden y recovery retrieval/decrypt; creación y retrieval del inventario
 confiable; custodia original HMAC/version histórica; inventario/cutoff de todas las capas;
 config R2 actual y expiración efectiva compatible con30d; autorización separada de lifecycle,
@@ -258,5 +273,6 @@ Los resultados del provider se registran independientemente. Sin test:db ni gene
 por preparación de un runbook. PR manual, CI/GitGuardian/required checks pendientes hasta que
 exista candidato PR; no se atribuye el verde de PR108 a DEV-02D. AUTO-FIXes: NONE.
 
-STOP en **DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED** hasta aprobación explícita.
+STOP en **DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED** hasta ejecución humana verificada;
+la aprobación explícita ya recibida no equivale a generación/custody/decrypt completados.
 Sin Railway accept-deploy/Postgres UAT/live backups/scheduler/PROD/DEV-03.
