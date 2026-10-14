@@ -1,5 +1,12 @@
 # Auditoría del estado actual
 
+DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [evidencia de una única ejecución real](DEV-02C.md)
+sobre stockapp-uat-backups: writer/upload, reader/download, SHA-256/tamaño, decrypt y plaintext
+exactos PASS; solo su objeto eliminado. Identity QA efímera y temporales limpiados.
+PR107 merged, Railway56 staged/source5222... sin cambios ni deployment. Custodia permanente,
+retención y recovery Railway pendientes; backup/scheduler/PROD no activados. Solo documentación;
+estados inferiores conservan evidencia histórica. STOP, no DEV-03 automático.
+
 DEV-02B CODE READY (2026-10-13): [tooling R2/age y ensayo de recuperación](DEV-02B.md),
 sin cambios runtime comercial/contratos/schema/UI ni dependencias. Bucket R2 privado/ENAM según
 aprobación humana; remote smoke NOT RUN y custodia UAT pendiente. Railway56 staged/source5222...
