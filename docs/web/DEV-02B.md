@@ -1,5 +1,10 @@
 # DEV-02B — Transporte R2 y cifrado age
 
+Actualización 2026-10-14: DEV-02B integrado por PR107; [DEV-02C](DEV-02C.md) ejecutó
+un único smoke real R2 PASS con ciphertext sintético e identity QA efímera y borró su objeto.
+Custodia permanente, retención, recuperación Railway y activación siguen pendientes.
+La evidencia inferior conserva el estado histórico de implementación/QA DEV-02B.
+
 Base main después de DEV-02/PR106: `402988098caf97262ce321d3e3d5d9fe23320126`,
 clean0/0. Rama `chore/dev-02b-r2-backup-encryption`. Implementación y QA sintético autorizados;
 activación Railway, backups programados, PROD y DEV-03 no autorizados.
@@ -155,8 +160,9 @@ ni URL con credentials. Rechazado en CI; nunca se dispara por pnpm check.
 Genera identity QA efímera privada, carga un único ciphertext sintético en qa-smoke/UUID,
 descarga con reader, compara ciphertext y plaintext y elimina solo su objeto tras éxito completo.
 Fallo/resultado incierto conserva la posible asignación para revisión; nunca limpia otros objetos
-ni elimina uno preexistente tras una colisión. **REMOTE SMOKE: NOT RUN**: falta opt-in dedicado
-y no se han inyectado/inspeccionado credenciales reales. No se presenta como PASS.
+ni elimina uno preexistente tras una colisión. **REMOTE SMOKE en DEV-02B: NOT RUN**;
+posteriormente DEV-02C aportó opt-in e inyección privada y acreditó transporte remoto PASS.
+La [evidencia separada](DEV-02C.md) no certifica custodia permanente ni recovery Railway.
 
 Ceremonia humana UAT, aún pendiente: generar/aprobar identity permanente con age-keygen en
 ubicación privada; guardar identity fuera de R2/Railway/Git/API/CI; conservar copia independiente;
@@ -167,7 +173,7 @@ identities históricas mientras existan objetos retenidos que las necesiten y pr
 Pérdida de todas las copias de una identity hace irrecuperables esos backups; R2 no puede descifrarlos.
 La clave HMAC histórica API-10 tiene custodia separada y estable, no se rota por este ticket.
 QA identity nunca se reutiliza para UAT. **BACKUP ACTIVATION BLOCKED** hasta completar custodia,
-smoke real, revisión de retención y autorización operativa/deploy.
+revisión de retención y autorización operativa/deploy; smoke real completado en DEV-02C.
 
 ## Retención y costos
 

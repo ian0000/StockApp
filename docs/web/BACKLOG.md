@@ -1,5 +1,10 @@
 # Backlog de implementación Cloud/Web
 
+DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [transporte remoto sintético](DEV-02C.md) probado
+una vez con writer/reader separados, integridad y decrypt exactos, borrado solo de su objeto.
+DEV-02B/PR107 merged. Railway sigue solo staged; custodia age permanente, retención,
+recovery UAT y activación pendientes. Sin scheduler/PROD/DEV-03; STOP tras entrega documental.
+
 DEV-02B CODE READY (2026-10-13): tooling operador R2/age y pruebas sintéticas de integridad y
 restore/supresión; [alcance y evidencia](DEV-02B.md). Bucket ENAM confirmado humanamente,
 sin validación remota ni custodia permanente completada. Activación de backup/Railway bloqueada;
