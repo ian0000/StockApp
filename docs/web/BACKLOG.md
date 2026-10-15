@@ -1,5 +1,11 @@
 # Backlog de implementación Cloud/Web
 
+DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [sandbox mínimo sintético](DEV-UAT-01.md)
+en preparación. Excepción aprobada: backup/DR/retención avanzada no bloquean solo este sandbox;
+controles básicos/auth/piloto se conservan. Resend HTTPS Free autorizado para preparación,
+adaptador sin dependencias y headers Web locales; costo/secrets/checkpoint2 pendientes. DEV-02E conserva evidencia parcial,
+sin auditoría completa ni cambios de proveedor. PR/merge manuales; no PROD ni datos reales.
+
 DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING (2026-10-14 local): [custodia/retención](DEV-02D.md).
 Identity permanente generada una vez por humano; primaria/recovery Bitwarden, ambos decrypts,
 recipient y cleanup PASS. Descriptors/HMAC original/retención efectiva siguen pendientes.
