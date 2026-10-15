@@ -1,5 +1,13 @@
 # Auditoría del estado actual
 
+DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING (2026-10-14 local): [evidencia y política](DEV-02D.md).
+Una identity permanente humana, primaria local con ACL privada y recovery Bitwarden recuperada;
+ambos decrypts del mismo ciphertext PASS, recipient coincidente, temporales y clipboard confirmados.
+Acceso independiente a bóveda atestiguado por humano; sin auditoría administrativa Bitwarden.
+Descriptors/HMAC original/expiración efectiva pendientes; lifecycle R2 no aplicado, Railway56 staged
+sin cambios/deployments. Solo docs, PR manual humano. DEV-02B recovery local y DEV-02C transporte
+real PASS preservados; sin backups reales/scheduler/PROD/DEV-03.
+
 DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [evidencia de una única ejecución real](DEV-02C.md)
 sobre stockapp-uat-backups: writer/upload, reader/download, SHA-256/tamaño, decrypt y plaintext
 exactos PASS; solo su objeto eliminado. Identity QA efímera y temporales limpiados.

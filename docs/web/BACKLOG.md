@@ -1,5 +1,11 @@
 # Backlog de implementación Cloud/Web
 
+DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING (2026-10-14 local): [custodia/retención](DEV-02D.md).
+Identity permanente generada una vez por humano; primaria/recovery Bitwarden, ambos decrypts,
+recipient y cleanup PASS. Descriptors/HMAC original/retención efectiva siguen pendientes.
+Retención/lifecycle solo propuestos; Railway56 staged intactos. PR se creará manualmente por humano;
+sin activación/backup real/scheduler/PROD/DEV-03. Estados inferiores conservan evidencia histórica.
+
 DEV-02C REMOTE R2 SMOKE PASS (2026-10-14): [transporte remoto sintético](DEV-02C.md) probado
 una vez con writer/reader separados, integridad y decrypt exactos, borrado solo de su objeto.
 DEV-02B/PR107 merged. Railway sigue solo staged; custodia age permanente, retención,
