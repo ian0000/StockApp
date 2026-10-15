@@ -1,9 +1,10 @@
 # Auditoría del estado actual
 
-DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED (2026-10-14): [ceremonia y retención propuestas](DEV-02D.md).
-Primaria local ACL privada propuesta, recovery Bitwarden elegida; no generación ni decrypt permanente.
-Ceremonia exacta aprobada por humano; ejecución interactiva y evidencia pendientes.
-Custody/descriptors/HMAC/expiración efectiva pendientes; lifecycle R2 no aplicado, Railway56 staged
+DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING (2026-10-14 local): [evidencia y política](DEV-02D.md).
+Una identity permanente humana, primaria local con ACL privada y recovery Bitwarden recuperada;
+ambos decrypts del mismo ciphertext PASS, recipient coincidente, temporales y clipboard confirmados.
+Acceso independiente a bóveda atestiguado por humano; sin auditoría administrativa Bitwarden.
+Descriptors/HMAC original/expiración efectiva pendientes; lifecycle R2 no aplicado, Railway56 staged
 sin cambios/deployments. Solo docs, PR manual humano. DEV-02B recovery local y DEV-02C transporte
 real PASS preservados; sin backups reales/scheduler/PROD/DEV-03.
 

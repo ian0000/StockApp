@@ -1,8 +1,9 @@
 # DEV-02B — Transporte R2 y cifrado age
 
-DEV-02D prepara [ceremonia permanente, descriptor y retención](DEV-02D.md), todavía sin
-generación ni custody/recovery permanente acreditadas. Versiones y formato existentes intactos;
-su preparación no activa proveedores ni reemplaza los gates pendientes.
+DEV-02D verifica [custodia permanente y propone descriptor/retención](DEV-02D.md): una identity
+humana, primaria privada y recovery Bitwarden con ambos decrypts/recipient/cleanup PASS.
+Descriptor/HMAC original/retención efectiva pendientes. Versiones y formato existentes intactos;
+no activa proveedores ni reemplaza los demás gates pendientes.
 
 Actualización 2026-10-14: DEV-02B integrado por PR107; [DEV-02C](DEV-02C.md) ejecutó
 un único smoke real R2 PASS con ciphertext sintético e identity QA efímera y borró su objeto.

@@ -1,7 +1,8 @@
 # DEV-02C — Smoke sintético remoto de Cloudflare R2
 
-Continuación DEV-02D: [preparación de custodia permanente y retención](DEV-02D.md),
-sin generación ni activación. Este smoke conserva su evidencia; no se repite automáticamente.
+Continuación DEV-02D: [custodia permanente verificada y retención propuesta](DEV-02D.md),
+con generación humana única y decrypts primaria/recovery PASS; activación pendiente.
+Este smoke conserva su evidencia; no se repite automáticamente.
 
 Estado: **REMOTE R2 SMOKE PASS**. Una única ejecución remota autorizada, sin cambios
 de implementación. Base main después de DEV-02B/[PR107](https://github.com/ian0000/StockApp/pull/107):

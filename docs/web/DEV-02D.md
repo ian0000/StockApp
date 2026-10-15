@@ -1,23 +1,25 @@
 # DEV-02D — Custodia age permanente y retención UAT
 
-Estado: **PREPARED — HUMAN KEY CEREMONY REQUIRED**, 2026-10-14.
+Estado: **KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING**, 2026-10-14 local.
 Base main después de [PR108](https://github.com/ian0000/StockApp/pull/108):
 `2a646f992500110c90c812c40d7d05ff02d491f6`, limpio, 0 ahead / 0 behind.
 Rama `docs/dev-02d-key-custody-retention`. El usuario crea el PR manualmente;
 Quality checks/GitGuardian/required checks del head exacto preceden a cualquier merge normal.
 Preparación documental autorizada; checkpoint adicional del ticket §5 aprobado explícitamente
-por el humano el2026-10-14: «Autorizar la ceremonia humana descrita». Ejecución humana pendiente.
+por el humano el2026-10-14: «Autorizar la ceremonia humana descrita». Ceremonia humana completada;
+decrypts y cleanup verificados. Esto no acredita preparación operacional de backups.
 
 ## Estado independiente de cada gate
 
 | Gate | Estado verificado |
 | --- | --- |
 | Human approval checkpoint | APPROVED; ejecución exclusivamente humana, sin generación unattended |
-| KEY CEREMONY | NOT RUN; autorización recibida, ejecución interactiva pendiente |
-| Public age recipient / version | Recipient NOT GENERATED; versión reservada `stockapp-uat-age-v1` |
-| PRIMARY CUSTODY | NO; ubicación propuesta, sin directorio ni clave creados |
-| RECOVERY COPY | NO; Bitwarden elegido por el usuario, copia aún inexistente/no probada |
-| RECOVERY DECRYPT TEST | NOT RUN con ambas copias |
+| KEY CEREMONY | PASS; una generación permanente humana; continuaciones reutilizaron esa identity |
+| Public age recipient / version | Recipient registrado abajo; versión `stockapp-uat-age-v1` |
+| PRIMARY CUSTODY | PASS; archivo existente, owner/DACL privada verificados |
+| RECOVERY COPY | PASS; nota Bitwarden guardada y recuperada por humano; acceso independiente atestiguado |
+| RECOVERY DECRYPT TEST | PASS con ambas copias sobre el mismo ciphertext sintético |
+| Cleanup | PASS temporales; clipboard confirmado mediante copia/pegado humano de marcador público |
 | TRUSTED DESCRIPTOR CUSTODY | PREPARED; inventario protegido propuesto, no aprovisionado/verificado |
 | Suppression HMAC custody | NOT VERIFIED; sin leer, generar o rotar el secreto original |
 | RETENTION POLICY | PROPOSED; retención efectiva aún no medida |
@@ -43,8 +45,9 @@ Railway leído sin mutaciones: StockApp UAT/uat, patch
 staged-create, latestDeployment null, sin cron; pin API
 `5222ee82437dcff1c5e5a691c466ddf5eaebfe7e` intacto. No accept-deploy ni secretos consultados.
 
-Ninguna generación permanente, test con clave permanente, copia privada, backup real, escritura
-R2 o modificación del proveedor ejecutada. Runtime API/Domain/Application/Mobile/contratos/
+Una identity permanente generada por el humano, con recovery Bitwarden y ambos decrypts sintéticos
+verificados. Ningún backup real, escritura R2 o modificación del proveedor ejecutados.
+Runtime API/Domain/Application/Mobile/contratos/
 schema/migrations/BackupV1/AccountExport/registro API-10/dependencias/CI permanecen intactos.
 
 Tras autorización se preparó un auxiliar PowerShell interactivo fuera del repositorio, en
@@ -53,28 +56,59 @@ Contiene una única generación con output file, rechaza input redirigido y ubic
 verifica pins de los ejecutables, ACL/owner, recipients y digests sintéticos, pausa para custodia/
 retrieval Bitwarden, y elimina solo el subdirectorio temporal propio. Secret line pasa solo por
 clipboard local controlado y prompt oculto; reporte allowlist público, sin private hashes.
-Syntax/ACL existentes en lectura/simulación de grant ajeno en memoria PASS; no se ejecutó
-el auxiliar completo ni una generación. Una prueba de ACL ajena sobre fixture de disco fue
+Syntax/ACL existentes en lectura/simulación de grant ajeno en memoria PASS. Una prueba de ACL
+ajena sobre fixture de disco fue
 rechazada por revisión automática (`blocked by policy`) antes de ejecutarse; se sustituyó
 por esa simulación en memoria, sin cambiar permisos de archivos ajenos ni relajar el guard.
-Estos checks del auxiliar no son decrypt permanente PASS. La evidencia de ejecución prevista es
-`stockapp-dev02d-ceremony-result.json` fuera del repo, aún no creada; solo recipient/resultados.
+El humano ejecutó el auxiliar original: creó la identity y se detuvo por manejo de stderr en
+Windows PowerShell5. Se preservó esa identity; auxiliares de continuación no generan claves.
+Los reportes fallidos se conservan sin sobrescribir ni convertirlos retrospectivamente en PASS.
 
-## Ceremonia exacta propuesta — solo tras aprobación humana
+## Evidencia final de custodia
+
+Recipient público de `stockapp-uat-age-v1`:
+
+```text
+age13sjc7nwzagct9wrx43pztqdaaz4zqkpe2gpuep5z5p2v2f20w9ws9mnfad
+```
+
+Reportes públicos allowlist fuera del repo, en `C:\Users\USER\.codex\artifacts`:
+
+| Evidencia | Resultado |
+| --- | --- |
+| `stockapp-dev02d-verification-02-result.json` | Ambos decrypts PASS, recipients iguales, temporales limpiados; STOPPED únicamente por marcador final incorrecto |
+| `stockapp-dev02d-clipboard-result-33dc7462-5a35-4917-b69a-08e56d08f332.json` | KEY_CUSTODY_VERIFIED; valida los gates del reporte anterior y completa el marcador exacto |
+| Decrypts UTC | 2026-10-15 01:09:19–01:11:04; 2026-10-14 20:09:19–20:11:04 America/Guayaquil |
+| Cierre UTC | 2026-10-15 01:17:12; 2026-10-14 20:17:12 America/Guayaquil |
+| Primary/recovery | Ambos descifran el mismo ciphertext; digests del plaintext sintético y recipient coinciden |
+| Temporales | Cero directorios `verification-*` restantes; primaria y nota permanente conservadas |
+| Generación | Una humana en total; cero invocaciones en cada continuación/verificación |
+
+El humano confirmó nota guardada, acceso independiente/MFA y retrieval desde Bitwarden.
+El decrypt demuestra que la copia recuperada funciona; no es una auditoría administrativa de
+la cuenta Bitwarden. El cierre de clipboard usa marcador público copiado y pegado por humano
+en prompt oculto con comparación exacta: confirmación asistida, sin inspeccionar la API del
+clipboard ni certificar borrado de historial remoto. No contenido/hash de identity privada en
+evidencia, Git o salida capturada. No se repitió el smoke R2 ni se usaron datos PostgreSQL reales.
+
+## Ceremonia aprobada y ejecutada — referencia operacional
+
+La versión v1 ya existe: **no repetir generación ni sobrescribir su archivo**. Los pasos
+siguientes registran la ceremonia aprobada; una nueva versión/rotación requiere aprobación propia.
 
 El usuario eligió finalmente Bitwarden Password Manager para la copia independiente.
 Elegirlo no acredita recuperación; comprobar acceso a la bóveda sin depender exclusivamente
 de este PC/perfil DPAPI antes de generar. Si credenciales/MFA o acceso independiente no están
 disponibles, **STOP — KEY CUSTODY NOT VERIFIED**. No pedir contraseña maestra/2FA/identity en chat.
 
-| Material | Destino propuesto bajo control humano |
+| Material | Destino bajo control humano |
 | --- | --- |
 | Primaria age X25519 | `C:\Users\USER\AppData\Local\StockApp\BackupKeyCustody\stockapp-uat-age-v1\identity.txt` |
 | Recovery independiente | Nota segura Bitwarden personal `StockApp UAT — age — stockapp-uat-age-v1` |
 | Temporales de prueba/recovery | Subdirectorio privado `verification-<UUID>` dentro del directorio primario |
 | Evidencia publicable | Solo recipient público, versión, UTC y resultados de verificación |
 
-La primaria será un archivo age privado en formato texto, con DACL restringida; ACL no equivale
+La primaria es un archivo age privado en formato texto, con DACL restringida; ACL no equivale
 a cifrado de disco. No se acredita BitLocker ni resistencia frente a un administrador/OS
 comprometido. Bitwarden protege la copia en su bóveda; una copia local DPAPI de esa nota o
 dos archivos del mismo PC no sustituyen el almacenamiento independiente.
@@ -117,7 +151,8 @@ no se requieren adjuntos premium, export de la bóveda ni un servicio pago nuevo
 11. Solo con ambos decrypt PASS, recipient coincidente, custody independiente acreditada y
     cleanup verificado actualizar los gates respectivos. Fallo → STOP, sin regenerar o activar.
 
-Secuencia CLI revisable, **NO EJECUTADA**; herramientas en su ubicación privada existente.
+Secuencia conceptual de la ceremonia humana completada; **no volver a ejecutar generación v1**.
+Herramientas en su ubicación privada existente.
 Los paths/variables corresponden a archivos nuevos del operador, no valores secretos en argv:
 
 ```text
@@ -131,7 +166,7 @@ age --decrypt --identity <retrieved-private-recovery-file> -o <new-recovery-outp
 
 Se usa [age X25519](https://github.com/FiloSottile/age), sin `-pq`, passphrase nueva,
 crypto propio, dependencia nueva ni cambio de versión. Los flags de generación/output/derive
-se revisaron en el help del binario fijado; no se ejecutó generación para preparar este runbook.
+se revisaron en el help del binario fijado. La generación permanente fue exclusivamente humana.
 
 ## Descriptor confiable y secretos históricos
 
@@ -259,8 +294,7 @@ Este documento no habilita un comando de recovery sobre Railway ni acepta un dep
 
 ## Revisión humana consolidada y cierre documental
 
-Pendientes razonablemente detectables: ejecución humana de ceremonia/ubicaciones aprobadas; evidencia de
-acceso independiente Bitwarden y recovery retrieval/decrypt; creación y retrieval del inventario
+Pendientes razonablemente detectables: creación y retrieval del inventario
 confiable; custodia original HMAC/version histórica; inventario/cutoff de todas las capas;
 config R2 actual y expiración efectiva compatible con30d; autorización separada de lifecycle,
 schedules, ensayo UAT y activación. La elección Bitwarden no resuelve esos gates automáticamente.
@@ -271,8 +305,21 @@ referencias/whitespace/fences, actionlint1.7.12 fijado y lint CI PASS; git diff 
 Binarios/version/archive pin age PASS; no private identity en los documentos cambiados.
 Los resultados del provider se registran independientemente. Sin test:db ni generation
 por preparación de un runbook. PR manual, CI/GitGuardian/required checks pendientes hasta que
-exista candidato PR; no se atribuye el verde de PR108 a DEV-02D. AUTO-FIXes: NONE.
+exista candidato PR; no se atribuye el verde de PR108 a DEV-02D.
 
-STOP en **DEV-02D PREPARED — HUMAN KEY CEREMONY REQUIRED** hasta ejecución humana verificada;
-la aprobación explícita ya recibida no equivale a generación/custody/decrypt completados.
+AUTO-FIX:
+CAUSE: Windows PowerShell5 convierte stderr público de age-keygen en error terminante con
+ErrorActionPreference Stop, y Set-Clipboard con cadena vacía falla; acceso nativo al clipboard
+también puede fallar en sesión no interactiva. Se reprodujeron con datos públicos sintéticos.
+SOURCE OF TRUTH: help age1.3.2, invariantes de ceremonia y comportamiento comprobado de PowerShell5.
+FILES: exclusivamente auxiliares locales `stockapp-dev02d-resume.ps1`, `stockapp-dev02d-verify.ps1`,
+`stockapp-dev02d-verify-02.ps1` y `stockapp-dev02d-finish.ps1`, fuera del repositorio.
+PRODUCTION BEHAVIOR CHANGED: NO.
+Se capturó stderr nativo sin publicarlo y se reutilizó la identity existente; para clipboard se
+usó reemplazo humano por marcador público y validación exacta, sin APIs nativas en el cierre.
+Errores de input humano conservaron sus reportes FAIL; se completó solo el paso restante,
+sin relajar assertions ni regenerar, sin retry loops ni sleeps para obtener verde.
+
+STOP en **DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING**.
+Custodia age completada; descriptor/HMAC original/retención efectiva siguen bloqueando activación.
 Sin Railway accept-deploy/Postgres UAT/live backups/scheduler/PROD/DEV-03.
