@@ -5,7 +5,7 @@ import {
 import { readDatabaseUrl } from '../infrastructure/postgres/config.js';
 import { readAuthConfig } from './config.js';
 import { createAuth } from './create-auth.js';
-import { createSmtpSender, readSmtpConfig } from './email.js';
+import { createEmailSender, readEmailConfig } from './email-provider.js';
 import { readSuppressionSecret } from '../deletion/model.js';
 import { createDeletionRunner } from '../deletion/runner.js';
 import { createReadinessCheck } from '../infrastructure/postgres/readiness.js';
@@ -18,10 +18,10 @@ export function createAuthRuntime(
   const config = readAuthConfig(env);
   const suppressionSecret = readSuppressionSecret(env);
   const databaseURL = readDatabaseUrl(env);
-  const smtpConfig = readSmtpConfig(env);
+  const emailConfig = readEmailConfig(env);
   const readiness = createReadinessCheck(databaseURL);
   const pool = createPostgresPool(databaseURL);
-  const emailSender = createSmtpSender(smtpConfig);
+  const emailSender = createEmailSender(emailConfig);
   const database = createDatabase(pool);
   const runtime = createAuth({
     database,

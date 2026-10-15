@@ -1,5 +1,8 @@
 import { v7 } from 'uuid';
-import { DOMAIN_VERSION, PROTOCOL_VERSION } from '@stock-app/contracts';
+import {
+  DOMAIN_VERSION,
+  PROTOCOL_VERSION,
+} from '@stock-app/contracts/transport';
 import type {
   InventoryStateDto,
   SaleDetailDto,

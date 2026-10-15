@@ -1,5 +1,12 @@
 # Auditoría del estado actual
 
+DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [configuración y gates del sandbox](DEV-UAT-01.md).
+Main4219ea1/PR109 integrado; Railway conserva56 staged, API/Postgres/volumen sin deployment.
+Pages stockapp-web-uat no encontrado en inventario visible; ningún DNS/servicio activado.
+Hosts UAT y piloto CLI con registro público confirmados. Resend HTTPS Free elegido, adaptador
+local y headers Web preparados; secrets/costos/checkpoint2 y smoke real pendientes. La excepción solo cubre pruebas sintéticas;
+no acredita UAT FULL ACCEPTANCE. DEV-02E permanece parcial, preservado sin mutaciones concurrentes.
+
 DEV-02D KEY CUSTODY VERIFIED — RETENTION ACTIVATION PENDING (2026-10-14 local): [evidencia y política](DEV-02D.md).
 Una identity permanente humana, primaria local con ACL privada y recovery Bitwarden recuperada;
 ambos decrypts del mismo ciphertext PASS, recipient coincidente, temporales y clipboard confirmados.

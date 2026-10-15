@@ -230,8 +230,8 @@ test('all Product/Sale/recovery standalone validators retain shared strict schem
   }
 });
 
-for (const feature of ['products', 'sales', 'adjustments'])
-  test(`${feature} bundle contains approved pure Domain without Ajv/compiler or server/native infrastructure`, async () => {
+for (const feature of ['products', 'sales', 'adjustments', 'voids'])
+  test(`${feature} bundle uses pure transport without Ajv/compiler or server/native infrastructure`, async () => {
     const output = await build({
       configFile: false,
       root: fileURLToPath(new URL('../', import.meta.url)),
@@ -267,7 +267,7 @@ for (const feature of ['products', 'sales', 'adjustments'])
         }
       }
     }
-    assert.equal(domain, true);
+    if (feature !== 'voids') assert.equal(domain, true);
     assert.equal(sourceTransport, true);
   });
 

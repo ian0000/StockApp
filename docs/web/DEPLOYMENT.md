@@ -1,5 +1,13 @@
 # Despliegue objetivo — sin configuración aplicada
 
+DEV-UAT-01 (2026-10-15 local) prepara [sandbox funcional con datos sintéticos descartables](DEV-UAT-01.md).
+Su checkpoint1 no activa recursos; checkpoint2 exige costo/configuración/secrets/DNS y SHA revisado.
+Para ese sandbox se difieren backup/DR/retención avanzada; se mantienen auth verificada, piloto,
+aislamiento, HTTPS/CORS/CSRF y gates. Hosts staging confirmados; DNS aún no aplicado.
+Hobby impide SMTP saliente: humano eligió preparar Resend HTTPS Free, sin SDK nuevo;
+AUTH_EMAIL_TRANSPORT=resend y sender/token exclusivos UAT aún sin provisionar. No datos reales ni PROD.
+Esta excepción no declara UAT FULL ACCEPTANCE ni sustituye el trabajo DEV-02B/02C/02D/02E.
+
 Actualización DEV-02 (2026-10-13): API y Postgres/volumen **staged-create**, sin deployment.
 Aceptación local reanudada en Docker18.6: test:db1040 PASS/0fail/skip/timeout, sin activación externa.
 StockApp UAT/uat, patch56 cambios no destructivo; defaults del template oficial, región DB/volumen
