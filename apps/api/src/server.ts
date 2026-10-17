@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { buildApp } from './app.js';
-import { readServerConfig } from './config.js';
+import { readServerConfig, readUatBootstrapPolicy } from './config.js';
 import { createAuthRuntime } from './auth/runtime.js';
 import { registerAuthRoutes } from './auth/routes.js';
 import { registerSaleRoutes } from './sales/routes.js';
@@ -38,6 +38,7 @@ export async function startServer(): Promise<void> {
   process.once('SIGINT', shutdown);
   process.once('SIGTERM', shutdown);
   try {
+    const bootstrapPolicy = readUatBootstrapPolicy(process.env);
     if (process.env.AUTH_BASE_URL) {
       const runtime = createAuthRuntime(
         process.env,
@@ -57,7 +58,13 @@ export async function startServer(): Promise<void> {
       app.addHook('onClose', () => runtime.close());
       readiness = runtime.readiness.check;
       registerAuthRoutes(app, runtime.auth, runtime.config);
-      registerOwnershipRoutes(app, runtime.auth, runtime.database);
+      registerOwnershipRoutes(
+        app,
+        runtime.auth,
+        runtime.database,
+        Date.now,
+        bootstrapPolicy,
+      );
       registerProductRoutes(app, runtime.auth, runtime.database);
       registerSaleRoutes(app, runtime.auth, runtime.database);
       registerPurchaseRoutes(app, runtime.auth, runtime.database);

@@ -65,8 +65,8 @@ export function OnboardingPage() {
           />
         </label>
         <p>
-          Revisa la zona horaria sugerida por tu navegador. El acceso cloud
-          requiere habilitación después de crear el inventario.
+          Revisa la zona horaria sugerida por tu navegador. Se usará para las
+          fechas y los reportes de tu inventario.
         </p>
         <button disabled={state.pending} type="submit">
           {state.pending ? 'Creando…' : 'Crear inventario vacío'}

@@ -132,8 +132,8 @@ test('enabled root shows Home route, metadata, semantic navigation, active state
   const html = await renderPath('/');
   assert.match(html, /<main(?:\s|>)/);
   assert.ok(html.includes('Cargando datos'));
-  assert.ok(html.includes('+ Venta'));
-  assert.ok(html.includes('+ Compra'));
+  assert.ok(html.includes('Nueva venta'));
+  assert.ok(html.includes('Nueva compra'));
   assert.ok(html.includes('Inventario A'));
   for (const label of [
     'Inicio',

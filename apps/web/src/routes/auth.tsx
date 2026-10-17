@@ -9,6 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { AuthFailure } from '../auth/client.js';
 import { AccessStatus } from './access.js';
+import { Brand } from '../ui/brand.js';
 
 export const resetRequestMessage =
   'Si el correo corresponde a una cuenta, recibirás un enlace para restablecer la contraseña.';
@@ -85,7 +86,8 @@ export function LoginPage() {
   )
     return <AccessStatus />;
   return (
-    <main>
+    <main className="auth-page">
+      <Brand />
       <h1>Iniciar sesión</h1>
       <form
         aria-describedby="form-message"
@@ -141,7 +143,8 @@ export function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   return (
-    <main>
+    <main className="auth-page">
+      <Brand />
       <h1>Crear cuenta</h1>
       <form
         aria-describedby="form-message"

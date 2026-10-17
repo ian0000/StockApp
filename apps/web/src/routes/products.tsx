@@ -166,7 +166,9 @@ function ProductsList() {
   return (
     <main>
       <h1>Productos</h1>
-      <Link to="/products/new">Crear producto</Link>
+      <Link className="primary-action" to="/products/new">
+        Crear producto
+      </Link>
       <p role="status" aria-live="polite">
         {feedback}
       </p>

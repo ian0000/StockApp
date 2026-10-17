@@ -1,5 +1,22 @@
 # Auditoría del estado actual
 
+Mejora UI/UX posterior: propuesta3 elegida, implementación y [QA local](../../design-qa.md) PASS.
+Activación automática de negocios nuevos verificados: opt-in restringido a UAT, gates API PASS.
+Cambios pendientes de revisión/merge y deployment controlado; los servicios remotos continúan
+en main386f6fd con el diseño anterior y piloto manual para altas nuevas.
+
+DEV-UAT-01 WEB/API/DB ONLINE / PARTIAL (2026-10-16 local): [activación y evidencia](DEV-UAT-01.md).
+PR110/main386f6fd desplegado; API y Postgres18.6 online, us-west2,0.5vCPU/500MB cada uno,
+volumen5GB y DB sin proxy público. Migración y health HTTPS200 PASS; auth401/CORS204/403 PASS.
+Resend dedicado configurado y POST de verificación al simulador aceptado200.
+Pages stockapp-web-uat success/main386f6fd, autodeploy production/preview deshabilitado.
+Web stockapp-staging.ian-k.dev Active/SSL y API api-stockapp-staging.ian-k.dev certificate VALID.
+HTTPS/assets/SPA/CSP y auth sin sesión/CORS PASS. Operador completó signup/verify/login;
+bootstrap UI y CLI piloto existente PASS, Inicio vacío visible con acceso autorizado.
+Inventario Web UAT independiente de Mobile, sin Sync ni monetización. Smoke financiero,
+persistencia tras relogin/restart y aislamiento pendientes; aún no UAT SANDBOX READY/FULL ACCEPTANCE.
+Secretos UAT nuevos con custodia local privada; copia Bitwarden humana pendiente. Sin PROD.
+
 DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [configuración y gates del sandbox](DEV-UAT-01.md).
 Main4219ea1/PR109 integrado; Railway conserva56 staged, API/Postgres/volumen sin deployment.
 Pages stockapp-web-uat no encontrado en inventario visible; ningún DNS/servicio activado.

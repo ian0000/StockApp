@@ -1,4 +1,15 @@
-import { Navigate, NavLink, Outlet } from 'react-router';
+import { Navigate, NavLink, Outlet, useLocation } from 'react-router';
+import {
+  IconHome,
+  IconCube,
+  IconFileText,
+  IconSettings,
+  IconPlus,
+  IconShoppingBag,
+  IconCalendar,
+  IconLogout,
+} from '@tabler/icons-react';
+import { Brand } from '../ui/brand.js';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { LoadingPage } from './status.js';
 import { privateDestination } from '../auth/session.js';
@@ -7,11 +18,13 @@ export function LogoutButton() {
   const controller = useSessionController();
   return (
     <button
+      className="logout-button"
       type="button"
       onClick={() => {
         void controller.logout();
       }}
     >
+      <IconLogout size={19} aria-hidden="true" />
       Cerrar sesión
     </button>
   );
@@ -82,30 +95,95 @@ export function PrivateBoundary() {
 }
 export function AppShell() {
   const view = useSessionView();
+  const location = useLocation();
   if (view.kind !== 'BUSINESS_ACTIVE_ENABLED') return <AccessStatus />;
+  const page = location.pathname.startsWith('/products')
+    ? 'Productos'
+    : location.pathname.startsWith('/history')
+      ? 'Historial'
+      : location.pathname.startsWith('/settings')
+        ? 'Configuración'
+        : location.pathname.startsWith('/sales')
+          ? 'Ventas'
+          : location.pathname.startsWith('/purchases')
+            ? 'Compras'
+            : location.pathname.startsWith('/adjustments')
+              ? 'Ajuste de stock'
+              : 'Inicio';
+  const timeZone = view.me.inventory?.reportingTimeZone ?? 'UTC';
+  const date = new Intl.DateTimeFormat('es', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone,
+  }).format(new Date());
   return (
     <div className="app-shell" key={view.generation}>
       <a className="skip-link" href="#app-content">
         Ir al contenido
       </a>
-      <aside>
-        <p>Cuenta: {view.me.user.email}</p>
+      <aside className="app-sidebar">
+        <NavLink className="brand-link" to="/" aria-label="StockApp · Inicio">
+          <Brand />
+        </NavLink>
         <nav aria-label="Navegación principal">
           <NavLink to="/" end>
+            <IconHome size={23} aria-hidden="true" />
             Inicio
           </NavLink>
-          <NavLink to="/products">Productos</NavLink>
-          <NavLink to="/history">Historial</NavLink>
-          <NavLink to="/settings">Configuración</NavLink>
+          <NavLink to="/products">
+            <IconCube size={23} aria-hidden="true" />
+            Productos
+          </NavLink>
+          <NavLink to="/history">
+            <IconFileText size={23} aria-hidden="true" />
+            Historial
+          </NavLink>
+          <NavLink to="/settings">
+            <IconSettings size={23} aria-hidden="true" />
+            Configuración
+          </NavLink>
         </nav>
+        <span className="nav-caption">Registrar operación</span>
         <nav aria-label="Registrar operación">
-          <NavLink to="/sales/new">Nueva venta</NavLink>
-          <NavLink to="/purchases/new">Nueva compra</NavLink>
+          <NavLink to="/sales/new">
+            <IconPlus size={20} aria-hidden="true" />
+            Nueva venta
+          </NavLink>
+          <NavLink to="/purchases/new">
+            <IconShoppingBag size={20} aria-hidden="true" />
+            Nueva compra
+          </NavLink>
         </nav>
-        <LogoutButton />
+        <div className="sidebar-account">
+          <span className="nav-caption">Tu cuenta</span>
+          <p>{view.me.user.email}</p>
+          <LogoutButton />
+        </div>
       </aside>
-      <div id="app-content" tabIndex={-1}>
-        <Outlet />
+      <div className="workspace">
+        <header className="workspace-header">
+          <div>
+            <strong>
+              {view.me.inventory?.name}{' '}
+              <span className="inventory-currency">
+                · {view.me.inventory?.currency}
+              </span>
+            </strong>
+            <span className="workspace-section">{page}</span>
+          </div>
+          <div className="workspace-date">
+            <IconCalendar size={23} aria-hidden="true" />
+            <div>
+              <span>{date}</span>
+              <small>{timeZone}</small>
+            </div>
+          </div>
+        </header>
+        <div id="app-content" tabIndex={-1}>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

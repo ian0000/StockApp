@@ -15,11 +15,16 @@ export type BootstrapInput = {
   reportingTimeZone: string;
 };
 
+export type BootstrapPolicy = {
+  autoEnableCloudAccess: boolean;
+};
+
 export async function bootstrapEmptyInventory(
   database: OwnershipDatabase,
   userId: string,
   input: BootstrapInput,
   clock: () => number = Date.now,
+  policy: BootstrapPolicy = { autoEnableCloudAccess: false },
 ) {
   const inventoryName = input.inventoryName.trim();
   let validTimeZone = Boolean(input.reportingTimeZone.trim());
@@ -90,7 +95,7 @@ export async function bootstrapEmptyInventory(
         id: v7(),
         ownerUserId: userId,
         status: 'ACTIVE',
-        cloudAccessEnabled: false,
+        cloudAccessEnabled: policy.autoEnableCloudAccess,
       })
       .returning();
     const now = clock();

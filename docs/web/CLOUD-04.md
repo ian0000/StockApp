@@ -91,6 +91,9 @@ Sin password/account/session/owner ajeno/generation/revision/capabilities/billin
 ## Atomicidad y retry
 
 Una transacción Drizzle crea Business ACTIVE/cloudAccessEnabled=false y su Inventory vacío.
+Excepción UAT autorizada en DEV-UAT-01: una política server-only, desactivada por defecto,
+permite crear el Business nuevo con cloudAccessEnabled=true solo para propietarios verificados
+en StockApp UAT. No cambia la respuesta V1 ni permite seleccionar el flag desde el request.
 Lock User FOR UPDATE serializa solicitudes del mismo owner incluso antes de existir Business;
 UNIQUE owner e Inventory.businessId son defensa adicional. Locks posteriores Business→Inventory,
 mismo orden que piloto. No locks entre tenants ni autoridad basada en ordering UUID.
@@ -122,7 +125,10 @@ solo pasa flag a false, preserva datos y sesiones. Already-disabled no-op sin ti
 Actualización efectiva conserva updatedAt >= timestamp anterior. No evento/receipt/purge/revoke.
 CLI imprime únicamente resultado genérico, error genérico/exit1 y cierra Pool en finally.
 Sin DB URL/email/password/sesión/inventario en stdout/stderr. Sin /admin ni API de habilitación.
-Signup/verify/bootstrap nunca habilitan piloto. No entitlement/billing automático.
+Signup/verify no habilitan piloto. Bootstrap conserva el acceso manual por defecto;
+la excepción server-only UAT descrita arriba activa únicamente negocios nuevos.
+Repetir bootstrap no reactiva un negocio deshabilitado ni uno DELETING.
+No entitlement/billing automático.
 
 ## Errores y seguridad
 
