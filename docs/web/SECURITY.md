@@ -96,7 +96,12 @@ orienta auth/Origin/cookies. Controles son diseño que debe probarse, no auditor
 
 Tres rutas locales con sesión oficial/verified, query owner+Inventory scoped y 404 ajeno;
 A own/B own200, A→B/B→A404, disable/DELETING403, inconsistent unverified403, expired/revoked401.
-Body/query mass assignment rechazado400; piloto solo CLI y enable precondiciones en transacción.
+Body/query mass assignment rechazado400; piloto por CLI y enable precondiciones en transacción.
+Excepción UAT autorizada: bootstrap puede habilitar automáticamente un Business nuevo del
+propietario verificado con UAT_AUTO_ENABLE_CLOUD_ACCESS=true. El parser exige también
+RAILWAY_ENVIRONMENT_NAME=uat y ambos orígenes staging exactos; una configuración fuera de
+ese entorno impide startup. Sin flag se conserva false. No modifica negocios existentes,
+deshabilitados o DELETING, ni elimina sesión/verificación/ownership/CSRF/rate limits.
 Signup/verify crean cero datasets; bootstrap nunca enable. Error DB sanitizado/requestId/no-store.
 FK owner NO ACTION y delete-user disabled, sin cascade del negocio. Sin imports Mobile/backup.
 Los controles aplican a metadata/bootstrap implementados; aún no prueban futuras rutas financieras,

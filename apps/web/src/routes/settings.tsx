@@ -11,6 +11,12 @@ import {
   useAccountView,
 } from '../account/context.js';
 import { useOnline } from '../products/context.js';
+import {
+  IconArrowLeft,
+  IconSettings,
+  IconShieldLock,
+} from '@tabler/icons-react';
+import { Brand } from '../ui/brand.js';
 
 export const legalLinks = [
   ['Política de privacidad', 'https://ian-k.dev/stockapp/privacy/'],
@@ -105,19 +111,47 @@ export function AccountBoundary() {
         <a className="skip-link" href="#app-content">
           Ir al contenido
         </a>
-        <aside>
-          <p>Cuenta: {meta.me.user.email}</p>
+        <aside className="app-sidebar">
+          <Link
+            className="brand-link"
+            to={meta.kind === 'NO_BUSINESS' ? '/onboarding' : '/'}
+          >
+            <Brand />
+          </Link>
           <nav aria-label="Navegación de cuenta">
             <Link to={meta.kind === 'NO_BUSINESS' ? '/onboarding' : '/'}>
+              <IconArrowLeft size={22} aria-hidden="true" />
               Volver a la aplicación
             </Link>
-            <Link to="/settings">Configuración</Link>
-            <Link to="/settings/privacy">Datos y privacidad</Link>
+            <Link to="/settings">
+              <IconSettings size={22} aria-hidden="true" />
+              Configuración
+            </Link>
+            <Link to="/settings/privacy">
+              <IconShieldLock size={22} aria-hidden="true" />
+              Datos y privacidad
+            </Link>
           </nav>
-          <LogoutButton />
+          <div className="sidebar-account">
+            <span className="nav-caption">Tu cuenta</span>
+            <p>{meta.me.user.email}</p>
+            <LogoutButton />
+          </div>
         </aside>
-        <div id="app-content" tabIndex={-1}>
-          <Outlet />
+        <div className="workspace">
+          <header className="workspace-header">
+            <div>
+              <strong>Tu cuenta</strong>
+              <span className="workspace-section">
+                {location.pathname === '/settings/privacy'
+                  ? 'Datos y privacidad'
+                  : 'Configuración'}
+              </span>
+            </div>
+          </header>
+          <div id="app-content" tabIndex={-1}>
+            <Outlet />
+          </div>
         </div>
       </div>
     </AccountMetadataContext.Provider>

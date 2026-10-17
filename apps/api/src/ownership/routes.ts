@@ -15,7 +15,11 @@ import {
   type OperationParams,
 } from '@stock-app/contracts';
 import type { StockAppAuth } from '../auth/create-auth.js';
-import { bootstrapEmptyInventory, type BootstrapInput } from './bootstrap.js';
+import {
+  bootstrapEmptyInventory,
+  type BootstrapInput,
+  type BootstrapPolicy,
+} from './bootstrap.js';
 import {
   resolveOwnDataset,
   resolveCloudInventory,
@@ -47,6 +51,7 @@ export function registerOwnershipRoutes(
   auth: StockAppAuth,
   database: OwnershipDatabase,
   clock: () => number = Date.now,
+  bootstrapPolicy: BootstrapPolicy = { autoEnableCloudAccess: false },
 ): void {
   app.register(async (scoped) => {
     scoped.addHook('onRequest', async (_request, reply) => {
@@ -125,6 +130,7 @@ export function registerOwnershipRoutes(
           authenticated.user.id,
           request.body,
           clock,
+          bootstrapPolicy,
         );
         return reply.code(result.created ? 201 : 200).send({
           business: businessDto(result.business),

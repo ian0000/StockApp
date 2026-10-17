@@ -4,6 +4,22 @@ Estado actual: **PARTIAL — WEB/API/DB UAT ONLINE; AUTH Y PILOTO PASS; SMOKE FI
 
 ## Publicación Cloudflare y dominios UAT — evidencia actual
 
+Rediseño Web posterior solicitado y propuesta3 elegida por el humano: sidebar clara, resumen
+diario navy, jerarquía/espaciado, formularios y detalles compartidos, adaptación móvil/tablet.
+[QA visual y funcional local](../../design-qa.md) PASS; Tabler React3.49.0 es la única nueva
+dependencia Web de este rediseño. No cambios de contrato financiero, Domain/Application/Mobile,
+schema/migrations, CI, pagos ni Sync. Preparado localmente; aún no publicado en Pages/Railway.
+
+Cambio posterior autorizado por el humano: acceso automático solo UAT para cuentas nuevas
+verificadas al crear su inventario. Implementación local opt-in con
+UAT_AUTO_ENABLE_CLOUD_ACCESS=true, RAILWAY_ENVIRONMENT_NAME=uat, APP_ORIGIN y AUTH_BASE_URL
+exactamente iguales a los hosts staging de esta sección. Ausente/false mantiene la política
+manual. Startup rechaza true fuera de ese entorno. No reactivar negocios existentes,
+administrativamente deshabilitados ni DELETING, ni modificar Mobile/Sync/monetización.
+**Pendiente de revisión/merge y deployment controlado:** el SHA remoto386f6fd aún requiere
+piloto manual; la cuenta del operador ya se habilitó. No activar la variable antes de
+desplegar el SHA revisado que implementa esta política. Ninguna migration nueva.
+
 Publicación y DNS confirmados por el humano en el checkpoint final; sin cambio de plan.
 Cloudflare Pages `stockapp-web-uat`, repositorio `ian0000/StockApp`, rama main y SHA exacto
 `386f6fd32a10124e082dabc86ff1bfbc181c2497`, igual al API Railway.

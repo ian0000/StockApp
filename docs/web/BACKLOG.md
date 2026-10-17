@@ -1,5 +1,9 @@
 # Backlog de implementación Cloud/Web
 
+UI/UX propuesta3 y acceso automático solo UAT preparados: [QA local](../../design-qa.md) PASS.
+Pendiente de revisión/merge y despliegue controlado. No confundir con código ya publicado:
+Pages/Railway siguen en main386f6fd. La cuenta de operador remota ya está habilitada.
+
 DEV-UAT-01 WEB/API/DB ONLINE / PARTIAL (2026-10-16 local): [Railway/Resend/Pages activados](DEV-UAT-01.md).
 API y Postgres online; migración/readiness/CORS/auth boundary y envío Resend al simulador PASS.
 Pages main386f6fd success, dominios Web/API HTTPS válidos, SPA/assets/headers/CORS PASS;

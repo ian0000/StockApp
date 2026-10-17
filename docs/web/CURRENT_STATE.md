@@ -1,5 +1,10 @@
 # Auditoría del estado actual
 
+Mejora UI/UX posterior: propuesta3 elegida, implementación y [QA local](../../design-qa.md) PASS.
+Activación automática de negocios nuevos verificados: opt-in restringido a UAT, gates API PASS.
+Cambios pendientes de revisión/merge y deployment controlado; los servicios remotos continúan
+en main386f6fd con el diseño anterior y piloto manual para altas nuevas.
+
 DEV-UAT-01 WEB/API/DB ONLINE / PARTIAL (2026-10-16 local): [activación y evidencia](DEV-UAT-01.md).
 PR110/main386f6fd desplegado; API y Postgres18.6 online, us-west2,0.5vCPU/500MB cada uno,
 volumen5GB y DB sin proxy público. Migración y health HTTPS200 PASS; auth401/CORS204/403 PASS.
