@@ -1,10 +1,15 @@
 # Auditoría del estado actual
 
-DEV-UAT-01 BACKEND ONLINE / PARTIAL (2026-10-16 local): [activación y evidencia](DEV-UAT-01.md).
+DEV-UAT-01 WEB/API/DB ONLINE / PARTIAL (2026-10-16 local): [activación y evidencia](DEV-UAT-01.md).
 PR110/main386f6fd desplegado; API y Postgres18.6 online, us-west2,0.5vCPU/500MB cada uno,
 volumen5GB y DB sin proxy público. Migración y health HTTPS200 PASS; auth401/CORS204/403 PASS.
-Resend dedicado configurado y POST de verificación al simulador aceptado200. Pages/DNS custom,
-buzón real y flujos browser/financieros pendientes; aún no UAT SANDBOX READY/FULL ACCEPTANCE.
+Resend dedicado configurado y POST de verificación al simulador aceptado200.
+Pages stockapp-web-uat success/main386f6fd, autodeploy production/preview deshabilitado.
+Web stockapp-staging.ian-k.dev Active/SSL y API api-stockapp-staging.ian-k.dev certificate VALID.
+HTTPS/assets/SPA/CSP y auth sin sesión/CORS PASS. Operador completó signup/verify/login;
+bootstrap UI y CLI piloto existente PASS, Inicio vacío visible con acceso autorizado.
+Inventario Web UAT independiente de Mobile, sin Sync ni monetización. Smoke financiero,
+persistencia tras relogin/restart y aislamiento pendientes; aún no UAT SANDBOX READY/FULL ACCEPTANCE.
 Secretos UAT nuevos con custodia local privada; copia Bitwarden humana pendiente. Sin PROD.
 
 DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [configuración y gates del sandbox](DEV-UAT-01.md).

@@ -1,6 +1,54 @@
 # DEV-UAT-01 — Sandbox UAT mínimo funcional
 
-Estado actual: **PARTIAL — BACKEND UAT ONLINE; WEB/DNS PENDIENTES**, 2026-10-16 America/Guayaquil.
+Estado actual: **PARTIAL — WEB/API/DB UAT ONLINE; AUTH Y PILOTO PASS; SMOKE FINANCIERO PENDIENTE**, 2026-10-16 America/Guayaquil.
+
+## Publicación Cloudflare y dominios UAT — evidencia actual
+
+Publicación y DNS confirmados por el humano en el checkpoint final; sin cambio de plan.
+Cloudflare Pages `stockapp-web-uat`, repositorio `ian0000/StockApp`, rama main y SHA exacto
+`386f6fd32a10124e082dabc86ff1bfbc181c2497`, igual al API Railway.
+Deployment `ce50d6d4-326e-49c4-a5d6-a87f0565cfb7`: **success**, duración40s.
+
+- [Web UAT](https://stockapp-staging.ian-k.dev): dominio Active, SSL enabled; HTTPS200.
+  Alias [Pages](https://stockapp-web-uat.pages.dev), deployment inmutable
+  [ce50d6d4](https://ce50d6d4.stockapp-web-uat.pages.dev).
+- Node22.16.0, pnpm11.0.9, build desde raíz:
+  `pnpm install --frozen-lockfile && pnpm --filter @stock-app/contracts build && pnpm --filter @stock-app/web build`.
+  Output `apps/web/dist`. Variables públicas únicas: NODE_VERSION, PNPM_VERSION y
+  VITE_API_URL=`https://api-stockapp-staging.ian-k.dev`. Sin secretos en Pages.
+- Después del primer build manual se deshabilitaron automatic production deployments y
+  preview branch deployments (None), antes de asociar el dominio UAT. Futuros pushes no
+  deben publicar automáticamente. Para nueva versión: validar SHA/CI, aprobación y deploy controlado.
+- [API UAT](https://api-stockapp-staging.ian-k.dev/health): certificado Railway VALID,
+  ownership verificado, CNAME propagado y HTTPS200 `{status:"ok"}`.
+  CNAME `api-stockapp-staging` apunta a `4515u4eh.up.railway.app`, DNS only;
+  TXT `_railway-verify.api-stockapp-staging` agregado con la prueba exacta del proveedor.
+  Pages creó únicamente CNAME `stockapp-staging` a `stockapp-web-uat.pages.dev`.
+  Sin cambios en correo raíz, portfolio, otros proyectos ni hosts PROD.
+- Smoke HTTP remoto: rutas `/login`, `/signup`, `/settings`200 con fallback SPA;
+  JS/CSS200, bundle con origen API correcto y sin `eval`/`new Function`.
+  Headers CSP/HSTS/noindex/nosniff/frame DENY/permissions/referrer aplicados.
+  API health no-store/requestId; `/v1/me`401 sanitizado, get-session200 null;
+  CORS del Web exacto204 con credentials, origen ajeno403 sin allow-origin.
+- Browser real: redirección inicial a login y navegación signup PASS; consola sin errores
+  ni warnings observados antes del registro. Humano completó signup, recepción/verificación
+  del correo e inicio de sesión con su buzón controlado; contraseña y enlaces no inspeccionados.
+  Sesión autenticada observada en onboarding, lectura administrativa confirmó emailVerified=true.
+  Inventario sintético vacío `StockApp UAT pruebas`, USD, America/Guayaquil creado por UI.
+  Boundary previo al piloto mostró Acceso cloud pendiente; se ejecutó el CLI compilado existente
+  `pilot-cli.js --user-id <id-privado> --enable` desde Console del servicio API UAT, con resultado
+  `Pilot access operation complete.`. Después la misma Web mostró Inicio, stock/ventas/ganancia0,
+  sin operaciones. Esto confirma cookies/origin/CSRF en el bootstrap y acceso cloud del tester.
+  Sin SQL de escritura, bypass de verificación, claves SSH nuevas ni TCP público.
+  Este permiso piloto es un control de testers, no monetización: Web usa PostgreSQL UAT y
+  Mobile conserva su inventario local; no se implementó Sync, importación ni plan de pago.
+- Se conservó el warning Vite de tamaño del bundle (~1733kB /238kB gzip); sin cambiar límites.
+  Evidencia externa local: `stockapp-uat-pages-build-2026-10-16.jpg`,
+  `stockapp-uat-pages-domain-active-2026-10-16.jpg` y `stockapp-uat-public-http-2026-10-16.json`.
+
+Ambos dominios ya sirven HTTPS real y el operador puede probar la Web con su cuenta habilitada.
+La matriz financiera completa, logout/relogin, restart/persistencia, aislamiento A/B, export y
+reset siguen NOT RUN en remoto. Por ello aún no se acredita UAT SANDBOX READY ni FULL ACCEPTANCE.
 
 ## Activación Railway y Resend — evidencia actual
 
@@ -28,15 +76,16 @@ fijada al SHA; no seguimiento automático de futuros pushes.
 - Un signup sintético desde Railway200, emailVerified=false; generó un único POST `/emails`200
   en Resend con la clave dedicada. Destino `delivered+stockapp-uat-smoke-20261016@resend.dev`,
   [simulador oficial](https://resend.com/docs/dashboard/emails/send-test-emails), sin buzón humano.
-  Sin piloto/Inventory ni datos financieros para esa cuenta. Entrega a buzón real/verify/login NOT RUN.
+  Sin piloto/Inventory ni datos financieros para esa cuenta simulada. La prueba posterior con
+  el operador y buzón real consta en la sección superior; no se reutilizó la cuenta del simulador.
 - Auth y HMAC UAT: secretos independientes nuevos,32 bytes CSPRNG cada uno, generados una vez;
   Railway y archivo externo con ACL usuario/SYSTEM. Versión HMAC `stockapp-uat-suppression-v1`;
   copia humana Bitwarden pendiente. Claves age/HMAC históricas intactas.
 - Recursos activos facturan consumo: máximo continuo teórico USD30.75/mes antes de red/otros
   usos, aprobado; Hobby incluye USD5. Consumo/factura mensual observados todavía no verificados.
 
-La URL Railway es de la API. Pages, DNS custom API/Web, navegador con cookies/origin finales y
-smoke financiero completo siguen pendientes; no declarar UAT SANDBOX READY ni FULL ACCEPTANCE.
+La URL Railway es de la API. Pages, DNS custom, sesión autenticada y piloto se completaron
+en la sección superior; el smoke financiero completo sigue pendiente.
 Evidencia externa local: prefijo `stockapp-dev-uat-01-`, archivos `activation-2026-10-16.md` y
 `railway-http-2026-10-16.json` en artifacts. No valores privados en Git ni en esos reportes.
 

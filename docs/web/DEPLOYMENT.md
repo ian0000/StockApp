@@ -1,10 +1,14 @@
 # Despliegue — UAT parcial y objetivo
 
-DEV-UAT-01 (2026-10-16 local): [backend Railway activo](DEV-UAT-01.md), PR110/main386f6fd.
+DEV-UAT-01 (2026-10-16 local): [Railway y Pages activos](DEV-UAT-01.md), PR110/main386f6fd.
 API y Postgres18.6 online en us-west2; volumen5GB, DB privada sin TCP proxy, límites0.5vCPU/500MB
 por servicio. Migración predeploy y health real200 PASS. Resend HTTPS con clave dedicada y sender
 stockapp-uat@ian-k.dev, envío al simulador aceptado200; no cambios DNS/correo raíz/otras claves.
-Web Pages y dominios custom aún pendientes. La URL Railway acredita API, no Web UAT funcional.
+Pages stockapp-web-uat deployment ce50d6d4 success, mismo SHA main386f6fd; automatic production
+y preview deployments deshabilitados. Web https://stockapp-staging.ian-k.dev Active/SSL y
+API https://api-stockapp-staging.ian-k.dev certificate VALID. HTTPS/SPA/assets/CSP y CORS PASS.
+Signup/verify/login humano, bootstrap UI y CLI piloto PASS; Inicio vacío autorizado visible.
+Aceptación financiera/persistencia/aislamiento sintética pendiente; estado PARTIAL.
 Costo/configuración/secretos aprobados explícitamente; sin cambio de plan ni autodeploy de nuevos SHA.
 
 DEV-UAT-01 (2026-10-15 local) prepara [sandbox funcional con datos sintéticos descartables](DEV-UAT-01.md).

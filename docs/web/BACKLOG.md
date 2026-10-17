@@ -1,8 +1,11 @@
 # Backlog de implementación Cloud/Web
 
-DEV-UAT-01 BACKEND ONLINE / PARTIAL (2026-10-16 local): [Railway/Resend activados](DEV-UAT-01.md).
+DEV-UAT-01 WEB/API/DB ONLINE / PARTIAL (2026-10-16 local): [Railway/Resend/Pages activados](DEV-UAT-01.md).
 API y Postgres online; migración/readiness/CORS/auth boundary y envío Resend al simulador PASS.
-Pendientes: Pages, DNS custom, buzón controlado y smoke browser/funcional completo; recuperación
+Pages main386f6fd success, dominios Web/API HTTPS válidos, SPA/assets/headers/CORS PASS;
+autodeploy production/preview deshabilitado. Signup/verify/login humano, bootstrap UI y CLI
+piloto PASS; Inicio vacío observado. Web independiente de Mobile; monetización pendiente.
+Pendientes: smoke financiero/browser completo, relogin/restart/aislamiento y recuperación
 humana Bitwarden de secretos UAT nuevos. No acredita aceptación de datos reales ni PROD.
 
 DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [sandbox mínimo sintético](DEV-UAT-01.md)
