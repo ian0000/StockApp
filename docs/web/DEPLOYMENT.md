@@ -1,4 +1,11 @@
-# Despliegue objetivo — sin configuración aplicada
+# Despliegue — UAT parcial y objetivo
+
+DEV-UAT-01 (2026-10-16 local): [backend Railway activo](DEV-UAT-01.md), PR110/main386f6fd.
+API y Postgres18.6 online en us-west2; volumen5GB, DB privada sin TCP proxy, límites0.5vCPU/500MB
+por servicio. Migración predeploy y health real200 PASS. Resend HTTPS con clave dedicada y sender
+stockapp-uat@ian-k.dev, envío al simulador aceptado200; no cambios DNS/correo raíz/otras claves.
+Web Pages y dominios custom aún pendientes. La URL Railway acredita API, no Web UAT funcional.
+Costo/configuración/secretos aprobados explícitamente; sin cambio de plan ni autodeploy de nuevos SHA.
 
 DEV-UAT-01 (2026-10-15 local) prepara [sandbox funcional con datos sintéticos descartables](DEV-UAT-01.md).
 Su checkpoint1 no activa recursos; checkpoint2 exige costo/configuración/secrets/DNS y SHA revisado.

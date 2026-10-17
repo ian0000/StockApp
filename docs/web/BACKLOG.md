@@ -1,5 +1,10 @@
 # Backlog de implementación Cloud/Web
 
+DEV-UAT-01 BACKEND ONLINE / PARTIAL (2026-10-16 local): [Railway/Resend activados](DEV-UAT-01.md).
+API y Postgres online; migración/readiness/CORS/auth boundary y envío Resend al simulador PASS.
+Pendientes: Pages, DNS custom, buzón controlado y smoke browser/funcional completo; recuperación
+humana Bitwarden de secretos UAT nuevos. No acredita aceptación de datos reales ni PROD.
+
 DEV-UAT-01 CHECKPOINT 1 / PARTIAL (2026-10-15 local): [sandbox mínimo sintético](DEV-UAT-01.md)
 en preparación. Excepción aprobada: backup/DR/retención avanzada no bloquean solo este sandbox;
 controles básicos/auth/piloto se conservan. Resend HTTPS Free autorizado para preparación,

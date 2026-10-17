@@ -1,5 +1,50 @@
 # DEV-UAT-01 — Sandbox UAT mínimo funcional
 
+Estado actual: **PARTIAL — BACKEND UAT ONLINE; WEB/DNS PENDIENTES**, 2026-10-16 America/Guayaquil.
+
+## Activación Railway y Resend — evidencia actual
+
+PR110 integrado; main desplegado `386f6fd32a10124e082dabc86ff1bfbc181c2497`, mismo árbol que
+el head local validado91795ee. Quality checks y regresión completa del main PASS; GitGuardian
+PASS en el head de PR110, sin check GitGuardian observado en el SHA del merge. Fuente Railway
+fijada al SHA; no seguimiento automático de futuros pushes.
+
+- StockApp UAT/uat, mismos IDs de proyecto/servicios/volumen documentados abajo.
+- API deployment `dc991ae7-1c0c-4976-9812-ce1209aaaf12`: SUCCESS, una réplica online.
+- PostgreSQL deployment `6c48c6eb-d541-4c16-b8f5-f958d0351b43`: SUCCESS, versión18.6.
+- us-west2; API y DB limitados cada uno a0.5vCPU/500000000 bytes; volumen efectivo5000MB.
+- DB privada con endpoint `postgres`, sin TCP proxies. Sin cron, HA o recursos adicionales.
+- Predeploy compilado separado: `PostgreSQL migrations complete.`; ledger/schema también
+  validados por readiness. Rerun remoto explícito y persistencia funcional tras restart NOT RUN.
+- [Health HTTPS real](https://stockapp-api-uat-uat.up.railway.app/health):200 `{status:"ok"}`,
+  no-store/requestId; `/v1/me` sin sesión401; preflight Web UAT204 con origen exacto y credentials;
+  origen ajeno403 sin allow-origin. Sin bypass TLS ni cambios de seguridad/runtime.
+- Usuario aprobó costo/configuración y secretos; patch68 no destructivo revisado. El conector
+  canceló dos accept-deploy pese a las confirmaciones; el humano pulsó Deploy en la consola.
+  Entorno final sin patch pendiente, dos servicios online y cero fallos/notificaciones observados.
+- Resend: dominio `ian-k.dev` ya verificado; sin cambios DNS, plan, tracking ni claves existentes.
+  Clave nueva `stockapp-uat-auth`, Sending access solo para ese dominio, guardada privadamente
+  como RESEND_API_KEY; sender `stockapp-uat@ian-k.dev`, transporte HTTPS explícito.
+- Un signup sintético desde Railway200, emailVerified=false; generó un único POST `/emails`200
+  en Resend con la clave dedicada. Destino `delivered+stockapp-uat-smoke-20261016@resend.dev`,
+  [simulador oficial](https://resend.com/docs/dashboard/emails/send-test-emails), sin buzón humano.
+  Sin piloto/Inventory ni datos financieros para esa cuenta. Entrega a buzón real/verify/login NOT RUN.
+- Auth y HMAC UAT: secretos independientes nuevos,32 bytes CSPRNG cada uno, generados una vez;
+  Railway y archivo externo con ACL usuario/SYSTEM. Versión HMAC `stockapp-uat-suppression-v1`;
+  copia humana Bitwarden pendiente. Claves age/HMAC históricas intactas.
+- Recursos activos facturan consumo: máximo continuo teórico USD30.75/mes antes de red/otros
+  usos, aprobado; Hobby incluye USD5. Consumo/factura mensual observados todavía no verificados.
+
+La URL Railway es de la API. Pages, DNS custom API/Web, navegador con cookies/origin finales y
+smoke financiero completo siguen pendientes; no declarar UAT SANDBOX READY ni FULL ACCEPTANCE.
+Evidencia externa local: prefijo `stockapp-dev-uat-01-`, archivos `activation-2026-10-16.md` y
+`railway-http-2026-10-16.json` en artifacts. No valores privados en Git ni en esos reportes.
+
+## Preparación histórica — 2026-10-15
+
+Las secciones inferiores conservan el preflight, propuestas y gates previos a la activación.
+Sus observaciones staged/NOT RUN describen esa fecha; el estado actual consta arriba.
+
 Estado: **PARTIAL — PREPARACIÓN LOCAL; ACTIVACIÓN PENDIENTE**, 2026-10-15 America/Guayaquil.
 Preparación iniciada el 2026-10-14; decisiones y validaciones adicionales el 2026-10-15.
 No Web/API/DB UAT desplegadas ni smoke remoto completado. `UAT SANDBOX READY` exige
