@@ -1,5 +1,13 @@
 # Auditoría del estado actual
 
+2026-10-26 — Landing y acceso público en preparación: portada explicativa para visitantes sin sesión,
+login/registro/verificación/reset con el lenguaje visual aprobado y explicación del enlace en página
+y correo. README presenta Web como producto principal y móvil como lanzamiento pendiente.
+La sesión verificada, ownership, callbacks oficiales, expiraciones y reglas comerciales no cambian.
+Esta entrada registra implementación local; la publicación nueva exige gates, CI, GitGuardian y
+comprobación remota del SHA. El PR111 anterior quedó integrado en main9bd1249 y publicado en UAT
+el2026-10-16; las notas386f6fd siguientes conservan la evidencia histórica de aquella preparación.
+
 Mejora UI/UX posterior: propuesta3 elegida, implementación y [QA local](../../design-qa.md) PASS.
 Activación automática de negocios nuevos verificados: opt-in restringido a UAT, gates API PASS.
 Cambios pendientes de revisión/merge y deployment controlado; los servicios remotos continúan

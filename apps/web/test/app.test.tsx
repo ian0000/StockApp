@@ -237,6 +237,40 @@ test('public auth screens expose labeled usable forms and no private shell', asy
     assert.ok(!html.includes('Inventario A'));
   }
 });
+test('anonymous root explains StockApp and links to signup without exposing an inventory', async () => {
+  const ctx = fixture({ session: async () => null });
+  const html = await renderPath('/', ctx);
+  assert.ok(html.includes('Menos hojas de cálculo'));
+  assert.ok(html.includes('href="/signup"'));
+  assert.ok(html.includes('href="#como-funciona"'));
+  assert.ok(html.includes('Web en pruebas'));
+  assert.ok(html.includes('sin fecha de lanzamiento'));
+  assert.ok(html.includes('datos ficticios'));
+  assert.ok(!html.includes('Inventario A'));
+  assert.ok(!html.includes('Cerrar sesión'));
+  assert.equal(ctx.controller.snapshot().kind, 'ANONYMOUS');
+});
+test('authenticated root retains its private dashboard and does not show the public landing', async () => {
+  const html = await renderPath('/');
+  assert.ok(html.includes('Inventario A'));
+  assert.ok(html.includes('Cerrar sesión'));
+  assert.ok(!html.includes('Menos hojas de cálculo'));
+});
+test('signup and verification explain the email steps without echoing private callback values', async () => {
+  const anon = () => fixture({ session: async () => null });
+  const signup = await renderPath('/signup', anon());
+  assert.ok(signup.includes('confirmar que el correo es tuyo'));
+  assert.ok(signup.includes('inventario vacío'));
+  const verify = await renderPath(
+    '/verify-email?token=PRIVATE-TOKEN&error=PRIVATE-ERROR',
+    anon(),
+  );
+  assert.ok(verify.includes('spam o promociones'));
+  assert.ok(verify.includes('no inicia sesión automáticamente'));
+  assert.ok(verify.includes('Reenviar verificación'));
+  assert.ok(!verify.includes('PRIVATE-TOKEN'));
+  assert.ok(!verify.includes('PRIVATE-ERROR'));
+});
 test('anonymous and no-business private boundary render only the redirect, with no private data', async () => {
   for (const ctx of [
     fixture({ session: async () => null }),

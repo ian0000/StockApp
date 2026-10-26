@@ -13,6 +13,7 @@ import { Brand } from '../ui/brand.js';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { LoadingPage } from './status.js';
 import { privateDestination } from '../auth/session.js';
+import { LandingPage } from './landing.js';
 
 export function LogoutButton() {
   const controller = useSessionController();
@@ -88,6 +89,9 @@ export function AccessStatus() {
 }
 export function PrivateBoundary() {
   const view = useSessionView();
+  const location = useLocation();
+  if (view.kind === 'ANONYMOUS' && location.pathname === '/')
+    return <LandingPage />;
   const destination = privateDestination(view);
   if (destination) return <Navigate to={destination} replace />;
   if (view.kind !== 'BUSINESS_ACTIVE_ENABLED') return <AccessStatus />;

@@ -3,6 +3,7 @@ import { App } from './app/app.js';
 import { createAppRouter } from './app/router.js';
 import { createWebQueryClient } from './app/providers.js';
 import './styles/base.css';
+import './styles/public.css';
 import { readApiConfig } from './api/config.js';
 import { createApiClient } from './api/client.js';
 import { createOwnershipClient } from './api/ownership.js';
