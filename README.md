@@ -1,12 +1,20 @@
 # StockApp
 
-**Proyecto personal · Inventario móvil offline-first · Alpha**
+**Inventario, compras y ventas desde la Web · UAT / Alpha**
 
-StockApp ayuda a pequeños negocios y emprendedores a saber qué tienen, qué compran, qué venden y cuánto ganan aproximadamente por producto. Las operaciones principales funcionan en el dispositivo, incluso sin Internet.
+StockApp Web ayuda a pequeños negocios y emprendedores a saber qué tienen, qué compran, qué venden y cuánto ganan aproximadamente por producto. Reúne catálogo, existencias y operaciones en una aplicación accesible desde el navegador, con cuenta y correo verificado.
 
-[Presentación pública](https://ian-k.dev/stockapp/) · [Guía Alpha](docs/ALPHA_TESTING.md) · [Capturas y presentación para testers](docs/alpha/TESTER_INTRO.md)
+[Abrir StockApp Web UAT](https://stockapp-staging.ian-k.dev/) · [Qué es y cómo funciona](https://ian-k.dev/stockapp/) · [Soporte](https://ian-k.dev/stockapp/support/)
 
-La presentación y las páginas de privacidad, términos y soporte están publicadas en **Cloudflare Pages**, desde el repositorio independiente [ian-k.dev](https://github.com/ian0000/ian-k.dev). La aplicación móvil conserva sus datos de inventario localmente en SQLite y funciona offline.
+La Web requiere conexión a Internet. La app móvil queda en segundo plano como **idea pendiente de lanzamiento**, sin fecha comprometida ni descarga pública. El código del prototipo móvil se conserva en este monorepo; no existe sincronización ni importación automática entre sus inventarios y la Web.
+
+## Cómo empezar
+
+1. Abre la Web y crea una cuenta.
+2. Busca el correo «Verifica tu correo para StockApp» y abre su enlace. Si no llega, revisa spam o solicita otro desde Verificar correo.
+3. Cuando aparezca «Correo verificado», inicia sesión con tu correo y contraseña. Verificar no inicia sesión automáticamente.
+4. Configura un inventario vacío: nombre, moneda y zona horaria de los reportes.
+5. Añade productos y prueba una compra o una venta con datos ficticios.
 
 ## Qué puedes hacer
 
@@ -20,72 +28,62 @@ La ganancia es una estimación sobre el producto; no descuenta alquiler, impuest
 
 ## Estado
 
-La versión Alpha se prueba con **datos ficticios**. No debe utilizarse como único registro de un negocio real. Los datos se guardan localmente y no hay sincronización entre dispositivos. Las instrucciones de distribución están en la guía Alpha; este README no anuncia una publicación en las tiendas.
+La Web está disponible en un entorno **UAT para pruebas con datos ficticios**, no como único registro de un negocio real. En este UAT, las cuentas nuevas verificadas pueden configurar su inventario con acceso automático. Esa política es exclusiva del entorno UAT; el servidor sigue validando sesión, ownership y acceso.
 
-## Legal y soporte
+La monetización y los planes comerciales están pendientes de definición. No se anuncian precios, suscripciones ni un lanzamiento móvil.
 
-Desde **Más → Legal y soporte** puedes abrir en el navegador del dispositivo:
+## Presentación y soporte
 
-- [Política de privacidad](https://ian-k.dev/stockapp/privacy/).
-- [Términos de uso](https://ian-k.dev/stockapp/terms/).
+La presentación pública y el soporte viven en el repositorio independiente [ian-k.dev](https://github.com/ian0000/ian-k.dev), publicado en Cloudflare Pages. El portfolio presenta StockApp y enlaza la Web; no administra su inventario ni contiene su backend.
+
 - [Soporte](https://ian-k.dev/stockapp/support/).
+- Contacto: `support@ian-k.dev`. No compartas contraseñas, tokens ni enlaces de verificación.
 
-Estas páginas requieren conexión al consultarlas. Los flujos de inventario
-continúan funcionando offline. Si no se puede abrir un enlace, la app muestra
-un mensaje para reintentar. La configuración de Google Play y App Store sigue
-como **PENDING EXTERNAL ACTION**; consulta el [backlog](docs/BACKLOG.md).
+La documentación histórica del prototipo móvil (privacidad, términos, guías Alpha y capturas Android) se conserva identificada con ese alcance. No describe la Web actual ni anuncia una descarga móvil.
 
 ## Tecnologías y estructura
 
-React Native, Expo, Expo Router, TypeScript, SQLite y Drizzle ORM, organizados con pnpm workspaces.
+React, Vite, React Router y TanStack Query en la Web; Fastify, Better Auth y Drizzle/PostgreSQL en la API. Monorepo TypeScript con pnpm workspaces. El prototipo móvil utiliza Expo/React Native y SQLite local.
 
-| Ruta                                          | Responsabilidad                                |
-| --------------------------------------------- | ---------------------------------------------- |
-| [apps/mobile](apps/mobile/)                   | Interfaz, navegación y persistencia local      |
-| [apps/api](apps/api/)                         | API local y schema PostgreSQL versionado       |
-| [packages/contracts](packages/contracts/)     | Contracts V1, codecs y fuente del OpenAPI      |
-| [packages/domain](packages/domain/)           | Reglas de negocio en TypeScript                |
-| [packages/application](packages/application/) | Casos de uso y contratos                       |
-| [packages/shared](packages/shared/)           | Código compartido                              |
-| [docs](docs/)                                 | Producto, arquitectura, reglas y pruebas Alpha |
+| Ruta                                          | Responsabilidad                                   |
+| --------------------------------------------- | ------------------------------------------------- |
+| [apps/web](apps/web/)                         | Landing, acceso y aplicación de inventario Web    |
+| [apps/api](apps/api/)                         | Auth, ownership, comandos y lecturas PostgreSQL   |
+| [apps/mobile](apps/mobile/)                   | Prototipo móvil conservado; lanzamiento pendiente |
+| [packages/contracts](packages/contracts/)     | Contracts V1, codecs y fuente del OpenAPI         |
+| [packages/domain](packages/domain/)           | Reglas de negocio en TypeScript                   |
+| [packages/application](packages/application/) | Casos de uso y contratos                          |
+| [packages/shared](packages/shared/)           | Código compartido                                 |
+| [docs](docs/)                                 | Producto, arquitectura, reglas y pruebas Alpha    |
 
 ## Desarrollo local
 
-Requisitos: Node.js 22.16 o superior y pnpm 11.0.9, según `package.json`. Utiliza un dispositivo o emulador compatible con la configuración de Expo del proyecto.
+Requisitos: Node.js 22.16 o superior y pnpm 11.0.9, según `package.json`. Usa exclusivamente PostgreSQL y credenciales locales de desarrollo; consulta los ejemplos de entorno de API y Web. No copies secretos UAT al repositorio.
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm --filter @stock-app/mobile start
+pnpm --filter @stock-app/api dev
+pnpm --filter @stock-app/web dev
 ```
 
-También están disponibles:
+Ejecuta API y Web en terminales separadas, con `VITE_API_URL` y los origins de auth configurados para tus puertos locales. La API requiere su configuración completa de auth, base de datos y correo para el flujo de cuentas. Los builds son:
 
 ```sh
+pnpm build:api
+pnpm build:web
+```
+
+`/live` indica liveness; `/health` comprueba readiness de PostgreSQL. El servidor HTTP no migra automáticamente: la migración se ejecuta explícitamente antes del arranque, según [DEV-UAT-01](docs/web/DEV-UAT-01.md).
+
+### Prototipo móvil, en segundo plano
+
+```sh
+pnpm --filter @stock-app/mobile start
 pnpm --filter @stock-app/mobile android
 pnpm --filter @stock-app/mobile ios
 ```
 
-La ejecución en simulador iOS requiere macOS y Xcode.
-
-Foundation API local de CLOUD-01:
-
-```sh
-pnpm --filter @stock-app/api dev
-pnpm build:api
-pnpm --filter @stock-app/api start
-```
-
-`GET http://localhost:3001/live` devuelve `{"status":"ok"}`. `HOST`/`PORT` configuran el bind.
-El build compila contracts y API. Sin AUTH_BASE_URL, el start conserva el modo foundation;
-con configuración explícita registra Better Auth, ownership y GET /v1/session/csrf.
-CLOUD-05 añade CORS/Origin exactos, CSRF por sesión, límites JSON/body y contadores durables
-PostgreSQL. Sin sync ni comandos financieros. [Seguridad](docs/web/CLOUD-05.md).
-Detalle y evidencia en [CLOUD-01](docs/web/CLOUD-01.md).
-
-CLOUD-06 congela [contratos V1](docs/web/CONTRACTS_V1.md) y [OpenAPI](docs/web/openapi/README.md).
-`pnpm contracts:openapi` genera el JSON; `pnpm contracts:openapi:check` verifica vigencia y forma
-parte de `pnpm check`. Application preserva IDs y tiempos recibidos; la composición móvil los prepara
-offline. Los endpoints financieros/sync/import/lifecycle y Web siguen planned; /health permanece404.
+El simulador iOS requiere macOS y Xcode. Sus [guías Alpha](docs/ALPHA_TESTING.md) y [capturas históricas](docs/alpha/TESTER_INTRO.md) corresponden al prototipo local, no a una app publicada. Este cambio de presentación conserva su código y sus reglas offline.
 
 ## Calidad
 
@@ -93,9 +91,9 @@ offline. Los endpoints financieros/sync/import/lifecycle y Web siguen planned; /
 pnpm check
 ```
 
-Ejecuta formato, lint, tipos, tests y build de API en secuencia. Para ejecutar un control individual: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` o `pnpm build:api`. `pnpm format` aplica el formato.
+Ejecuta OpenAPI, formato, lint, tipos, tests y builds API/Web en secuencia. `pnpm contracts:openapi:check` verifica los [contratos V1](docs/web/CONTRACTS_V1.md); `pnpm contracts:openapi` genera el JSON. `pnpm format` aplica el formato.
 
-GitHub Actions ejecuta `pnpm check` en pushes a `main` y pull requests hacia esa rama.
+GitHub Actions selecciona checks por impacto en pushes a `main` y PRs hacia esa rama. `Quality checks` valida el plan y los resultados del SHA exacto; los candidatos de release conservan regresión completa. GitGuardian se revisa por separado.
 También ejecuta `pnpm test:db` contra PostgreSQL efímero, auth, ownership, seguridad y HTTP compilado con SMTP local,
 y comprueba la generación oficial de auth/migrations. Localmente ese gate exige un build previo
 y `TEST_DATABASE_URL` de una DB disposable.
@@ -103,12 +101,9 @@ y `TEST_DATABASE_URL` de una DB disposable.
 Persistencia API: `pnpm --filter @stock-app/api db:generate` genera SQL versionado y
 `pnpm --filter @stock-app/api db:migrate` aplica migrations usando `DATABASE_URL` explícita.
 El servidor HTTP no migra automáticamente; `/live` sigue independiente de DB.
-Persistencia: [CLOUD-02](docs/web/CLOUD-02.md). Identidad email/password, verify/reset, sesiones
-revocables y configuración SMTP: [CLOUD-03](docs/web/CLOUD-03.md). No hay DB Railway ni despliegue.
-Ownership, bootstrap transaccional y habilitación manual del piloto:
-[CLOUD-04](docs/web/CLOUD-04.md). Crear/verificar cuenta no crea ni sube inventario.
-El operador usa `pnpm --filter @stock-app/api pilot:access -- --user-id <id> --enable`
-o `--disable`, con DATABASE_URL explícita; no existe API administrativa.
+Persistencia: [CLOUD-02](docs/web/CLOUD-02.md). Identidad: [CLOUD-03](docs/web/CLOUD-03.md). Ownership y política UAT: [CLOUD-04](docs/web/CLOUD-04.md). Crear o verificar una cuenta no crea ni sube un inventario por sí solo.
+
+La Web UAT se publica en Cloudflare Pages y la API/PostgreSQL UAT en Railway, con despliegues controlados del SHA validado. [DEV-UAT-01](docs/web/DEV-UAT-01.md) conserva preparación, controles y evidencia histórica; una prueba local no acredita un despliegue remoto.
 
 ## Documentación
 

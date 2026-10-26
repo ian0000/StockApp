@@ -6,6 +6,7 @@ import type { createDatabase } from '../infrastructure/postgres/client.js';
 import * as schema from '../infrastructure/postgres/schema.js';
 import { nativeOrigin, type AuthConfig } from './config.js';
 import type { EmailSender } from './email.js';
+import { verificationEmailText } from './email-copy.js';
 import { createSecurity } from '../security/policy.js';
 
 export function createAuth(dependencies: {
@@ -97,7 +98,11 @@ export function createAuth(dependencies: {
         enqueueEmail(
           user.email,
           'Verifica tu correo para StockApp',
-          `Verifica tu correo abriendo este enlace:\n${url}\nEl enlace vence en ${config.verificationExpiresIn / 3600} horas.`,
+          verificationEmailText(
+            url,
+            config.verificationExpiresIn,
+            config.appOrigin,
+          ),
         );
       },
     },

@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { AuthFailure } from '../auth/client.js';
 import { AccessStatus } from './access.js';
-import { Brand } from '../ui/brand.js';
+import { AuthLayout } from '../ui/auth-layout.js';
 
 export const resetRequestMessage =
   'Si el correo corresponde a una cuenta, recibirás un enlace para restablecer la contraseña.';
@@ -86,9 +86,10 @@ export function LoginPage() {
   )
     return <AccessStatus />;
   return (
-    <main className="auth-page">
-      <Brand />
-      <h1>Iniciar sesión</h1>
+    <AuthLayout
+      title="Iniciar sesión"
+      intro="Qué bueno verte de nuevo. Vuelve a tu inventario, tus operaciones y el resumen de tu día."
+    >
       <form
         aria-describedby="form-message"
         onSubmit={(event) => {
@@ -127,12 +128,21 @@ export function LoginPage() {
         </button>
         <FormStatus state={state} />
       </form>
-      <nav aria-label="Acceso">
-        <Link to="/signup">Crear cuenta</Link>
+      <p className="auth-switch">
+        ¿Primera vez aquí? <Link to="/signup">Crear cuenta</Link>
+      </p>
+      <nav className="auth-links" aria-label="Acceso">
         <Link to="/reset-password">Olvidé mi contraseña</Link>
         <Link to="/verify-email">Verificar correo</Link>
       </nav>
-    </main>
+      <div className="verification-note">
+        <strong>¿Aún no verificaste tu correo?</strong>
+        <p>
+          Abre el enlace que recibiste al registrarte y después inicia sesión
+          aquí. Si venció o no llegó, puedes solicitar otro.
+        </p>
+      </div>
+    </AuthLayout>
   );
 }
 export function SignupPage() {
@@ -143,9 +153,10 @@ export function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   return (
-    <main className="auth-page">
-      <Brand />
-      <h1>Crear cuenta</h1>
+    <AuthLayout
+      title="Crear cuenta"
+      intro="Tu inventario empieza aquí. Después confirmaremos tu correo y podrás configurar un inventario vacío."
+    >
       <form
         aria-describedby="form-message"
         onSubmit={(event) => {
@@ -196,8 +207,18 @@ export function SignupPage() {
         </button>
         <FormStatus state={state} />
       </form>
-      <Link to="/login">Volver a iniciar sesión</Link>
-    </main>
+      <div className="verification-note">
+        <strong>Un paso más para entrar</strong>
+        <p>
+          Te enviaremos un enlace de verificación. Ábrelo para confirmar que el
+          correo es tuyo; luego vuelve e inicia sesión con tu contraseña. Tu
+          inventario se configura después.
+        </p>
+      </div>
+      <p className="auth-switch">
+        ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
+      </p>
+    </AuthLayout>
   );
 }
 
@@ -234,10 +255,30 @@ export function VerifyPage() {
       );
   }, [callback, controller, location.search, navigate]);
   return (
-    <main>
-      <h1>Verificar correo</h1>
+    <AuthLayout
+      title="Verificar correo"
+      intro="Confirma que puedes acceder a tu correo para activar el acceso a tu cuenta."
+    >
       <p role="status" aria-live="polite">
         {result}
+      </p>
+      <ol className="verification-steps">
+        <li>
+          Busca el mensaje «Verifica tu correo para StockApp» en tu bandeja de
+          entrada. Revisa también spam o promociones.
+        </li>
+        <li>
+          Abre el enlace del correo. El mensaje indica cuándo vence; si caducó,
+          solicita otro enlace aquí.
+        </li>
+        <li>
+          Cuando veas «Correo verificado», vuelve a iniciar sesión con tu correo
+          y contraseña. Verificar no inicia sesión automáticamente.
+        </li>
+      </ol>
+      <p>
+        Si no pediste crear una cuenta, no abras el enlace. Nunca necesitas
+        responder el correo ni enviar tu contraseña.
       </p>
       <form
         aria-describedby="form-message"
@@ -267,7 +308,7 @@ export function VerifyPage() {
         <FormStatus state={state} />
       </form>
       <Link to="/login">Volver a iniciar sesión</Link>
-    </main>
+    </AuthLayout>
   );
 }
 
@@ -288,8 +329,14 @@ export function ResetPage() {
     if (location.search) void navigate('/reset-password', { replace: true });
   }, [location.search, navigate]);
   return (
-    <main>
-      <h1>{token ? 'Nueva contraseña' : 'Restablecer contraseña'}</h1>
+    <AuthLayout
+      title={token ? 'Nueva contraseña' : 'Restablecer contraseña'}
+      intro={
+        token
+          ? 'Elige una contraseña nueva de entre 8 y 128 caracteres.'
+          : 'Te enviaremos un enlace si el correo corresponde a una cuenta. Es un paso distinto de verificar tu correo.'
+      }
+    >
       {invalid && (
         <p role="alert">El enlace venció o no es válido. Solicita otro.</p>
       )}
@@ -347,6 +394,6 @@ export function ResetPage() {
         <FormStatus state={state} />
       </form>
       <Link to="/login">Volver a iniciar sesión</Link>
-    </main>
+    </AuthLayout>
   );
 }

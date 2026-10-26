@@ -105,3 +105,30 @@ CSS respeta reduced-motion; no se hizo auditoría formal con lector de pantalla.
 
 P3: pequeñas diferencias de fuente e iconografía frente al raster y pluralización preexistente
 de cantidades unitarias. No impiden la navegación ni la lectura de resultados.
+
+## 2026-10-26 — Extensión pública de la propuesta aprobada
+
+final result: passed
+
+Alcance: landing para visitantes anónimos, login, signup, explicación de verificación y reset.
+Referencia: la UI3 aprobada y sus tokens/componentes existentes, no un clon de la vieja página
+de login plana. La composición pública nueva es parte explícita del pedido. Comparación conjunta
+abierta del dashboard de referencia y login local: misma marca/IconCube de Tabler, sistema de
+fuentes nativas, azul0672ce, navy193248, controles grandes y foco visible. El aside y la tarjeta
+son una extensión intencional, no una afirmación de igualdad de píxeles con otra pantalla.
+
+Evidencias locales fuera del repo, carpeta `C:\Users\USER\.codex\artifacts\stockapp-public-onboarding`:
+landing-local.jpg, login-local.jpg, signup-local.jpg, verify-local.jpg y verify-mobile.jpg.
+Desktop1280 y viewport390 (375CSS de contenido): verificación sin overflow horizontal375/375,
+instrucciones completas, formulario y retorno al login accesibles mediante scroll. Override reset.
+Captura real del dashboard sintético reutilizada, con alt y leyenda explícita de datos ficticios;
+ningún activo dibujado para sustituir una imagen ni datos reales de UAT.
+
+Cinco superficies revisadas: tipografía/jerarquía legible; espaciado y grids que colapsan;
+tokens de color/foco conservados; foto de interfaz real sin deformación; copy Web/UAT y móvil
+pendiente sin precios ni promesas nuevas. No P0/P1/P2 visuales detectados en los estados revisados.
+Login local con cuenta ficticia pasa al dashboard existente; logout vuelve a landing; signup local
+pasa a verificar; reenviar da respuesta genérica y foco al status. Cero correo externo.
+Tokens/errores raw no se imprimen en la UI; duración y enlace oficial del correo conservados.
+Las pruebas HTTP oficiales de verificación y full regressions son gates distintos del examen visual.
+No se afirma aquí entrega al buzón real ni aceptación remota completa de UAT.
