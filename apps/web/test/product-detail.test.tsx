@@ -183,6 +183,24 @@ test('404 hides cached detail including foreign or archived state with generic u
   assert.match(html, /Volver a productos/);
   assert.ok(!html.includes('Agua') && !html.includes('Archivar producto'));
 });
+for (const status of [401, 403]) {
+  test(`cached edit fields are withdrawn immediately after HTTP ${status}, before session effects run`, async (t) => {
+    const ctx = productsFixture(async () => failure(status));
+    t.after(() => ctx.dispose());
+    await ctx.controller.refresh();
+    const scope = productScope(ctx.controller)!;
+    ctx.queries.setQueryData(productsKey(scope, 'detail', productId), product);
+    await assert.rejects(
+      ctx.queries.fetchQuery({
+        ...productDetailOptions(ctx.client, scope, productId),
+        staleTime: 0,
+      }),
+    );
+    const html = render(ctx, true);
+    assert.ok(!html.includes('name="name"') && !html.includes('value="Agua"'));
+    assert.ok(html.includes('role="alert"'));
+  });
+}
 for (const [cost, price, margin, markup] of [
   [null, '1234567', null, null],
   ['0', '0', '0', '0'],

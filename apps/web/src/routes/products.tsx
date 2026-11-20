@@ -20,6 +20,7 @@ import {
 import { uniqueProducts } from '../products/client.js';
 import { formatMoney, initialProductForm } from '../products/input.js';
 import { productListOptions } from '../products/queries.js';
+import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 
 export function ProductCard({
   item,
@@ -313,6 +314,10 @@ export function NewProductPage() {
       ? location.state.barcode
       : '';
   const [form, setForm] = useState(() => initialProductForm(navigationBarcode));
+  useUnsavedChanges(
+    view.kind !== 'ACCEPTED' &&
+      JSON.stringify(form) !== JSON.stringify(initialProductForm()),
+  );
   const formRef = useRef<HTMLFormElement>(null);
   const alreadyAccepted = useRef(view.kind === 'ACCEPTED');
   const [previousMessage] = useState(

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createWebAuth, AuthFailure } from '../src/auth/client.js';
-import { resetRequestMessage } from '../src/routes/auth.js';
+import {
+  resetRequestMessage,
+  verificationRequestMessage,
+} from '../src/routes/auth.js';
 
 function harness() {
   const calls: {
@@ -149,6 +152,44 @@ test('verification token is consumed by official GET with no custom redirect or 
   assert.equal(call.url.searchParams.get('token'), 'verify-fixture');
   assert.equal(call.init.method, 'GET');
   assert.equal(call.url.searchParams.get('callbackURL'), null);
+});
+test('resend uses the same accepted result for existing, verified and missing addresses without promising delivery', async () => {
+  const h = harness();
+  for (const email of [
+    'existing@example.test',
+    'verified@example.test',
+    'missing@example.test',
+  ]) {
+    h.reply({ status: true });
+    assert.equal(await h.auth.resend(email), undefined);
+  }
+  assert.match(verificationRequestMessage, /Solicitud aceptada/);
+  assert.match(
+    verificationRequestMessage,
+    /no confirma que el correo haya llegado/,
+  );
+  assert.ok(
+    h.calls.every(
+      (call) => call.url.pathname === '/api/auth/send-verification-email',
+    ),
+  );
+});
+test('resend provider and rate-limit failures reject safely instead of reporting accepted delivery', async () => {
+  const h = harness();
+  for (const status of [500, 429]) {
+    h.reply(
+      { code: 'PRIVATE_PROVIDER_ERROR', message: 'SECRET-RECIPIENT-TOKEN' },
+      status,
+    );
+    await assert.rejects(
+      h.auth.resend('existing@example.test'),
+      (error: unknown) =>
+        error instanceof AuthFailure &&
+        error.status === status &&
+        !error.message.includes('SECRET') &&
+        !error.message.includes('aceptada'),
+    );
+  }
 });
 test('Better Auth errors are mapped safely, independently of ApiError envelopes; no blind retry', async () => {
   const h = harness();

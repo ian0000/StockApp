@@ -54,6 +54,25 @@ export async function startServer(): Promise<void> {
             'Could not complete deletion maintenance.',
           );
         },
+        (event) => {
+          const context = {
+            code:
+              event.outcome === 'accepted'
+                ? 'AUTH_EMAIL_PROVIDER_ACCEPTED'
+                : 'AUTH_EMAIL_PROVIDER_FAILED',
+            ...event,
+          };
+          if (event.outcome === 'accepted')
+            app.log.info(
+              context,
+              'Authentication email accepted by provider; inbox delivery is unconfirmed.',
+            );
+          else
+            app.log.warn(
+              context,
+              'Authentication email provider request failed.',
+            );
+        },
       );
       app.addHook('onClose', () => runtime.close());
       readiness = runtime.readiness.check;

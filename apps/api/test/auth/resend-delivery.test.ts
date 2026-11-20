@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { buildApp } from '../../src/app.js';
 import { createAuthRuntime } from '../../src/auth/runtime.js';
 import { registerAuthRoutes } from '../../src/auth/routes.js';
+import type { EmailDeliveryEvent } from '../../src/auth/email-provider.js';
 import { migrateDatabase } from '../../src/infrastructure/postgres/migrate.js';
 import { disposableDatabase } from '../postgres/helpers.js';
 
@@ -30,10 +31,11 @@ test('Resend runtime preserves verified login, reset revocation and safe deliver
           typeof body.text === 'string',
       );
       messages.push({ text: body.text });
-      return Response.json({ id: 'fictional-delivery-id' });
+      return Response.json({ id: '00000000-0000-4000-8000-000000000001' });
     },
   );
   let failures = 0;
+  const deliveries: EmailDeliveryEvent[] = [];
   const runtime = createAuthRuntime(
     {
       DATABASE_URL: pool.options.connectionString,
@@ -48,6 +50,8 @@ test('Resend runtime preserves verified login, reset revocation and safe deliver
     () => {
       failures++;
     },
+    undefined,
+    (event) => deliveries.push(event),
   );
   const app = buildApp();
   registerAuthRoutes(app, runtime.auth, runtime.config);
@@ -81,6 +85,14 @@ test('Resend runtime preserves verified login, reset revocation and safe deliver
     );
     await runtime.drainEmails();
     assert.equal(messages.length, 1);
+    assert.deepEqual(deliveries, [
+      {
+        transport: 'resend',
+        outcome: 'accepted',
+        providerStatus: 200,
+        providerMessageId: '00000000-0000-4000-8000-000000000001',
+      },
+    ]);
     assert.equal(
       (await post('sign-in/email', { email, password })).statusCode,
       403,
@@ -148,6 +160,22 @@ test('Resend runtime preserves verified login, reset revocation and safe deliver
     );
     await runtime.drainEmails();
     assert.equal(failures, 1);
+    assert.deepEqual(deliveries.at(-1), {
+      transport: 'resend',
+      outcome: 'failed',
+      providerStatus: 503,
+    });
+    const diagnostic = JSON.stringify(deliveries);
+    for (const privateValue of [
+      email,
+      failedEmail,
+      password,
+      newPassword,
+      token,
+      'fictional-resend-integration-key',
+      ...messages.map((message) => message.text),
+    ])
+      assert.equal(diagnostic.includes(privateValue), false);
     assert.equal(
       (await post('sign-in/email', { email: failedEmail, password }))
         .statusCode,

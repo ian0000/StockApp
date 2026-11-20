@@ -9,6 +9,7 @@ import type { SaleDetailDto } from '@stock-app/contracts';
 import { VoidAction } from '../voids/panel.js';
 import { useSessionView } from '../auth/context.js';
 import { useOnline, useProducts } from '../products/context.js';
+import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 import {
   productScope,
   productErrorMessage,
@@ -277,6 +278,7 @@ function NewSale({ scope }: { scope: ProductScope }) {
     'ACCEPTED',
   ].includes(view.kind);
   const [enteredAccepted] = useState(view.kind === 'ACCEPTED');
+  useUnsavedChanges(view.kind !== 'ACCEPTED' && draft.cart.length > 0);
   const { refresh, clear } = draft;
   const mounted = useRef(true);
   useEffect(() => {
