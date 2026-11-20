@@ -20,6 +20,7 @@ import {
 import { uniqueProducts } from '../products/client.js';
 import { formatMoney, initialProductForm } from '../products/input.js';
 import { productListOptions } from '../products/queries.js';
+import { NEW_PURCHASE_PATH } from '../purchases/paths.js';
 import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 
 export function ProductCard({
@@ -301,6 +302,14 @@ function ProductsList() {
   );
 }
 export function NewProductPage() {
+  return <NewProduct />;
+}
+
+export function NewPurchaseProductPage() {
+  return <NewProduct fromPurchase />;
+}
+
+function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
   const controller = useProducts(),
     view = useProductMutation(),
     location = useLocation(),
@@ -340,12 +349,29 @@ export function NewProductPage() {
         alreadyAccepted.current = false;
         return;
       }
+      if (fromPurchase) {
+        if (view.commandKind === 'PRODUCT_CREATE' && view.productId) {
+          void navigate(NEW_PURCHASE_PATH, {
+            replace: true,
+            state: { createdProductId: view.productId },
+          });
+        }
+        return;
+      }
       void navigate('/products', {
         replace: true,
         state: { productMessage: view.message },
       });
     }
-  }, [controller, navigate, view.kind, view.message]);
+  }, [
+    controller,
+    fromPurchase,
+    navigate,
+    view.kind,
+    view.commandKind,
+    view.productId,
+    view.message,
+  ]);
   const fields = [
     ['name', 'Nombre', false],
     ['variant', 'Variante (opcional)', false],
@@ -355,12 +381,18 @@ export function NewProductPage() {
     ['initialStock', 'Stock inicial', true],
     ['initialUnitCost', 'Costo inicial aproximado por unidad', true],
   ] as const;
+  const visibleFields = fromPurchase
+    ? fields.filter(
+        ([name]) => name !== 'initialStock' && name !== 'initialUnitCost',
+      )
+    : fields;
   return (
     <main>
       <h1>Nuevo producto</h1>
       <p>
-        El costo inicial se usa para estimar la ganancia. Es obligatorio si ya
-        tienes unidades; puede ser aproximado.
+        {fromPurchase
+          ? 'Las unidades se añadirán al inventario cuando registres la compra.'
+          : 'El costo inicial se usa para estimar la ganancia. Es obligatorio si ya tienes unidades; puede ser aproximado.'}
       </p>
       <PendingProductStatus />
       {previousMessage && (
@@ -381,7 +413,7 @@ export function NewProductPage() {
       >
         <fieldset disabled={locked || !online}>
           <legend>Datos del producto</legend>
-          {fields.map(([name, label, numeric]) => (
+          {visibleFields.map(([name, label, numeric]) => (
             <label key={name}>
               {label}
               <input
@@ -418,7 +450,13 @@ export function NewProductPage() {
           </button>
         </fieldset>
       </form>
-      <Link to="/products">Volver a productos</Link>
+      {fromPurchase ? (
+        <Link to={NEW_PURCHASE_PATH} replace>
+          Volver a la compra
+        </Link>
+      ) : (
+        <Link to="/products">Volver a productos</Link>
+      )}
     </main>
   );
 }

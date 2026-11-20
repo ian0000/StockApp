@@ -6,6 +6,10 @@ import {
 } from 'react-router';
 import { PrivateBoundary } from '../routes/access.js';
 import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
+import {
+  NEW_PURCHASE_PATH,
+  NEW_PURCHASE_PRODUCT_PATH,
+} from '../purchases/paths.js';
 
 function RouteContent() {
   const navigation = useNavigation();
@@ -126,16 +130,23 @@ export function createAppRoutes(): RouteObject[] {
                     : (await import('../routes/sales.js')).SaleDetailPage,
               }),
             })),
-            ...(['/purchases/new', '/purchases/:id'] as const).map((path) => ({
+            ...([NEW_PURCHASE_PATH, '/purchases/:id'] as const).map((path) => ({
               path,
               lazy: async () => ({
                 Component:
-                  path === '/purchases/new'
+                  path === NEW_PURCHASE_PATH
                     ? (await import('../routes/purchases.js')).NewPurchasePage
                     : (await import('../routes/purchases.js'))
                         .PurchaseDetailPage,
               }),
             })),
+            {
+              path: NEW_PURCHASE_PRODUCT_PATH,
+              lazy: async () => ({
+                Component: (await import('../routes/products.js'))
+                  .NewPurchaseProductPage,
+              }),
+            },
             {
               path: '/adjustments/new',
               lazy: async () => ({
