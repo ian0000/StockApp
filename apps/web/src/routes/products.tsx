@@ -376,10 +376,20 @@ function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
     ['name', 'Nombre', false],
     ['variant', 'Variante (opcional)', false],
     ['barcode', 'Código de barras (opcional)', false],
-    ['regularSalePrice', 'Precio habitual por unidad', true],
+    [
+      'regularSalePrice',
+      'Precio de venta por unidad',
+      true,
+      'Lo que esperas cobrar al vender una unidad.',
+    ],
     ['minimumStock', 'Stock mínimo (opcional)', true],
     ['initialStock', 'Stock inicial', true],
-    ['initialUnitCost', 'Costo inicial aproximado por unidad', true],
+    [
+      'initialUnitCost',
+      'Costo de compra por unidad',
+      true,
+      'Si ya tienes unidades, escribe lo que pagaste por cada una. Puedes usar un costo aproximado.',
+    ],
   ] as const;
   const visibleFields = fromPurchase
     ? fields.filter(
@@ -389,11 +399,12 @@ function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
   return (
     <main>
       <h1>Nuevo producto</h1>
-      <p>
-        {fromPurchase
-          ? 'Las unidades se añadirán al inventario cuando registres la compra.'
-          : 'El costo inicial se usa para estimar la ganancia. Es obligatorio si ya tienes unidades; puede ser aproximado.'}
-      </p>
+      {fromPurchase && (
+        <p>
+          Indicarás el costo de compra al volver. Las unidades se añadirán al
+          inventario cuando registres la compra.
+        </p>
+      )}
       <PendingProductStatus />
       {previousMessage && (
         <p role="status" aria-live="polite">
@@ -413,9 +424,9 @@ function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
       >
         <fieldset disabled={locked || !online}>
           <legend>Datos del producto</legend>
-          {visibleFields.map(([name, label, numeric]) => (
+          {visibleFields.map(([name, label, numeric, help]) => (
             <label key={name}>
-              {label}
+              <span id={`new-product-${name}-label`}>{label}</span>
               <input
                 name={name}
                 type="text"
@@ -441,8 +452,18 @@ function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
                     form.initialStock.trim() !== '0')
                 }
                 aria-invalid={view.field === name || undefined}
-                aria-describedby="product-message"
+                aria-labelledby={`new-product-${name}-label`}
+                aria-describedby={
+                  help
+                    ? `new-product-${name}-help product-message`
+                    : 'product-message'
+                }
               />
+              {help && (
+                <small className="field-hint" id={`new-product-${name}-help`}>
+                  {help}
+                </small>
+              )}
             </label>
           ))}
           <button type="submit" disabled={locked || !online}>

@@ -221,7 +221,19 @@ test('mobile viewport: cancel navigation, confirm leaving, clean re-entry and ac
   assert.equal(await input.inputValue(), '');
   await input.fill('Guardado');
   await page
-    .getByRole('textbox', { name: 'Precio habitual por unidad', exact: true })
+    .getByRole('textbox', { name: 'Costo de compra por unidad', exact: true })
+    .waitFor();
+  await page
+    .getByText('Lo que esperas cobrar al vender una unidad.', { exact: true })
+    .waitFor();
+  await page
+    .getByText(
+      'Si ya tienes unidades, escribe lo que pagaste por cada una. Puedes usar un costo aproximado.',
+      { exact: true },
+    )
+    .waitFor();
+  await page
+    .getByRole('textbox', { name: 'Precio de venta por unidad', exact: true })
     .fill('2.50');
   await page
     .getByRole('button', { name: 'Crear producto', exact: true })
@@ -255,7 +267,7 @@ test('mobile viewport: creating a product from a purchase restores its draft and
   );
   assert.equal(
     await page
-      .getByLabel('Costo inicial aproximado por unidad', { exact: true })
+      .getByLabel('Costo de compra por unidad', { exact: true })
       .count(),
     0,
   );
@@ -263,7 +275,7 @@ test('mobile viewport: creating a product from a purchase restores its draft and
     .getByRole('textbox', { name: 'Nombre', exact: true })
     .fill('Jugo UAT');
   await page
-    .getByRole('textbox', { name: 'Precio habitual por unidad', exact: true })
+    .getByRole('textbox', { name: 'Precio de venta por unidad', exact: true })
     .fill('2.50');
   await page
     .getByRole('button', { name: 'Crear producto', exact: true })
