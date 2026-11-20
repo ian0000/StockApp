@@ -13,6 +13,8 @@ import { AuthLayout } from '../ui/auth-layout.js';
 
 export const resetRequestMessage =
   'Si el correo corresponde a una cuenta, recibirás un enlace para restablecer la contraseña.';
+export const verificationRequestMessage =
+  'Solicitud aceptada. Si corresponde, se intentará enviar un enlace de verificación. Esto no confirma que el correo haya llegado.';
 export function useSubmit() {
   const flight = useRef(false);
   const [pending, setPending] = useState(false);
@@ -164,7 +166,10 @@ export function SignupPage() {
             const value = password;
             setPassword('');
             await controller.auth.signup(name.trim(), email, value);
-            await navigate('/verify-email', { replace: true });
+            await navigate('/verify-email', {
+              replace: true,
+              state: { verificationRequested: true },
+            });
           });
         }}
       >
@@ -210,9 +215,10 @@ export function SignupPage() {
       <div className="verification-note">
         <strong>Un paso más para entrar</strong>
         <p>
-          Te enviaremos un enlace de verificación. Ábrelo para confirmar que el
+          Abre el enlace de verificación que recibas para confirmar que el
           correo es tuyo; luego vuelve e inicia sesión con tu contraseña. Tu
-          inventario se configura después.
+          inventario se configura después. Crear otra cuenta con el mismo correo
+          no cambia tu contraseña; si la olvidaste, usa la recuperación.
         </p>
       </div>
       <p className="auth-switch">
@@ -242,7 +248,9 @@ export function VerifyPage() {
       ? 'El enlace no pudo verificarse. Solicita otro correo.'
       : callback.verified
         ? 'Correo verificado. Ya puedes iniciar sesión.'
-        : 'Revisa tu correo y abre el enlace de verificación.',
+        : location.state?.verificationRequested === true
+          ? verificationRequestMessage
+          : 'Revisa tu correo y abre el enlace de verificación.',
   );
   useEffect(() => {
     if (consumed.current) return;
@@ -285,9 +293,7 @@ export function VerifyPage() {
         onSubmit={(event) => {
           void state.submit(event, async () => {
             await controller.auth.resend(email);
-            state.setMessage(
-              'Si corresponde, recibirás un correo de verificación.',
-            );
+            state.setMessage(verificationRequestMessage);
           });
         }}
       >
@@ -307,6 +313,12 @@ export function VerifyPage() {
         </button>
         <FormStatus state={state} />
       </form>
+      <p>
+        Si ya verificaste tu correo, <Link to="/login">inicia sesión</Link>. Si
+        olvidaste tu contraseña,{' '}
+        <Link to="/reset-password">solicita restablecerla</Link>; reenviar la
+        verificación no cambia la contraseña.
+      </p>
       <Link to="/login">Volver a iniciar sesión</Link>
     </AuthLayout>
   );

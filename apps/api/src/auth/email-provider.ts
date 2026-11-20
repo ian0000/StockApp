@@ -9,6 +9,13 @@ type EmailConfig =
   | { transport: 'smtp'; smtp: SmtpConfig }
   | { transport: 'resend'; apiKey: string; from: string };
 
+export type EmailDeliveryEvent = {
+  transport: 'smtp' | 'resend';
+  outcome: 'accepted' | 'failed';
+  providerStatus?: number;
+  providerMessageId?: string;
+};
+
 export function readEmailConfig(
   env: Readonly<Record<string, string | undefined>>,
 ): EmailConfig {
@@ -30,11 +37,34 @@ export function readEmailConfig(
 export function createEmailSender(
   config: EmailConfig,
   fetcher: typeof fetch = globalThis.fetch,
+  onDelivery?: (event: EmailDeliveryEvent) => void,
 ) {
-  if (config.transport === 'smtp') return createSmtpSender(config.smtp);
+  function report(event: EmailDeliveryEvent) {
+    try {
+      onDelivery?.(event);
+    } catch {
+      // An observability failure must not change delivery or trigger a second send.
+    }
+  }
+  if (config.transport === 'smtp') {
+    const sender = createSmtpSender(config.smtp);
+    return {
+      async send(email: AuthEmail): Promise<void> {
+        try {
+          await sender.send(email);
+          report({ transport: 'smtp', outcome: 'accepted' });
+        } catch (error) {
+          report({ transport: 'smtp', outcome: 'failed' });
+          throw error;
+        }
+      },
+      close: () => sender.close(),
+    };
+  }
   const lifetime = new AbortController();
   return {
     async send(email: AuthEmail): Promise<void> {
+      let providerStatus: number | undefined;
       try {
         lifetime.signal.throwIfAborted();
         const response = await fetcher('https://api.resend.com/emails', {
@@ -59,6 +89,7 @@ export function createEmailSender(
             AbortSignal.timeout(10_000),
           ]),
         });
+        providerStatus = response.status;
         if (!response.ok) {
           await response.body?.cancel();
           throw new Error();
@@ -74,7 +105,23 @@ export function createEmailSender(
         )
           throw new Error();
         // Provider acceptance is not evidence of delivery to the tester's inbox.
+        report({
+          transport: 'resend',
+          outcome: 'accepted',
+          providerStatus,
+          // Never log an arbitrary provider string that could contain message content or PII.
+          ...(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+            result.id,
+          )
+            ? { providerMessageId: result.id }
+            : {}),
+        });
       } catch {
+        report({
+          transport: 'resend',
+          outcome: 'failed',
+          ...(providerStatus === undefined ? {} : { providerStatus }),
+        });
         throw new Error('Could not deliver authentication email.');
       }
     },

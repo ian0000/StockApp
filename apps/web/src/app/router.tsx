@@ -9,7 +9,16 @@ import { LoadingPage, NotFoundPage, RouteErrorPage } from '../routes/status.js';
 
 function RouteContent() {
   const navigation = useNavigation();
-  return navigation.state === 'loading' ? <LoadingPage /> : <Outlet />;
+  return (
+    <>
+      {navigation.state === 'loading' && (
+        <p role="status" aria-live="polite">
+          Cargando pantalla…
+        </p>
+      )}
+      <Outlet />
+    </>
+  );
 }
 
 export function createAppRoutes(): RouteObject[] {

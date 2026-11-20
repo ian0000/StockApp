@@ -29,6 +29,7 @@ import {
 } from '../purchases/input.js';
 import { purchaseDetailOptions } from '../purchases/queries.js';
 import { purchaseErrorMessage } from '../purchases/controller.js';
+import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 import {
   PurchaseConfirmation,
   PurchaseFacts,
@@ -119,6 +120,12 @@ function NewPurchase({
       typeof location.state?.productId === 'string'
         ? location.state.productId
         : null;
+  useUnsavedChanges(
+    view.kind !== 'ACCEPTED' &&
+      (form.productId !== null ||
+        form.quantity !== '1' ||
+        form.unitCost !== ''),
+  );
   const list = useInfiniteQuery(
       productListOptions(controller.products.client, scope, search),
     ),

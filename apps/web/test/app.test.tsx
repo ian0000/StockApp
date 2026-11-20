@@ -379,7 +379,7 @@ test('Query provider supplies exact same instance with online policy', async (t)
   assert.equal(ctx.queries.getDefaultOptions().mutations?.retry, false);
   assert.equal(ctx.queries.getDefaultOptions().queries?.networkMode, 'online');
 });
-test('initial and navigation lazy loading expose status/aria-live; private loading exposes no old data', async (t) => {
+test('initial loading hides private data while lazy navigation preserves the current route and exposes status', async (t) => {
   const ctx = fixture();
   await ctx.controller.refresh();
   const ready = deferred<void>();
@@ -408,6 +408,10 @@ test('initial and navigation lazy loading expose status/aria-live; private loadi
     );
   assert.ok(render().includes('role="status"'));
   assert.ok(render().includes('aria-live="polite"'));
+  assert.ok(
+    render().includes('Inicio'),
+    'the current route stays mounted while a lazy destination loads',
+  );
   ready.resolve();
   await pending;
   assert.ok(render().includes('Productos'));

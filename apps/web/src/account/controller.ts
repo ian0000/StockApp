@@ -25,7 +25,8 @@ export const deletionUnknown =
 export const deletionAccepted =
   'Tu solicitud de eliminación fue aceptada. Se cerraron tus sesiones y la eliminación de datos continuará en el servidor.';
 export function accountScope(view: SessionView) {
-  if (!('me' in view) || !view.me.user.emailVerified) return null;
+  if (view.revalidationError || !('me' in view) || !view.me.user.emailVerified)
+    return null;
   return {
     generation: view.generation,
     userId: view.me.user.id,
@@ -92,7 +93,10 @@ export class AccountController {
         });
     });
     this.stopSession = session.subscribe(() => {
-      if (['ERROR', 'LOGOUT_ERROR'].includes(session.snapshot().kind)) {
+      if (
+        session.snapshot().revalidationError ||
+        ['ERROR', 'LOGOUT_ERROR'].includes(session.snapshot().kind)
+      ) {
         if (this.scope) this.reset(this.sent);
         return;
       }

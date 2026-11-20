@@ -23,6 +23,65 @@ const message = {
 };
 const deliveryError = { message: 'Could not deliver authentication email.' };
 
+test('Resend acceptance and failure telemetry distinguish provider response from inbox delivery without recipient or content', async () => {
+  const events: unknown[] = [];
+  let status = 200;
+  const sender = createEmailSender(
+    readEmailConfig(resend),
+    async () =>
+      Response.json({ id: '00000000-0000-4000-8000-000000000001' }, { status }),
+    (event: unknown) => events.push(event),
+  );
+  try {
+    await sender.send(message);
+    assert.deepEqual(events, [
+      {
+        transport: 'resend',
+        outcome: 'accepted',
+        providerStatus: 200,
+        providerMessageId: '00000000-0000-4000-8000-000000000001',
+      },
+    ]);
+    status = 429;
+    await assert.rejects(sender.send(message), deliveryError);
+    assert.deepEqual(events.at(-1), {
+      transport: 'resend',
+      outcome: 'failed',
+      providerStatus: 429,
+    });
+    const serialized = JSON.stringify(events);
+    for (const privateValue of [
+      message.to,
+      message.text,
+      resend.RESEND_API_KEY,
+    ])
+      assert.equal(serialized.includes(privateValue), false);
+    assert.equal(serialized.includes('delivered'), false);
+  } finally {
+    sender.close();
+  }
+});
+
+test('provider telemetry cannot leak unsafe IDs or turn accepted email into failure', async () => {
+  const events: unknown[] = [];
+  const sender = createEmailSender(
+    readEmailConfig(resend),
+    async () => Response.json({ id: message.to + '\n' + message.text }),
+    (event: unknown) => {
+      events.push(event);
+      throw new Error('unavailable logger');
+    },
+  );
+  try {
+    await sender.send(message);
+    assert.deepEqual(events, [
+      { transport: 'resend', outcome: 'accepted', providerStatus: 200 },
+    ]);
+  } finally {
+    sender.close();
+  }
+});
+
 test('SMTP remains the default and Resend selection fails closed without its own configuration', () => {
   assert.equal(readEmailConfig(smtp).transport, 'smtp');
   assert.equal(

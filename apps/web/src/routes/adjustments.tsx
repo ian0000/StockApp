@@ -5,6 +5,7 @@ import type { ProductReadDto } from '@stock-app/contracts';
 import { validate as validUuid } from 'uuid';
 import { useSessionView } from '../auth/context.js';
 import { useOnline } from '../products/context.js';
+import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 import {
   productScope,
   productsKey,
@@ -64,6 +65,12 @@ function NewAdjustment({ scope }: { scope: ProductScope }) {
     selectionVersion = useRef(0),
     errorRef = useRef<HTMLParagraphElement>(null);
   const productId = new URLSearchParams(location.search).get('productId');
+  useUnsavedChanges(
+    view.kind !== 'ACCEPTED' &&
+      (form.productId !== null ||
+        form.actualStock !== '' ||
+        form.customUnitCost !== ''),
+  );
   const list = useInfiniteQuery(
     productListOptions(controller.products.client, scope, search),
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { ApiClientError } from '../api/client.js';
 import type { ProductReadDto } from '@stock-app/contracts';
 import { useSessionView } from '../auth/context.js';
 import {
@@ -24,6 +25,7 @@ import {
   type MetadataField,
 } from '../products/edit.js';
 import { PendingProductStatus } from './products.js';
+import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 
 export const ARCHIVE_WARNING =
   'El producto dejará de aparecer en búsquedas y nuevas operaciones. Las ventas, compras y movimientos anteriores se conservarán.';
@@ -169,7 +171,10 @@ function LoadedProduct({
         <PendingProductStatus />
       </section>
     );
-  if (query.error)
+  const accessDenied =
+    query.error instanceof ApiClientError &&
+    [401, 403].includes(query.error.status ?? 0);
+  if (query.error && (!query.data || accessDenied))
     return (
       <section>
         <p role="alert">{productErrorMessage(query.error)}</p>
@@ -186,10 +191,22 @@ function LoadedProduct({
         <PendingProductStatus />
       </>
     );
-  return edit ? (
-    <EditProduct item={query.data} />
-  ) : (
-    <ProductDetail item={query.data} currency={scope.currency} />
+  return (
+    <>
+      {query.error && (
+        <div role="alert">
+          No pudimos actualizar el producto. Conservamos tus cambios.
+          <button type="button" onClick={() => void query.refetch()}>
+            Reintentar consulta
+          </button>
+        </div>
+      )}
+      {edit ? (
+        <EditProduct item={query.data} />
+      ) : (
+        <ProductDetail item={query.data} currency={scope.currency} />
+      )}
+    </>
   );
 }
 function ProductDetail({
@@ -302,6 +319,9 @@ function EditProduct({ item }: { item: ProductReadDto }) {
     view = useProductMutation(),
     online = useOnline();
   const [draft, setDraft] = useState(() => initialEditDraft(item.product));
+  useUnsavedChanges(
+    view.kind !== 'ACCEPTED' && Object.values(draft.dirty).some(Boolean),
+  );
   const ownConflict =
     view.kind === 'CONFLICT' &&
     view.productId?.toLowerCase() === item.product.id.toLowerCase();

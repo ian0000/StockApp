@@ -51,7 +51,9 @@ export function AccessStatus() {
       <h1>
         {'cloudDisabled' in view && view.cloudDisabled
           ? 'Acceso cloud pendiente'
-          : (titles[view.kind] ?? 'Acceso a tu cuenta')}
+          : view.revalidationError
+            ? 'No pudimos comprobar tu acceso'
+            : (titles[view.kind] ?? 'Acceso a tu cuenta')}
       </h1>
       {'me' in view && <p>Cuenta: {view.me.user.email}</p>}
       {'me' in view && view.me.user.emailVerified && (
@@ -70,6 +72,11 @@ export function AccessStatus() {
         </p>
       )}
       {'message' in view && <p role="alert">{view.message}</p>}
+      {view.revalidationError && (
+        <p role="alert">
+          No pudimos comprobar la sesión. Reintenta antes de continuar.
+        </p>
+      )}
       {'verification' in view && view.verification && (
         <NavLink to="/verify-email">Verificar correo</NavLink>
       )}
@@ -99,6 +106,7 @@ export function PrivateBoundary() {
 }
 export function AppShell() {
   const view = useSessionView();
+  const controller = useSessionController();
   const location = useLocation();
   if (view.kind !== 'BUSINESS_ACTIVE_ENABLED') return <AccessStatus />;
   const page = location.pathname.startsWith('/products')
@@ -186,6 +194,15 @@ export function AppShell() {
           </div>
         </header>
         <div id="app-content" tabIndex={-1}>
+          {view.revalidationError && (
+            <p role="status">
+              No pudimos comprobar la sesión. Conservamos tus cambios; vuelve a
+              comprobar el acceso cuando tengas conexión.
+              <button type="button" onClick={() => void controller.refresh()}>
+                Reintentar conexión
+              </button>
+            </p>
+          )}
           <Outlet />
         </div>
       </div>

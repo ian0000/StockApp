@@ -22,11 +22,16 @@ export function SessionProvider({
     };
     window.addEventListener('focus', revalidate);
     window.addEventListener('online', revalidate);
+    const resume = () => {
+      if (document.visibilityState === 'visible') revalidate();
+    };
+    document.addEventListener('visibilitychange', resume);
     // Detect expiry/revocation on an open tab too; never poll commercial endpoints.
     const timer = window.setInterval(revalidate, 60_000);
     return () => {
       window.removeEventListener('focus', revalidate);
       window.removeEventListener('online', revalidate);
+      document.removeEventListener('visibilitychange', resume);
       window.clearInterval(timer);
       controller.dispose();
     };

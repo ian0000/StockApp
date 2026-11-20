@@ -20,6 +20,7 @@ export function accessState(me: MeResponse): AccessState {
 }
 export type SessionView = {
   generation: number;
+  revalidationError?: boolean;
 } & (
   | {
       kind:
@@ -123,11 +124,21 @@ export class SessionController {
   }
   async refresh(): Promise<void> {
     if (this.authBusy || this.view.kind === 'LOGOUT_ERROR') return;
+    if (this.identity && this.identity.expiresAt <= Date.now()) {
+      this.anonymous();
+      return;
+    }
+    // An ordinary revalidation must not unmount the private route or its local form state.
+    const previous = 'me' in this.view ? this.view : null;
     this.pending?.abort();
     const request = new AbortController();
     this.pending = request;
     const epoch = ++this.epoch;
-    this.publish({ kind: 'LOADING_SESSION', generation: this.view.generation });
+    if (!previous)
+      this.publish({
+        kind: 'LOADING_SESSION',
+        generation: this.view.generation,
+      });
     try {
       const next = await this.auth.session(request.signal);
       if (epoch !== this.epoch || request.signal.aborted) return;
@@ -135,10 +146,10 @@ export class SessionController {
         this.anonymous();
         return;
       }
-      if (
-        this.identity?.userId !== next.userId ||
-        this.identity?.sessionId !== next.sessionId
-      ) {
+      const sameIdentity =
+        this.identity?.userId === next.userId &&
+        this.identity?.sessionId === next.sessionId;
+      if (!sameIdentity) {
         // First hydration preserves the minimal reload descriptor; a known identity change clears it.
         if (this.identity)
           for (const listener of this.boundaryListeners) listener();
@@ -149,20 +160,36 @@ export class SessionController {
         };
       }
       this.identity = next;
-      this.publish({
-        kind: 'AUTHENTICATED_LOADING_ME',
-        generation: this.view.generation,
-      });
+      if (!previous || !sameIdentity)
+        this.publish({
+          kind: 'AUTHENTICATED_LOADING_ME',
+          generation: this.view.generation,
+        });
       const me = await this.queries.fetchQuery({
         queryKey: ['private', this.view.generation, 'me', next.userId],
         queryFn: ({ signal }) => this.ownership.me(signal),
         staleTime: 0,
       });
       if (epoch !== this.epoch || request.signal.aborted) return;
+      if (next.expiresAt <= Date.now()) {
+        this.anonymous();
+        return;
+      }
       if (me.user.id !== next.userId) {
         this.boundary();
         this.failed(new Error('Identity mismatch'));
         return;
+      }
+      if (
+        previous &&
+        sameIdentity &&
+        previous.me.inventory &&
+        me.inventory &&
+        (previous.me.business?.id !== me.business?.id ||
+          previous.me.inventory?.id !== me.inventory?.id)
+      ) {
+        this.boundary();
+        this.identity = next;
       }
       this.publish({
         kind: accessState(me),
@@ -170,7 +197,25 @@ export class SessionController {
         me,
       });
     } catch (error) {
-      if (epoch === this.epoch && !request.signal.aborted) this.failed(error);
+      if (epoch !== this.epoch || request.signal.aborted) return;
+      if (this.identity && this.identity.expiresAt <= Date.now()) {
+        this.anonymous();
+        return;
+      }
+      const status =
+        error instanceof ApiClientError || error instanceof AuthFailure
+          ? error.status
+          : undefined;
+      const temporary = status == null || status === 429 || status >= 500;
+      if (
+        temporary &&
+        previous &&
+        this.view === previous &&
+        this.identity &&
+        this.view.generation === previous.generation
+      ) {
+        this.publish({ ...previous, revalidationError: true });
+      } else this.failed(error);
     }
   }
   async login(email: string, password: string): Promise<void> {
@@ -254,6 +299,8 @@ export class SessionController {
         'BUSINESS_DELETING',
       ].includes(error.apiError?.error.code ?? '')
     ) {
+      this.pending?.abort();
+      this.epoch++;
       this.queries.clear();
       this.failed(error);
     }
