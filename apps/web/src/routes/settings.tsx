@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, Outlet, useLocation } from 'react-router';
+import { Link, Outlet, useLocation } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import type { AccessState, SessionView } from '../auth/session.js';
 import type { MeResponse } from '@stock-app/contracts';
@@ -102,7 +102,6 @@ export function AccountBoundary() {
       ['ACCEPTED', 'UNKNOWN'].includes(state.kind)
     )
       return <DeletionOutcomePage />;
-    if (view.kind === 'ANONYMOUS') return <Navigate to="/login" replace />;
     return <AccessStatus />;
   }
   return (

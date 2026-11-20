@@ -81,11 +81,7 @@ export function LoginPage() {
         replace: true,
       });
   }, [view, navigate]);
-  if (
-    view.kind === 'ERROR' ||
-    view.kind === 'LOGOUT_ERROR' ||
-    view.kind === 'AUTHENTICATED_LOADING_ME'
-  )
+  if (view.kind === 'ERROR' || view.kind === 'AUTHENTICATED_LOADING_ME')
     return <AccessStatus />;
   return (
     <AuthLayout

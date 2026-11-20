@@ -1,5 +1,11 @@
 # Arquitectura UX Web
 
+En UAT, una ruta privada sin sesión confirmada vuelve al inicio público. Si el cierre de sesión
+no se confirma, el inicio muestra un aviso y permite reintentar; la aplicación mantiene retirados
+los datos privados y no restaura la sesión en segundo plano. Una conexión intermitente durante
+la revalidación de una sesión vigente conserva el formulario. Para autenticarse en UAT se usa
+el dominio `stockapp-staging.ian-k.dev`, autorizado por la API.
+
 WEB-10 reemplaza Settings/Privacy placeholders: metadata real read-only, downloads explícitos y confirmación irreversible. AccountBoundary permite cuentas verified sin Business/Inventory/Cloud, sin conceder comercio; reauth oficial necesita nueva acción. Unknown no equivale a fallo tras revocación. [Detalle](WEB-10.md).
 
 WEB-09 añade Anular desde detalles, confirmación humana, explicación de ineligibilidad y VOIDED histórico. Same-session conserva review; incertidumbre reintenta la misma intención, sin Undo temporal/partial/Adjustment. [Detalle](WEB-09.md).

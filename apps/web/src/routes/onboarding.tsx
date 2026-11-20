@@ -12,7 +12,6 @@ export function OnboardingPage() {
   const [inventoryName, setName] = useState('');
   const [currency, setCurrency] = useState('');
   const [reportingTimeZone, setZone] = useState(suggestedTimeZone);
-  if (view.kind === 'ANONYMOUS') return <Navigate to="/login" replace />;
   if (view.kind === 'BUSINESS_ACTIVE_ENABLED')
     return <Navigate to="/" replace />;
   if (view.kind !== 'NO_BUSINESS') return <AccessStatus />;

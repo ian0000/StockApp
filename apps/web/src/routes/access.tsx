@@ -15,7 +15,7 @@ import { LoadingPage } from './status.js';
 import { privateDestination } from '../auth/session.js';
 import { LandingPage } from './landing.js';
 
-export function LogoutButton() {
+export function LogoutButton({ retry = false }: { retry?: boolean } = {}) {
   const controller = useSessionController();
   return (
     <button
@@ -26,13 +26,31 @@ export function LogoutButton() {
       }}
     >
       <IconLogout size={19} aria-hidden="true" />
-      Cerrar sesión
+      {retry ? 'Reintentar cerrar sesión' : 'Cerrar sesión'}
     </button>
   );
 }
 export function AccessStatus() {
   const view = useSessionView();
   const controller = useSessionController();
+  const location = useLocation();
+  if (privateDestination(view) === '/') {
+    if (location.pathname !== '/') return <Navigate to="/" replace />;
+    return (
+      <LandingPage
+        sessionNotice={
+          view.kind === 'LOGOUT_ERROR' ? (
+            <div role="alert">
+              <p>{view.message}</p>
+              <LogoutButton retry />
+            </div>
+          ) : view.kind === 'SESSION_UNAVAILABLE' ? (
+            <p role="status">{view.message}</p>
+          ) : undefined
+        }
+      />
+    );
+  }
   if (
     ['LOADING_SESSION', 'AUTHENTICATED_LOADING_ME', 'LOGGING_OUT'].includes(
       view.kind,
@@ -44,7 +62,6 @@ export function AccessStatus() {
     BUSINESS_DELETING: 'Tu cuenta está en proceso de eliminación.',
     BUSINESS_WITHOUT_INVENTORY: 'Configuración pendiente',
     ERROR: 'No pudimos comprobar tu acceso',
-    LOGOUT_ERROR: 'No pudimos cerrar la sesión',
   };
   return (
     <main>
@@ -80,27 +97,22 @@ export function AccessStatus() {
       {'verification' in view && view.verification && (
         <NavLink to="/verify-email">Verificar correo</NavLink>
       )}
-      {view.kind !== 'LOGOUT_ERROR' && (
-        <button
-          type="button"
-          onClick={() => {
-            void controller.refresh();
-          }}
-        >
-          Refrescar estado
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => {
+          void controller.refresh();
+        }}
+      >
+        Refrescar estado
+      </button>
       <LogoutButton />
     </main>
   );
 }
 export function PrivateBoundary() {
   const view = useSessionView();
-  const location = useLocation();
-  if (view.kind === 'ANONYMOUS' && location.pathname === '/')
-    return <LandingPage />;
-  const destination = privateDestination(view);
-  if (destination) return <Navigate to={destination} replace />;
+  if (privateDestination(view) === '/onboarding')
+    return <Navigate to="/onboarding" replace />;
   if (view.kind !== 'BUSINESS_ACTIVE_ENABLED') return <AccessStatus />;
   return <AppShell />;
 }

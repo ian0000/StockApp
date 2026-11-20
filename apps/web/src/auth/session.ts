@@ -30,7 +30,7 @@ export type SessionView = {
         | 'LOGGING_OUT';
     }
   | {
-      kind: 'ERROR' | 'LOGOUT_ERROR';
+      kind: 'ERROR' | 'LOGOUT_ERROR' | 'SESSION_UNAVAILABLE';
       message: string;
       verification?: boolean;
       cloudDisabled?: boolean;
@@ -39,8 +39,13 @@ export type SessionView = {
 );
 export function privateDestination(
   view: SessionView,
-): '/login' | '/onboarding' | null {
-  if (view.kind === 'ANONYMOUS') return '/login';
+): '/' | '/onboarding' | null {
+  if (
+    view.kind === 'ANONYMOUS' ||
+    view.kind === 'LOGOUT_ERROR' ||
+    view.kind === 'SESSION_UNAVAILABLE'
+  )
+    return '/';
   if (view.kind === 'NO_BUSINESS') return '/onboarding';
   return null;
 }
@@ -134,7 +139,7 @@ export class SessionController {
     const request = new AbortController();
     this.pending = request;
     const epoch = ++this.epoch;
-    if (!previous)
+    if (!previous && privateDestination(this.view) !== '/')
       this.publish({
         kind: 'LOADING_SESSION',
         generation: this.view.generation,
@@ -215,17 +220,27 @@ export class SessionController {
         this.view.generation === previous.generation
       ) {
         this.publish({ ...previous, revalidationError: true });
+      } else if (!previous && status !== 401 && (!this.identity || temporary)) {
+        this.publish({
+          kind: 'SESSION_UNAVAILABLE',
+          generation: this.view.generation,
+          message:
+            'No pudimos comprobar tu sesión. Puedes volver a intentarlo.',
+        });
       } else this.failed(error);
     }
   }
   async login(email: string, password: string): Promise<void> {
     if (this.authBusy) return;
+    const previousLogout = this.view.kind === 'LOGOUT_ERROR' ? this.view : null;
     this.authBusy = true;
     this.boundary();
     try {
       await this.auth.login(email, password);
     } catch (error) {
-      this.anonymous();
+      if (previousLogout)
+        this.publish({ ...previousLogout, generation: this.view.generation });
+      else this.anonymous();
       throw error;
     } finally {
       this.authBusy = false;
