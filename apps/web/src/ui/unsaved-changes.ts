@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useBeforeUnload, useBlocker } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 
-export function useUnsavedChanges(dirty: boolean) {
+export function useUnsavedChanges(dirty: boolean, keepDraftOnPath?: string) {
   const session = useSessionController();
   const view = useSessionView();
   const generation = view.generation;
@@ -17,6 +17,7 @@ export function useUnsavedChanges(dirty: boolean) {
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       active() &&
+      nextLocation.pathname !== keepDraftOnPath &&
       (currentLocation.pathname !== nextLocation.pathname ||
         currentLocation.search !== nextLocation.search),
   );

@@ -155,6 +155,46 @@ button:disabled {
   background: #edf6ff;
   border-color: #7fb5e6;
 }
+.tutorial-dialog {
+  width: min(34rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+.tutorial-dialog::backdrop {
+  background: rgb(24 43 64 / 55%);
+}
+.tutorial-dialog > header,
+.tutorial-topics {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tutorial-dialog > header {
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.tutorial-dialog > header :is(h2, button),
+.tutorial-topics button {
+  margin: 0;
+}
+.tutorial-topics button[aria-pressed='true'] {
+  color: var(--blue-dark);
+  background: #e5f2ff;
+  border-color: #7fb5e6;
+}
+.tutorial-dialog ol {
+  padding-inline-start: 1.5rem;
+}
+.tutorial-dialog li + li {
+  margin-top: 0.65rem;
+}
 button.danger {
   background: var(--danger);
 }
@@ -167,6 +207,10 @@ label {
   margin-block: 1.2rem;
   font-weight: 600;
   font-size: 0.94rem;
+}
+.field-hint {
+  color: var(--muted);
+  font-weight: 400;
 }
 input,
 select,
@@ -313,6 +357,12 @@ main > p[aria-live]:not(:empty) {
 }
 .app-sidebar nav a > svg {
   flex: none;
+}
+.app-sidebar .tutorial-trigger {
+  justify-self: start;
+  margin: 0;
+  padding-inline: 0.7rem;
+  font-size: 0.87rem;
 }
 .nav-caption {
   display: block;
@@ -775,7 +825,7 @@ button.text-button:hover {
     font-size: 0.77rem;
     min-height: 60px;
   }
-  .app-sidebar nav[aria-label='Registrar operación'] {
+  .app-sidebar .operation-nav {
     margin-top: 0.5rem;
     padding-top: 0.35rem;
     border-top: 1px solid var(--line);

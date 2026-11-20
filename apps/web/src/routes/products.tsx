@@ -20,7 +20,9 @@ import {
 import { uniqueProducts } from '../products/client.js';
 import { formatMoney, initialProductForm } from '../products/input.js';
 import { productListOptions } from '../products/queries.js';
+import { NEW_PURCHASE_PATH } from '../purchases/paths.js';
 import { useUnsavedChanges } from '../ui/unsaved-changes.js';
+import { TutorialButton } from '../ui/tutorial.js';
 
 export function ProductCard({
   item,
@@ -301,6 +303,14 @@ function ProductsList() {
   );
 }
 export function NewProductPage() {
+  return <NewProduct />;
+}
+
+export function NewPurchaseProductPage() {
+  return <NewProduct fromPurchase />;
+}
+
+function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
   const controller = useProducts(),
     view = useProductMutation(),
     location = useLocation(),
@@ -340,28 +350,63 @@ export function NewProductPage() {
         alreadyAccepted.current = false;
         return;
       }
+      if (fromPurchase) {
+        if (view.commandKind === 'PRODUCT_CREATE' && view.productId) {
+          void navigate(NEW_PURCHASE_PATH, {
+            replace: true,
+            state: { createdProductId: view.productId },
+          });
+        }
+        return;
+      }
       void navigate('/products', {
         replace: true,
         state: { productMessage: view.message },
       });
     }
-  }, [controller, navigate, view.kind, view.message]);
+  }, [
+    controller,
+    fromPurchase,
+    navigate,
+    view.kind,
+    view.commandKind,
+    view.productId,
+    view.message,
+  ]);
   const fields = [
     ['name', 'Nombre', false],
     ['variant', 'Variante (opcional)', false],
     ['barcode', 'Código de barras (opcional)', false],
-    ['regularSalePrice', 'Precio habitual por unidad', true],
+    [
+      'regularSalePrice',
+      'Precio de venta por unidad',
+      true,
+      'Lo que esperas cobrar al vender una unidad.',
+    ],
     ['minimumStock', 'Stock mínimo (opcional)', true],
     ['initialStock', 'Stock inicial', true],
-    ['initialUnitCost', 'Costo inicial aproximado por unidad', true],
+    [
+      'initialUnitCost',
+      'Costo de compra por unidad',
+      true,
+      'Si ya tienes unidades, escribe lo que pagaste por cada una. Puedes usar un costo aproximado.',
+    ],
   ] as const;
+  const visibleFields = fromPurchase
+    ? fields.filter(
+        ([name]) => name !== 'initialStock' && name !== 'initialUnitCost',
+      )
+    : fields;
   return (
     <main>
       <h1>Nuevo producto</h1>
-      <p>
-        El costo inicial se usa para estimar la ganancia. Es obligatorio si ya
-        tienes unidades; puede ser aproximado.
-      </p>
+      <TutorialButton topic="products" />
+      {fromPurchase && (
+        <p>
+          Indicarás el costo de compra al volver. Las unidades se añadirán al
+          inventario cuando registres la compra.
+        </p>
+      )}
       <PendingProductStatus />
       {previousMessage && (
         <p role="status" aria-live="polite">
@@ -381,9 +426,9 @@ export function NewProductPage() {
       >
         <fieldset disabled={locked || !online}>
           <legend>Datos del producto</legend>
-          {fields.map(([name, label, numeric]) => (
+          {visibleFields.map(([name, label, numeric, help]) => (
             <label key={name}>
-              {label}
+              <span id={`new-product-${name}-label`}>{label}</span>
               <input
                 name={name}
                 type="text"
@@ -409,8 +454,18 @@ export function NewProductPage() {
                     form.initialStock.trim() !== '0')
                 }
                 aria-invalid={view.field === name || undefined}
-                aria-describedby="product-message"
+                aria-labelledby={`new-product-${name}-label`}
+                aria-describedby={
+                  help
+                    ? `new-product-${name}-help product-message`
+                    : 'product-message'
+                }
               />
+              {help && (
+                <small className="field-hint" id={`new-product-${name}-help`}>
+                  {help}
+                </small>
+              )}
             </label>
           ))}
           <button type="submit" disabled={locked || !online}>
@@ -418,7 +473,13 @@ export function NewProductPage() {
           </button>
         </fieldset>
       </form>
-      <Link to="/products">Volver a productos</Link>
+      {fromPurchase ? (
+        <Link to={NEW_PURCHASE_PATH} replace>
+          Volver a la compra
+        </Link>
+      ) : (
+        <Link to="/products">Volver a productos</Link>
+      )}
     </main>
   );
 }

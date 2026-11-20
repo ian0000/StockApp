@@ -41,13 +41,14 @@ en PARITY_MATRIX; etiquetas/cálculos siguen UX canónica. No diseño pixel-perf
 | /products | Lista/búsqueda de activos, stock, precio y código |
 | /products/new, /products/:id, /products/:id/edit | Alta, detalle, editar/archivar |
 | /sales/new, /sales/:id | Carrito y detalle/anulación |
-| /purchases/new, /purchases/:id | Un producto, costo, resultado, margen/precio sugerido y anulación |
+| /purchases/new, /purchases/new/product, /purchases/:id | Un producto, alta desde la compra, costo, resultado, margen/precio sugerido y anulación |
 | /adjustments/new?productId=... | Conteo físico con motivo/costo aceptado |
 | /history | Una cronología; 50 recientes, siguiente página API si necesaria |
 | /settings | Cuenta, moneda visible, zona reportes, backup/import, sync y legal/soporte |
 | /settings/privacy | Export/borrado; sesiones/confirmación reciente |
 
 App shell tiene Inicio/Productos/Historial/Configuración, acciones de venta/compra visibles.
+La guía de Productos y Ventas se abre desde el menú y desde los formularios sin salir ni descartar el borrador.
 Desktop navegación lateral; narrow top/bottom accesibles; no veinte módulos de negocio.
 Tablas compactas pueden convertirse en tarjetas en pantalla estrecha. No gráficos obligatorios.
 Forms muestran campos actuales sin proveedores/categorías/impuestos; precio habitual precargado

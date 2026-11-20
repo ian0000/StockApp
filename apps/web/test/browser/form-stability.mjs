@@ -27,6 +27,9 @@ async function harness(t) {
     mode: 'ok',
     detail: product,
     writes: 0,
+    createdProducts: new Map(),
+    lastProductCommand: null,
+    purchaseWrites: 0,
     documents: 0,
     detailCalls: 0,
     logoutFailure: false,
@@ -65,11 +68,27 @@ async function harness(t) {
       return route.fulfill({ json: { token: 'test-csrf' } });
     if (route.request().method() === 'POST' && path.endsWith('/products')) {
       state.writes++;
+      const command = route.request().postDataJSON();
+      const result = strictResult(command);
+      state.lastProductCommand = command;
+      state.createdProducts.set(result.product.id, {
+        ...product,
+        product: result.product,
+        state: result.state,
+        isLowStock: false,
+      });
       return route.fulfill({
         status: 200,
-        json: strictResult(route.request().postDataJSON()),
+        json: result,
       });
     }
+    if (route.request().method() === 'POST' && path.endsWith('/purchases')) {
+      state.purchaseWrites++;
+      return route.fulfill({ status: 500 });
+    }
+    const created = state.createdProducts.get(path.split('/').at(-1));
+    if (created && path.endsWith(`/products/${created.product.id}`))
+      return route.fulfill({ json: created });
     if (path.endsWith(`/products/${productId}`)) {
       state.detailCalls++;
       if (state.mode === 'detail-network')
@@ -102,7 +121,12 @@ async function harness(t) {
       return route.fulfill({ json: state.detail });
     }
     if (path.endsWith('/products'))
-      return route.fulfill({ json: { items: [product], nextCursor: null } });
+      return route.fulfill({
+        json: {
+          items: [product, ...state.createdProducts.values()],
+          nextCursor: null,
+        },
+      });
     throw new Error(
       `Unhandled fixture request: ${route.request().method()} ${path}`,
     );
@@ -201,7 +225,19 @@ test('mobile viewport: cancel navigation, confirm leaving, clean re-entry and ac
   assert.equal(await input.inputValue(), '');
   await input.fill('Guardado');
   await page
-    .getByRole('textbox', { name: 'Precio habitual por unidad', exact: true })
+    .getByRole('textbox', { name: 'Costo de compra por unidad', exact: true })
+    .waitFor();
+  await page
+    .getByText('Lo que esperas cobrar al vender una unidad.', { exact: true })
+    .waitFor();
+  await page
+    .getByText(
+      'Si ya tienes unidades, escribe lo que pagaste por cada una. Puedes usar un costo aproximado.',
+      { exact: true },
+    )
+    .waitFor();
+  await page
+    .getByRole('textbox', { name: 'Precio de venta por unidad', exact: true })
     .fill('2.50');
   await page
     .getByRole('button', { name: 'Crear producto', exact: true })
@@ -210,6 +246,124 @@ test('mobile viewport: cancel navigation, confirm leaving, clean re-entry and ac
   assert.equal(state.writes, 1);
   await page.goto(`${baseURL}/products/new`);
   assert.equal(await input.inputValue(), '');
+});
+
+test('mobile viewport: creating a product from a purchase restores its draft and selects the product', async (t) => {
+  const { page, state } = await harness(t);
+  const dialogs = [];
+  page.on('dialog', (dialog) => {
+    dialogs.push(dialog.message());
+    return dialog.dismiss();
+  });
+  await page.goto(`${baseURL}/purchases/new`);
+  await page.getByRole('button', { name: 'Seleccionar', exact: true }).click();
+  const quantity = page.getByRole('textbox', { name: 'Cantidad' });
+  const cost = page.getByRole('textbox', {
+    name: /Costo de compra por unidad/,
+  });
+  await quantity.fill('7');
+  await cost.fill('1.25');
+  await page.getByRole('link', { name: 'Crear producto' }).click();
+  await page.waitForURL(`${baseURL}/purchases/new/product`);
+  assert.equal(
+    await page.getByLabel('Stock inicial', { exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await page
+      .getByLabel('Costo de compra por unidad', { exact: true })
+      .count(),
+    0,
+  );
+  await page
+    .getByRole('textbox', { name: 'Nombre', exact: true })
+    .fill('Jugo UAT');
+  await page
+    .getByRole('textbox', { name: 'Precio de venta por unidad', exact: true })
+    .fill('2.50');
+  await page
+    .getByRole('button', { name: 'Crear producto', exact: true })
+    .click();
+  await page.waitForURL(`${baseURL}/purchases/new`);
+  await page.getByText('Producto: Jugo UAT', { exact: true }).waitFor();
+  assert.equal(await quantity.inputValue(), '7');
+  assert.equal(await cost.inputValue(), '1.25');
+  assert.equal(
+    await page.getByRole('button', { name: 'Registrar compra' }).isEnabled(),
+    true,
+  );
+  assert.equal(state.writes, 1);
+  assert.equal(state.lastProductCommand.payload.initialStock, 0);
+  assert.equal(state.lastProductCommand.payload.initialUnitCost, null);
+  assert.equal(state.lastProductCommand.payload.initialMovementId, null);
+  assert.equal(state.purchaseWrites, 0);
+  assert.equal(state.documents, 1);
+  assert.deepEqual(dialogs, []);
+});
+
+test('mobile viewport: leaving product creation keeps the purchase and discards only the product draft', async (t) => {
+  const { page, state } = await harness(t);
+  await page.goto(`${baseURL}/purchases/new`);
+  await page.getByRole('button', { name: 'Seleccionar', exact: true }).click();
+  const quantity = page.getByRole('textbox', { name: 'Cantidad' });
+  const cost = page.getByRole('textbox', {
+    name: /Costo de compra por unidad/,
+  });
+  await quantity.fill('3');
+  await cost.fill('2.00');
+  await page.getByRole('link', { name: 'Crear producto' }).click();
+  await page
+    .getByRole('textbox', { name: 'Nombre', exact: true })
+    .fill('Borrador de producto');
+  const warning = page.waitForEvent('dialog');
+  const leave = page.getByRole('link', { name: 'Volver a la compra' }).click();
+  await (await warning).accept();
+  await leave;
+  await page.waitForURL(`${baseURL}/purchases/new`);
+  await page.getByText('Producto: Agua · 1 L', { exact: true }).waitFor();
+  assert.equal(await quantity.inputValue(), '3');
+  assert.equal(await cost.inputValue(), '2.00');
+  assert.equal(state.writes, 0);
+  assert.equal(state.purchaseWrites, 0);
+  assert.equal(state.documents, 1);
+});
+
+test('mobile viewport: the guide opens from the menu and both forms without discarding drafts', async (t) => {
+  const { page, state } = await harness(t);
+  await page.goto(`${baseURL}/products/new`);
+  const dialog = page.getByRole('dialog', { name: 'Guía de StockApp' });
+  const name = page.getByRole('textbox', { name: 'Nombre', exact: true });
+  await name.fill('Agua con gas');
+  await page.getByRole('button', { name: 'Guía', exact: true }).click();
+  await dialog.getByRole('heading', { name: 'Cómo crear productos' }).waitFor();
+  await dialog.getByRole('button', { name: 'Ventas', exact: true }).click();
+  await dialog
+    .getByRole('heading', { name: 'Cómo registrar una venta' })
+    .waitFor();
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'hidden' });
+  await page.waitForFunction(
+    () => document.activeElement?.textContent === 'Guía',
+  );
+  await page.getByRole('button', { name: 'Cómo crear productos' }).click();
+  await dialog.getByRole('heading', { name: 'Cómo crear productos' }).waitFor();
+  await dialog.getByRole('button', { name: 'Cerrar guía' }).click();
+  assert.equal(await name.inputValue(), 'Agua con gas');
+  await name.fill('');
+
+  await page.getByRole('link', { name: 'Nueva venta' }).click();
+  await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+  const price = page.getByRole('textbox', {
+    name: /Precio de venta por unidad/,
+  });
+  await price.fill('3');
+  await page.getByRole('button', { name: 'Cómo registrar una venta' }).click();
+  await dialog
+    .getByRole('heading', { name: 'Cómo registrar una venta' })
+    .waitFor();
+  await dialog.getByRole('button', { name: 'Cerrar guía' }).click();
+  assert.equal(await price.inputValue(), '3');
+  assert.equal(state.documents, 1);
 });
 
 test('mobile viewport: edited Product survives detail refetch failure and retry', async (t) => {

@@ -25,6 +25,7 @@ import {
   type ProductsController,
 } from '../products/controller.js';
 import { recoverPurchase, type PurchasesClient } from './client.js';
+import { NEW_PURCHASE_PATH, NEW_PURCHASE_PRODUCT_PATH } from './paths.js';
 import {
   buildPurchase,
   purchaseTotal,
@@ -94,7 +95,8 @@ export class PurchasesController extends ScopedCommandController<
   }
   routeChanged(pathname: string) {
     if (
-      pathname !== '/purchases/new' &&
+      pathname !== NEW_PURCHASE_PATH &&
+      pathname !== NEW_PURCHASE_PRODUCT_PATH &&
       !this.ownPrice &&
       !this.intent &&
       !this.descriptor

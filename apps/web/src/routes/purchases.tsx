@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import {
   useInfiniteQuery,
   useQuery,
@@ -29,6 +29,10 @@ import {
 } from '../purchases/input.js';
 import { purchaseDetailOptions } from '../purchases/queries.js';
 import { purchaseErrorMessage } from '../purchases/controller.js';
+import {
+  NEW_PURCHASE_PATH,
+  NEW_PURCHASE_PRODUCT_PATH,
+} from '../purchases/paths.js';
 import { useUnsavedChanges } from '../ui/unsaved-changes.js';
 import {
   PurchaseConfirmation,
@@ -104,7 +108,8 @@ function NewPurchase({
     view = usePurchaseMutation(),
     online = useOnline(),
     queries = useQueryClient(),
-    location = useLocation();
+    location = useLocation(),
+    navigate = useNavigate();
   const [form, setForm] = useState(() => controller.savedDraft(scope).form),
     [selected, setSelected] = useState<ProductReadDto | null>(
       () => controller.savedDraft(scope).selected,
@@ -116,26 +121,30 @@ function NewPurchase({
     [lookingUp, setLookingUp] = useState(false),
     [submitted, setSubmitted] = useState(false);
   const mounted = useRef(true),
+    createdProductId =
+      typeof location.state?.createdProductId === 'string'
+        ? location.state.createdProductId
+        : null,
     preselect =
-      typeof location.state?.productId === 'string'
+      createdProductId ??
+      (typeof location.state?.productId === 'string'
         ? location.state.productId
-        : null;
+        : null);
   useUnsavedChanges(
     view.kind !== 'ACCEPTED' &&
       (form.productId !== null ||
         form.quantity !== '1' ||
         form.unitCost !== ''),
+    NEW_PURCHASE_PRODUCT_PATH,
   );
   const list = useInfiniteQuery(
       productListOptions(controller.products.client, scope, search),
     ),
-    locked = [
-      'PREPARING',
-      'SENDING',
-      'UNCERTAIN',
-      'CHECKING',
-      'ACCEPTED',
-    ].includes(view.kind);
+    locked =
+      createdProductId !== null ||
+      ['PREPARING', 'SENDING', 'UNCERTAIN', 'CHECKING', 'ACCEPTED'].includes(
+        view.kind,
+      );
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -160,11 +169,32 @@ function NewPurchase({
   useEffect(() => {
     if (!preselect) return;
     const request = new AbortController();
+    function finishCreatedSelection(read: ProductReadDto | null) {
+      const saved = controller.savedDraft(scope).form;
+      const next = {
+        ...saved,
+        productId: read?.product.id ?? createdProductId,
+      };
+      setSelected(read);
+      setForm(next);
+      controller.saveDraft(scope, next, read);
+      setSelectionMessage(
+        read
+          ? 'Producto creado y seleccionado.'
+          : 'Producto creado. Selecciónalo en la lista para continuar.',
+      );
+      void navigate(NEW_PURCHASE_PATH, {
+        replace: true,
+        preventScrollReset: true,
+      });
+    }
     void controller.products.client
       .detail(scope.inventoryId, preselect, request.signal)
       .then((read) => {
         if (request.signal.aborted || !mounted.current) return;
-        if (read) {
+        if (createdProductId) {
+          finishCreatedSelection(read);
+        } else if (read) {
           setSelected(read);
           const saved = controller.savedDraft(scope).form;
           const next =
@@ -178,11 +208,12 @@ function NewPurchase({
       .catch((error) => {
         if (!request.signal.aborted) {
           controller.session.handleBusinessError(error);
-          setSelectionMessage(productErrorMessage(error));
+          if (createdProductId) finishCreatedSelection(null);
+          else setSelectionMessage(productErrorMessage(error));
         }
       });
     return () => request.abort();
-  }, [controller, scope, preselect]);
+  }, [controller, scope, preselect, createdProductId, navigate]);
   const previousKind = useRef(view.kind);
   useEffect(() => {
     if (view.kind === 'READY' && previousKind.current !== 'READY') {
@@ -193,13 +224,14 @@ function NewPurchase({
     previousKind.current = view.kind;
   }, [view.kind]);
   function select(read: ProductReadDto) {
+    const saved = controller.savedDraft(scope).form;
+    const next =
+      saved.productId === read.product.id
+        ? saved
+        : { ...initialPurchaseForm(), productId: read.product.id };
     setSelected(read);
-    setForm({ ...initialPurchaseForm(), productId: read.product.id });
-    controller.saveDraft(
-      scope,
-      { ...initialPurchaseForm(), productId: read.product.id },
-      read,
-    );
+    setForm(next);
+    controller.saveDraft(scope, next, read);
     setSelectionMessage('Producto seleccionado.');
     setSubmitted(false);
   }
@@ -251,6 +283,11 @@ function NewPurchase({
   return (
     <section>
       <h1>Nueva compra</h1>
+      {online && !locked && (
+        <Link className="secondary-action" to={NEW_PURCHASE_PRODUCT_PATH}>
+          Crear producto
+        </Link>
+      )}
       {!online && (
         <p role="status">
           Sin conexión. Los datos pueden estar desactualizados. Necesitas
@@ -293,7 +330,11 @@ function NewPurchase({
           Seleccionar por código
         </button>
       </form>
-      <p role="status">{selectionMessage}</p>
+      <p role="status">
+        {createdProductId
+          ? 'Seleccionando el producto creado…'
+          : selectionMessage}
+      </p>
       {list.isPending && <p role="status">Cargando productos…</p>}
       {list.error && (
         <p role="alert">
@@ -352,11 +393,13 @@ function NewPurchase({
           <legend>Datos de la compra</legend>
           <p>
             Producto:{' '}
-            {selected
-              ? `${selected.product.name}${selected.product.variant ? ` · ${selected.product.variant}` : ''}`
-              : form.productId
-                ? 'Producto no disponible.'
-                : 'Selecciona un producto.'}
+            {createdProductId
+              ? 'Seleccionando producto…'
+              : selected
+                ? `${selected.product.name}${selected.product.variant ? ` · ${selected.product.variant}` : ''}`
+                : form.productId
+                  ? 'Producto no disponible.'
+                  : 'Selecciona un producto.'}
           </p>
           <label htmlFor="purchase-quantity">Cantidad</label>
           <input
