@@ -23,7 +23,7 @@ test('anonymous startup never calls business endpoints and private routing requi
   );
   await ctx.controller.refresh();
   assert.equal(ctx.controller.snapshot().kind, 'ANONYMOUS');
-  assert.equal(privateDestination(ctx.controller.snapshot()), '/login');
+  assert.equal(privateDestination(ctx.controller.snapshot()), '/');
   assert.equal(calls, 0);
 });
 test('access machine resolves all six me states from server fields', () => {
@@ -144,6 +144,9 @@ test('logout withdraws queries/UI at start and only marks anonymous after offici
 test('failed sign-out does not claim server revocation, keeps queries removed and locks auto-refresh until retry', async () => {
   let fail = true;
   const ctx = fixture({
+    login: async () => {
+      throw new AuthFailure('INVALID_EMAIL_OR_PASSWORD', 401);
+    },
     logout: async () => {
       if (fail) throw new Error('raw private network');
     },
@@ -152,6 +155,7 @@ test('failed sign-out does not claim server revocation, keeps queries removed an
   await ctx.controller.logout();
   const view = ctx.controller.snapshot();
   assert.equal(view.kind, 'LOGOUT_ERROR');
+  assert.equal(privateDestination(view), '/');
   assert.ok(
     'message' in view &&
       view.message.includes('no pudimos cerrar la sesión en el servidor'),
@@ -159,11 +163,16 @@ test('failed sign-out does not claim server revocation, keeps queries removed an
   await ctx.controller.refresh();
   assert.equal(ctx.controller.snapshot().kind, 'LOGOUT_ERROR');
   assert.equal(ctx.queries.getQueryCache().getAll().length, 0);
+  await assert.rejects(
+    ctx.controller.login('b@example.test', 'wrong-password'),
+  );
+  await ctx.controller.refresh();
+  assert.equal(ctx.controller.snapshot().kind, 'LOGOUT_ERROR');
   fail = false;
   await ctx.controller.logout();
   assert.equal(ctx.controller.snapshot().kind, 'ANONYMOUS');
 });
-test('null, expired, revoked auth and me 401 all clear queries and return to login', async () => {
+test('null, expired, revoked auth and me 401 all clear queries and return to public home', async () => {
   for (const failure of ['null', 'expiry', 'auth401', 'me401'] as const) {
     let revoke = false;
     const ctx = fixture(
@@ -189,9 +198,36 @@ test('null, expired, revoked auth and me 401 all clear queries and return to log
     const generation = ctx.controller.snapshot().generation;
     revoke = true;
     await ctx.controller.refresh();
-    assert.equal(privateDestination(ctx.controller.snapshot()), '/login');
+    assert.equal(privateDestination(ctx.controller.snapshot()), '/');
     assert.equal(ctx.queries.getQueryCache().getAll().length, 0);
     assert.ok(ctx.controller.snapshot().generation > generation);
+  }
+});
+test('startup session and ownership network failures fall back to public home and can recover', async () => {
+  for (const endpoint of ['session', 'me'] as const) {
+    let unavailable = true;
+    const ctx = fixture(
+      {
+        session: async () => {
+          if (unavailable && endpoint === 'session')
+            throw new TypeError('Failed to fetch');
+          return identity;
+        },
+      },
+      {
+        me: async () => {
+          if (unavailable && endpoint === 'me')
+            throw new ApiClientError('NETWORK', null);
+          return me;
+        },
+      },
+    );
+    await ctx.controller.refresh();
+    assert.equal(ctx.controller.snapshot().kind, 'SESSION_UNAVAILABLE');
+    assert.equal(privateDestination(ctx.controller.snapshot()), '/');
+    unavailable = false;
+    await ctx.controller.refresh();
+    assert.equal(ctx.controller.snapshot().kind, 'BUSINESS_ACTIVE_ENABLED');
   }
 });
 test('reset completion withdraws context, revokes via official method and does not auto-login', async () => {

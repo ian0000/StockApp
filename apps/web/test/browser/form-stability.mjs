@@ -29,6 +29,7 @@ async function harness(t) {
     writes: 0,
     documents: 0,
     detailCalls: 0,
+    logoutFailure: false,
   };
   page.on('request', (request) => {
     if (request.isNavigationRequest() && request.resourceType() === 'document')
@@ -54,8 +55,11 @@ async function harness(t) {
               },
       });
     }
-    if (path === '/api/auth/sign-out')
+    if (path === '/api/auth/sign-out') {
+      if (state.logoutFailure) return route.abort('internetdisconnected');
+      state.mode = 'expired';
       return route.fulfill({ json: { success: true } });
+    }
     if (path === '/v1/me') return route.fulfill({ json: me });
     if (path === '/v1/session/csrf')
       return route.fulfill({ json: { token: 'test-csrf' } });
@@ -317,7 +321,7 @@ test('mobile viewport: revoked session and logout bypass the dirty guard and dis
     .fill('Privado');
   state.mode = 'expired';
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await page.waitForURL(`${baseURL}/login`);
+  await page.waitForURL(`${baseURL}/`);
   assert.equal(
     await page.getByRole('textbox', { name: 'Nombre', exact: true }).count(),
     0,
@@ -336,7 +340,7 @@ test('mobile viewport: revoked session and logout bypass the dirty guard and dis
   await page
     .getByRole('button', { name: 'Cerrar sesión', exact: true })
     .click();
-  await page.waitForURL(`${baseURL}/login`);
+  await page.waitForURL(`${baseURL}/`);
   assert.deepEqual(
     await page.evaluate(() => ({
       local: { ...localStorage },
@@ -344,6 +348,57 @@ test('mobile viewport: revoked session and logout bypass the dirty guard and dis
     })),
     { local: {}, session: {} },
   );
+});
+
+test('mobile viewport: without a confirmed session protected routes return to public home', async (t) => {
+  const { page, state } = await harness(t);
+  for (const [path, mode] of [
+    ['/products/new', 'expired'],
+    ['/settings', 'network'],
+    ['/onboarding', 'expired'],
+  ]) {
+    state.mode = mode;
+    await page.goto(`${baseURL}${path}`);
+    await page.waitForURL(`${baseURL}/`);
+    await page
+      .getByRole('heading', { name: /Menos hojas de cálculo/ })
+      .waitFor();
+    if (mode === 'network')
+      await page
+        .getByText(
+          'No pudimos comprobar tu sesión. Puedes volver a intentarlo.',
+        )
+        .waitFor();
+    assert.equal(await page.locator('.app-shell').count(), 0);
+  }
+});
+
+test('mobile viewport: failed sign-out returns to public home with a retry and fences background verification', async (t) => {
+  const { page, state } = await harness(t);
+  await page.goto(`${baseURL}/products/new`);
+  await page
+    .getByRole('textbox', { name: 'Nombre', exact: true })
+    .fill('Privado');
+  state.logoutFailure = true;
+  await page
+    .getByRole('button', { name: 'Cerrar sesión', exact: true })
+    .click();
+  await page.waitForURL(`${baseURL}/`);
+  await page.getByRole('heading', { name: /Menos hojas de cálculo/ }).waitFor();
+  const notice = page
+    .getByRole('alert')
+    .filter({ hasText: 'no pudimos cerrar la sesión en el servidor' });
+  await notice.waitFor();
+  const calls = state.sessionCalls;
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  assert.equal(state.sessionCalls, calls);
+  assert.equal(await page.locator('.app-shell').count(), 0);
+  state.logoutFailure = false;
+  await notice
+    .getByRole('button', { name: 'Reintentar cerrar sesión' })
+    .click();
+  await notice.waitFor({ state: 'hidden' });
+  await page.getByRole('heading', { name: /Menos hojas de cálculo/ }).waitFor();
 });
 
 test('mobile viewport: browser Back can be cancelled and then confirmed without a document reload', async (t) => {

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import type { ReactNode } from 'react';
 import {
   IconArrowRight,
   IconBox,
@@ -49,7 +50,7 @@ const features = [
   },
 ];
 
-export function LandingPage() {
+export function LandingPage({ sessionNotice }: { sessionNotice?: ReactNode }) {
   return (
     <div className="public-site">
       <a className="skip-link" href="#public-content">
@@ -57,6 +58,7 @@ export function LandingPage() {
       </a>
       <PublicHeader />
       <main id="public-content" className="landing-content">
+        {sessionNotice}
         <section className="landing-hero" aria-labelledby="landing-title">
           <div>
             <p className="public-eyebrow">Inventario para pequeños negocios</p>
