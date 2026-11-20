@@ -53,7 +53,7 @@ test('CLOUD-03 valid ownership upgrade preserves identity and financial fixture,
   const journal = (
     await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id')
   ).rows;
-  assert.equal(journal.length, 5);
+  assert.equal(journal.length, 6);
   assert.deepEqual(journal.slice(0, 3), oldJournal);
   await migrateDatabase(pool);
   assert.deepEqual(

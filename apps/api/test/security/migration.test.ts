@@ -58,7 +58,7 @@ test('CLOUD-04 upgrade preserves auth, sessions and ownership; rate table is add
   const journal = (
     await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id')
   ).rows;
-  assert.equal(journal.length, 5);
+  assert.equal(journal.length, 6);
   await migrateDatabase(pool);
   assert.deepEqual(
     (await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id'))

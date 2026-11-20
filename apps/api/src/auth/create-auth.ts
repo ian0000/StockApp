@@ -1,9 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { APIError, isAPIError } from 'better-auth/api';
-import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
 import type { createDatabase } from '../infrastructure/postgres/client.js';
-import * as schema from '../infrastructure/postgres/schema.js';
+import { createAuthAdapter } from './adapter.js';
 import { nativeOrigin, type AuthConfig } from './config.js';
 import type { EmailSender } from './email.js';
 import { verificationEmailText } from './email-copy.js';
@@ -49,11 +48,7 @@ export function createAuth(dependencies: {
     secret: config.secret,
     baseURL: config.baseURL,
     basePath: '/api/auth',
-    database: drizzleAdapter(database, {
-      provider: 'pg',
-      schema,
-      transaction: true,
-    }),
+    database: createAuthAdapter(database),
     trustedOrigins: [config.appOrigin, nativeOrigin],
     rateLimit: {
       enabled: true,

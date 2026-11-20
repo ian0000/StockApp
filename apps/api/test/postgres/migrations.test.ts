@@ -54,7 +54,7 @@ test('real PostgreSQL migrates empty to latest and second run is a no-op', async
   const journal = await pool.query(
     'SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id',
   );
-  assert.equal(journal.rowCount, 5);
+  assert.equal(journal.rowCount, 6);
   await migrateDatabase(pool);
   assert.deepEqual(
     (
@@ -171,7 +171,7 @@ test('upgrade from core revision preserves financial data and adds delivery sche
   assert.equal(
     (await pool.query('SELECT count(*) FROM drizzle.__drizzle_migrations'))
       .rows[0].count,
-    '5',
+    '6',
   );
   await assert.rejects(
     pool.query('UPDATE products SET metadata_revision=-1 WHERE id=$1', [
@@ -191,6 +191,35 @@ test('upgrade from core revision preserves financial data and adds delivery sche
     indexes.rows.some(
       (row) => row.indexname === 'import_sessions_business_status_idx',
     ),
+  );
+});
+
+test('normalized email migration refuses pre-existing case collisions without changing users or the ledger', async (t) => {
+  const pool = await disposableDatabase(t);
+  await migrateDatabase(pool, await migrationPrefix(t, 5));
+  await pool.query(`INSERT INTO "user" (id, name, email) VALUES
+    ('a', 'Synthetic A', 'case@example.test'), ('b', 'Synthetic B', 'CASE@example.test')`);
+  const before = await pool.query('SELECT * FROM "user" ORDER BY id');
+  const ledger = await pool.query(
+    'SELECT * FROM drizzle.__drizzle_migrations ORDER BY id',
+  );
+  await assert.rejects(migrateDatabase(pool), (error: unknown) => {
+    return (
+      error instanceof Error &&
+      error.cause !== null &&
+      typeof error.cause === 'object' &&
+      'code' in error.cause &&
+      error.cause.code === '23505'
+    );
+  });
+  assert.deepEqual(
+    (await pool.query('SELECT * FROM "user" ORDER BY id')).rows,
+    before.rows,
+  );
+  assert.deepEqual(
+    (await pool.query('SELECT * FROM drizzle.__drizzle_migrations ORDER BY id'))
+      .rows,
+    ledger.rows,
   );
 });
 

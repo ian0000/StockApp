@@ -68,21 +68,24 @@ export function registerAuthRoutes(
               .send({ message: 'Too many requests. Please try again later.' });
           let denied = ip;
           const body: unknown = request.body;
+          const reset = path === '/api/auth/request-password-reset';
+          const resend = path === '/api/auth/send-verification-email';
+          const login = path === '/api/auth/sign-in/email';
           if (
             body &&
             typeof body === 'object' &&
             'email' in body &&
             typeof body.email === 'string' &&
-            [
-              '/api/auth/sign-in/email',
-              '/api/auth/request-password-reset',
-            ].includes(path)
+            (login || reset || resend)
           ) {
-            const reset = path === '/api/auth/request-password-reset';
             const email = await auth.security.consume(
-              reset ? 'auth-reset-email' : 'auth-login-email',
+              login
+                ? 'auth-login-email'
+                : reset
+                  ? 'auth-reset-email'
+                  : 'auth-resend-email',
               body.email.trim().toLowerCase(),
-              { window: reset ? 3600 : 60, max: reset ? 3 : 5 },
+              login ? { window: 60, max: 5 } : { window: 3600, max: 3 },
             );
             if (!email.allowed) denied = email;
           }
