@@ -213,17 +213,18 @@ export function SignupPage() {
         <FormStatus state={state} />
       </form>
       <div className="verification-note">
-        <strong>Un paso más para entrar</strong>
         <p>
-          Abre el enlace de verificación que recibas para confirmar que el
-          correo es tuyo; luego vuelve e inicia sesión con tu contraseña. Tu
-          inventario se configura después. Crear otra cuenta con el mismo correo
-          no cambia tu contraseña; si la olvidaste, usa la recuperación.
+          Usa el enlace de verificación para confirmar que el correo es tuyo. Si
+          ya tienes cuenta, puedes iniciar sesión con tu contraseña actual.
         </p>
       </div>
-      <p className="auth-switch">
-        ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
-      </p>
+      <nav className="auth-switch" aria-label="Opciones de acceso">
+        <Link to="/login">Iniciar sesión</Link>
+        {' · '}
+        <Link to="/reset-password">Recuperar contraseña</Link>
+        {' · '}
+        <Link to="/verify-email">Solicitar verificación</Link>
+      </nav>
     </AuthLayout>
   );
 }

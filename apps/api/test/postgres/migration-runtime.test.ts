@@ -131,7 +131,7 @@ test(
         'SELECT hash,created_at::text FROM drizzle.__drizzle_migrations ORDER BY id',
       )
     ).rows;
-    assert.equal(ledger.length, 5);
+    assert.equal(ledger.length, 6);
     assert.equal((await run(pool.options.connectionString)).code, 0);
     assert.deepEqual(
       (
@@ -223,6 +223,6 @@ test('failed migration rolls back SQL and blocks continuation; approved assets s
   assert.equal(
     (await pool.query('SELECT count(*) FROM drizzle.__drizzle_migrations'))
       .rows[0].count,
-    '5',
+    '6',
   );
 });

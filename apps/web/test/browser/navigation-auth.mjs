@@ -122,6 +122,21 @@ test('mobile viewport: public auth links navigate in one document and preserve t
   await page.waitForURL(`${baseURL}/login`);
   const root = await page.locator('#root').elementHandle();
   await page.getByRole('link', { name: 'Crear cuenta', exact: true }).click();
+  const signupActions = page.getByRole('navigation', {
+    name: 'Opciones de acceso',
+  });
+  for (const [label, path] of [
+    ['Iniciar sesión', '/login'],
+    ['Recuperar contraseña', '/reset-password'],
+    ['Solicitar verificación', '/verify-email'],
+  ]) {
+    assert.equal(
+      await signupActions
+        .getByRole('link', { name: label, exact: true })
+        .getAttribute('href'),
+      path,
+    );
+  }
   await page.waitForURL(`${baseURL}/signup`);
   await page.getByRole('link', { name: 'Iniciar sesión', exact: true }).click();
   await page

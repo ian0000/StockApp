@@ -36,6 +36,13 @@
       "when": 1791045670163,
       "tag": "0004_security_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795197704121,
+      "tag": "0005_auth_email_normalized",
+      "breakpoints": true
     }
   ]
 }
