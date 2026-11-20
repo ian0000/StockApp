@@ -10,6 +10,7 @@ import {
   IconLogout,
 } from '@tabler/icons-react';
 import { Brand } from '../ui/brand.js';
+import { TutorialButton } from '../ui/tutorial.js';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { LoadingPage } from './status.js';
 import { privateDestination } from '../auth/session.js';
@@ -158,7 +159,7 @@ export function AppShell() {
           </NavLink>
         </nav>
         <span className="nav-caption">Registrar operación</span>
-        <nav aria-label="Registrar operación">
+        <nav className="operation-nav" aria-label="Acciones de inventario">
           <NavLink to="/sales/new">
             <IconPlus size={20} aria-hidden="true" />
             Nueva venta
@@ -167,6 +168,7 @@ export function AppShell() {
             <IconShoppingBag size={20} aria-hidden="true" />
             Nueva compra
           </NavLink>
+          <TutorialButton />
         </nav>
         <div className="sidebar-account">
           <span className="nav-caption">Tu cuenta</span>

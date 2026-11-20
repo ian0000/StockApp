@@ -42,6 +42,7 @@ en PARITY_MATRIX; etiquetas/cálculos siguen UX canónica. No diseño pixel-perf
 | /settings/privacy | Export/borrado; sesiones/confirmación reciente |
 
 App shell tiene Inicio/Productos/Historial/Configuración, acciones de venta/compra visibles.
+La guía de Productos y Ventas se abre desde el menú y desde los formularios sin salir ni descartar el borrador.
 Desktop navegación lateral; narrow top/bottom accesibles; no veinte módulos de negocio.
 Tablas compactas pueden convertirse en tarjetas en pantalla estrecha. No gráficos obligatorios.
 Forms muestran campos actuales sin proveedores/categorías/impuestos; precio habitual precargado

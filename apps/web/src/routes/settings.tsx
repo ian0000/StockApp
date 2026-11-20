@@ -17,6 +17,7 @@ import {
   IconShieldLock,
 } from '@tabler/icons-react';
 import { Brand } from '../ui/brand.js';
+import { TutorialButton } from '../ui/tutorial.js';
 
 export const legalLinks = [
   ['Política de privacidad', 'https://ian-k.dev/stockapp/privacy/'],
@@ -131,6 +132,7 @@ export function AccountBoundary() {
               <IconShieldLock size={22} aria-hidden="true" />
               Datos y privacidad
             </Link>
+            {meta.kind === 'BUSINESS_ACTIVE_ENABLED' && <TutorialButton />}
           </nav>
           <div className="sidebar-account">
             <span className="nav-caption">Tu cuenta</span>

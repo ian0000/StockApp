@@ -10,6 +10,7 @@ import { VoidAction } from '../voids/panel.js';
 import { useSessionView } from '../auth/context.js';
 import { useOnline, useProducts } from '../products/context.js';
 import { useUnsavedChanges } from '../ui/unsaved-changes.js';
+import { TutorialButton } from '../ui/tutorial.js';
 import {
   productScope,
   productErrorMessage,
@@ -346,6 +347,7 @@ function NewSale({ scope }: { scope: ProductScope }) {
   return (
     <section>
       <h1>Nueva venta</h1>
+      <TutorialButton topic="sales" />
       {!online && (
         <p role="status">
           Sin conexión. Los datos en pantalla pueden estar desactualizados.

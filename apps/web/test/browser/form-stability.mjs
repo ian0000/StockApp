@@ -324,6 +324,44 @@ test('mobile viewport: leaving product creation keeps the purchase and discards 
   assert.equal(state.documents, 1);
 });
 
+test('mobile viewport: the guide opens from the menu and both forms without discarding drafts', async (t) => {
+  const { page, state } = await harness(t);
+  await page.goto(`${baseURL}/products/new`);
+  const dialog = page.getByRole('dialog', { name: 'Guía de StockApp' });
+  const name = page.getByRole('textbox', { name: 'Nombre', exact: true });
+  await name.fill('Agua con gas');
+  await page.getByRole('button', { name: 'Guía', exact: true }).click();
+  await dialog.getByRole('heading', { name: 'Cómo crear productos' }).waitFor();
+  await dialog.getByRole('button', { name: 'Ventas', exact: true }).click();
+  await dialog
+    .getByRole('heading', { name: 'Cómo registrar una venta' })
+    .waitFor();
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'hidden' });
+  await page.waitForFunction(
+    () => document.activeElement?.textContent === 'Guía',
+  );
+  await page.getByRole('button', { name: 'Cómo crear productos' }).click();
+  await dialog.getByRole('heading', { name: 'Cómo crear productos' }).waitFor();
+  await dialog.getByRole('button', { name: 'Cerrar guía' }).click();
+  assert.equal(await name.inputValue(), 'Agua con gas');
+  await name.fill('');
+
+  await page.getByRole('link', { name: 'Nueva venta' }).click();
+  await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+  const price = page.getByRole('textbox', {
+    name: /Precio de venta por unidad/,
+  });
+  await price.fill('3');
+  await page.getByRole('button', { name: 'Cómo registrar una venta' }).click();
+  await dialog
+    .getByRole('heading', { name: 'Cómo registrar una venta' })
+    .waitFor();
+  await dialog.getByRole('button', { name: 'Cerrar guía' }).click();
+  assert.equal(await price.inputValue(), '3');
+  assert.equal(state.documents, 1);
+});
+
 test('mobile viewport: edited Product survives detail refetch failure and retry', async (t) => {
   const { page, state } = await harness(t);
   await page.goto(`${baseURL}/products/${productId}/edit`);

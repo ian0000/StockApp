@@ -22,6 +22,7 @@ import { formatMoney, initialProductForm } from '../products/input.js';
 import { productListOptions } from '../products/queries.js';
 import { NEW_PURCHASE_PATH } from '../purchases/paths.js';
 import { useUnsavedChanges } from '../ui/unsaved-changes.js';
+import { TutorialButton } from '../ui/tutorial.js';
 
 export function ProductCard({
   item,
@@ -399,6 +400,7 @@ function NewProduct({ fromPurchase = false }: { fromPurchase?: boolean }) {
   return (
     <main>
       <h1>Nuevo producto</h1>
+      <TutorialButton topic="products" />
       {fromPurchase && (
         <p>
           Indicarás el costo de compra al volver. Las unidades se añadirán al
