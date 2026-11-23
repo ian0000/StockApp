@@ -5,7 +5,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { useSessionController, useSessionView } from '../auth/context.js';
 import { AuthFailure } from '../auth/client.js';
 import { AccessStatus } from './access.js';
@@ -72,6 +72,8 @@ export function LoginPage() {
   const controller = useSessionController();
   const view = useSessionView();
   const navigate = useNavigate();
+  const verificationComplete =
+    useLocation().state?.verificationComplete === true;
   const state = useSubmit();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -88,6 +90,11 @@ export function LoginPage() {
       title="Iniciar sesión"
       intro="Qué bueno verte de nuevo. Vuelve a tu inventario, tus operaciones y el resumen de tu día."
     >
+      {verificationComplete && (
+        <p className="verification-note" role="status">
+          Correo verificado. Ya puedes iniciar sesión.
+        </p>
+      )}
       <form
         aria-describedby="form-message"
         onSubmit={(event) => {
@@ -133,13 +140,15 @@ export function LoginPage() {
         <Link to="/reset-password">Olvidé mi contraseña</Link>
         <Link to="/verify-email">Verificar correo</Link>
       </nav>
-      <div className="verification-note">
-        <strong>¿Aún no verificaste tu correo?</strong>
-        <p>
-          Abre el enlace que recibiste al registrarte y después inicia sesión
-          aquí. Si venció o no llegó, puedes solicitar otro.
-        </p>
-      </div>
+      {!verificationComplete && (
+        <div className="verification-note">
+          <strong>¿Aún no verificaste tu correo?</strong>
+          <p>
+            Abre el enlace que recibiste al registrarte y después inicia sesión
+            aquí. Si venció o no llegó, puedes solicitar otro.
+          </p>
+        </div>
+      )}
     </AuthLayout>
   );
 }
@@ -233,39 +242,46 @@ export function VerifyPage() {
   const [email, setEmail] = useState('');
   const [callback] = useState(() => {
     const query = new URLSearchParams(location.search);
+    if (query.has('error')) return { kind: 'failed' } as const;
+    const token = query.get('token');
+    if (token) return { kind: 'verifying', token } as const;
     return {
-      token: query.get('token'),
-      failed: query.has('error'),
-      verified: query.get('verified') === '1',
-    };
+      kind: query.get('verified') === '1' ? 'verified' : 'waiting',
+    } as const;
   });
   const consumed = useRef(false);
-  const [result, setResult] = useState(
-    callback.failed
-      ? 'El enlace no pudo verificarse. Solicita otro correo.'
-      : callback.verified
-        ? 'Correo verificado. Ya puedes iniciar sesión.'
-        : location.state?.verificationRequested === true
-          ? verificationRequestMessage
-          : 'Revisa tu correo y abre el enlace de verificación.',
-  );
+  const [result, setResult] = useState(callback.kind);
   useEffect(() => {
-    if (consumed.current) return;
+    if (consumed.current || callback.kind === 'verified') return;
     consumed.current = true;
     if (location.search) void navigate('/verify-email', { replace: true });
-    if (callback.token)
+    if (callback.kind === 'verifying')
       void controller.auth.verify(callback.token).then(
-        () => setResult('Correo verificado. Ya puedes iniciar sesión.'),
-        () => setResult('El enlace no pudo verificarse. Solicita otro correo.'),
+        () => setResult('verified'),
+        () => setResult('failed'),
       );
   }, [callback, controller, location.search, navigate]);
+  if (result === 'verified')
+    return (
+      <Navigate to="/login" replace state={{ verificationComplete: true }} />
+    );
+  if (result === 'verifying')
+    return (
+      <main role="status">
+        <h1>Verificando tu correo…</h1>
+      </main>
+    );
   return (
     <AuthLayout
       title="Verificar correo"
       intro="Confirma que puedes acceder a tu correo para activar el acceso a tu cuenta."
     >
       <p role="status" aria-live="polite">
-        {result}
+        {result === 'failed'
+          ? 'El enlace no pudo verificarse. Solicita otro correo.'
+          : location.state?.verificationRequested === true
+            ? verificationRequestMessage
+            : 'Revisa tu correo y abre el enlace de verificación.'}
       </p>
       <ol className="verification-steps">
         <li>
@@ -277,8 +293,8 @@ export function VerifyPage() {
           solicita otro enlace aquí.
         </li>
         <li>
-          Cuando veas «Correo verificado», vuelve a iniciar sesión con tu correo
-          y contraseña. Verificar no inicia sesión automáticamente.
+          Cuando se verifique tu correo, se abrirá «Iniciar sesión». Entra con
+          tu correo y contraseña.
         </li>
       </ol>
       <p>

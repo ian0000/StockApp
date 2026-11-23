@@ -45,7 +45,8 @@ async function harness(t, authenticated = false) {
   t.after(() => assert.deepEqual(errors, []));
   await page.route('https://api.example.test/**', async (route) => {
     const request = route.request();
-    const path = new URL(request.url()).pathname;
+    const url = new URL(request.url());
+    const path = url.pathname;
     if (path === '/api/auth/get-session')
       return route.fulfill({
         json: authenticated
@@ -76,6 +77,23 @@ async function harness(t, authenticated = false) {
           token: null,
           user: { id: 'synthetic-public-user', emailVerified: false },
         },
+      });
+    }
+    if (path === '/api/auth/verify-email') {
+      const valid = url.searchParams.get('token') === 'valid-fixture';
+      const callbackURL = url.searchParams.get('callbackURL');
+      if (callbackURL) {
+        const callback = new URL(callbackURL);
+        assert.equal(callback.origin, new URL(baseURL).origin);
+        if (!valid) callback.searchParams.set('error', 'TOKEN_EXPIRED');
+        return route.fulfill({
+          status: 302,
+          headers: { location: callback.href },
+        });
+      }
+      return route.fulfill({
+        status: valid ? 200 : 401,
+        json: valid ? { status: true, user: null } : { code: 'TOKEN_EXPIRED' },
       });
     }
     if (path === '/api/auth/send-verification-email')
@@ -111,6 +129,51 @@ async function harness(t, authenticated = false) {
   });
   return { page, state };
 }
+
+test('mobile viewport: a valid verification link opens login and an expired one offers resend', async (t) => {
+  const { page, state } = await harness(t);
+  const emailLink = new URL('https://api.example.test/api/auth/verify-email');
+  emailLink.searchParams.set(
+    'callbackURL',
+    `${baseURL}/verify-email?verified=1`,
+  );
+  const login = page.getByRole('heading', {
+    name: 'Iniciar sesión',
+    exact: true,
+  });
+  const confirmation = page
+    .getByRole('status')
+    .filter({ hasText: 'Correo verificado. Ya puedes iniciar sesión.' });
+  const resend = page.getByRole('button', { name: 'Reenviar verificación' });
+  const failure = page
+    .getByRole('status')
+    .filter({ hasText: 'El enlace no pudo verificarse.' });
+
+  emailLink.searchParams.set('token', 'valid-fixture');
+  await page.goto(emailLink.href);
+  await page.waitForURL(`${baseURL}/login`);
+  await login.waitFor();
+  await confirmation.waitFor();
+  assert.equal(await resend.count(), 0);
+
+  emailLink.searchParams.set('token', 'expired-fixture');
+  await page.goto(emailLink.href);
+  await page.waitForURL(`${baseURL}/verify-email`);
+  await failure.waitFor();
+  await resend.waitFor();
+  assert.equal(await confirmation.count(), 0);
+
+  await page.goto(`${baseURL}/verify-email?token=expired-fixture&verified=1`);
+  await page.waitForURL(`${baseURL}/verify-email`);
+  await failure.waitFor();
+  await resend.waitFor();
+  assert.equal(await confirmation.count(), 0);
+
+  await page.goto(`${baseURL}/verify-email?token=valid-fixture`);
+  await page.waitForURL(`${baseURL}/login`);
+  await confirmation.waitFor();
+  assert.equal(state.signins.length, 0);
+});
 
 test('mobile viewport: public auth links navigate in one document and preserve the running app', async (t) => {
   const { page, state } = await harness(t);

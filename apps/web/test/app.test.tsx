@@ -266,7 +266,7 @@ test('signup and verification explain the email steps without echoing private ca
     anon(),
   );
   assert.ok(verify.includes('spam o promociones'));
-  assert.ok(verify.includes('no inicia sesión automáticamente'));
+  assert.ok(verify.includes('se abrirá «Iniciar sesión»'));
   assert.ok(verify.includes('Reenviar verificación'));
   assert.ok(!verify.includes('PRIVATE-TOKEN'));
   assert.ok(!verify.includes('PRIVATE-ERROR'));
@@ -342,8 +342,7 @@ test('official verify/reset callbacks render usable safe states without leaking 
   assert.ok(reset.includes('type="password"'));
   assert.ok(!reset.includes('PRIVATE-TOKEN'));
   const verified = await renderPath('/verify-email?verified=1', anon());
-  assert.ok(verified.includes('Correo verificado'));
-  assert.ok(verified.includes('href="/login"'));
+  assert.equal(verified, '');
   const verifyError = await renderPath(
     '/verify-email?verified=1&error=PRIVATE-SQL',
     anon(),
