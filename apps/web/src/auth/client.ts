@@ -86,11 +86,12 @@ export function createWebAuth(
       checked(error);
     },
     async verify(token: string): Promise<void> {
-      const { error } = await client.verifyEmail({
+      const { data, error } = await client.verifyEmail({
         query: { token },
         fetchOptions: options,
       });
       checked(error);
+      if (data?.status !== true) throw new AuthFailure(undefined, undefined);
     },
     async requestReset(email: string): Promise<void> {
       const { error } = await client.requestPasswordReset(

@@ -152,6 +152,8 @@ test('verification token is consumed by official GET with no custom redirect or 
   assert.equal(call.url.searchParams.get('token'), 'verify-fixture');
   assert.equal(call.init.method, 'GET');
   assert.equal(call.url.searchParams.get('callbackURL'), null);
+  h.reply({ status: false });
+  await assert.rejects(h.auth.verify('verify-fixture'), AuthFailure);
 });
 test('resend uses the same accepted result for existing, verified and missing addresses without promising delivery', async () => {
   const h = harness();
